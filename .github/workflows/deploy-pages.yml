@@ -26,18 +26,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p app
-          if [ -f src/pages/Landing.tsx ]; then
-            tar \
-              --exclude=.git \
-              --exclude=.source \
-              --exclude=source.tar.gz \
-              --exclude=app \
-              --exclude=dist-gh-pages \
-              -cf - . | tar -xf - -C app
-          else
-            curl -fsSL "https://site-d219f67dd7394859a5770eea41cc4020.freebuff.page/source.tar.gz" -o source.tar.gz
-            tar -xzf source.tar.gz -C app
-          fi
+          tar \
+            --exclude=.git \
+            --exclude=.source \
+            --exclude=app \
+            --exclude=dist-gh-pages \
+            -cf - . | tar -xf - -C app
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -57,29 +51,19 @@ jobs:
         with:
           path: app/dist-gh-pages
 
-      - name: Materialize source for future builds
+      - name: Remove staging directory from git
         continue-on-error: true
         run: |
           set -euo pipefail
-          if [ -f src/pages/Landing.tsx ]; then
-            echo "Source already materialized"
-            exit 0
+          if git ls-files app | grep -q .; then
+            git rm -r --cached app
+            grep -qxF 'app/' .gitignore || printf '\napp/\n' >> .gitignore
+            git add .gitignore
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git commit -m "Remove Pages staging directory [skip ci]"
+            git push origin HEAD:main
           fi
-          tar \
-            --exclude=node_modules \
-            --exclude=dist-gh-pages \
-            --exclude=.git \
-            -cf - -C app . | tar -xf - -C .
-          rm -rf .source source.tar.gz
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          if git diff --cached --quiet; then
-            echo "No source changes to commit"
-            exit 0
-          fi
-          git commit -m "Add site source [skip ci]"
-          git push origin HEAD:main
 
   deploy:
     environment:
