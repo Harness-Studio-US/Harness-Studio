@@ -26,8 +26,8 @@ export default function Brand() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f7f8fb]">
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-[#f7f8fb]/90 backdrop-blur-xl">
+    <div className="min-h-screen bg-[#f8f8f6]">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-[#f8f8f6]/90 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-5 lg:px-8">
           <Link to="/" aria-label="Harness Studio home">
             <Logo />
@@ -40,8 +40,8 @@ export default function Brand() {
               <ArrowLeft className="h-3.5 w-3.5" />
               Back to site
             </Link>
-            <Link to="/console" className="btn-primary h-8 px-3 text-[12px]">
-              Try the AI
+            <Link to="/console" className="btn-primary h-8 px-3.5 text-[12px]">
+              Try the demo
             </Link>
           </div>
         </div>
@@ -51,12 +51,12 @@ export default function Brand() {
         <div className="mb-10 max-w-2xl">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10.5px] text-slate-600">
             <Sparkles className="h-3 w-3 text-violet-600" />
-            Brand &amp; press kit
+            Official brand &amp; press kit
           </span>
-          <h1 className="mt-4 text-4xl font-extrabold tracking-[-0.035em] text-slate-900">
+          <h1 className="mt-4 text-4xl font-bold tracking-[-0.04em] text-slate-950 sm:text-5xl">
             Harness Studio identity.
           </h1>
-          <p className="mt-3 text-[13.5px] leading-relaxed text-slate-600">
+          <p className="mt-4 text-[14px] leading-[1.8] text-slate-600">
             The folded ribbon forms an H — two uprights moving in opposite directions, joined by one
             continuous path. Use the files below as-is; don&apos;t redraw or recolor the mark.
           </p>
@@ -159,8 +159,8 @@ export default function Brand() {
             <div className="mt-5 rounded-xl border border-slate-200 bg-white p-3.5">
               <div className="text-[11px] font-medium text-slate-700">Need something custom?</div>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
-                For co-marketing, screenshots or a talk, write to press@harness.studio and tell us the
-                context.
+                For co-marketing, screenshots or a talk, write to HarnessStudio@Outlook.com and tell
+                us the context.
               </p>
             </div>
           </div>

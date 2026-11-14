@@ -4,7 +4,7 @@ import Landing from "./pages/Landing";
 import Docs from "./pages/Docs";
 import Brand from "./pages/Brand";
 import Console from "./pages/Console";
-import Login from "./pages/Login";
+import GetStarted from "./pages/GetStarted";
 import { PrivacyPolicy, TermsOfService } from "./pages/Legal";
 
 function ScrollManager() {
@@ -36,7 +36,8 @@ export default function App() {
         <Route path="/docs" element={<Docs />} />
         <Route path="/brand" element={<Brand />} />
         <Route path="/console" element={<Console />} />
-        <Route path="/login" element={<Login />} />
+        <Route path="/get-started" element={<GetStarted />} />
+        <Route path="/login" element={<Navigate to="/get-started" replace />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="*" element={<Navigate to="/" replace />} />

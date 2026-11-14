@@ -3,8 +3,6 @@ import { Link } from "react-router-dom";
 import {
   ArrowLeft,
   BookOpen,
-  LogIn,
-  LogOut,
   Menu,
   Plus,
   Search,
@@ -19,7 +17,6 @@ import { LegalLinks } from "../components/LegalLinks";
 import { streamAssistant, titleForConversation, type ChatMessage } from "../lib/chat";
 import { estimateTokens, useSettings } from "../lib/settings";
 import { cn } from "../lib/cn";
-import { initialsFor, providerLabel, useAuth } from "../lib/auth";
 
 type Conversation = {
   id: string;
@@ -76,7 +73,6 @@ function formatRelative(timestamp: number): string {
 
 export default function Console() {
   const { settings, logRequest } = useSettings();
-  const { user, signOut } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>(loadConversations);
   const [activeId, setActiveId] = useState<string>("");
   const [input, setInput] = useState("");
@@ -88,7 +84,7 @@ export default function Console() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    document.title = "Harness Studio AI — Preview";
+    document.title = "Harness Studio AI — Interactive demo";
   }, []);
 
   const activeConversation =
@@ -304,7 +300,7 @@ export default function Console() {
   const isStreaming = streaming !== null;
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#f7f8fb] text-slate-800">
+    <div className="flex h-screen w-full overflow-hidden bg-[#f8f8f6] text-slate-800">
       {/* sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -407,66 +403,28 @@ export default function Console() {
           </div>
         </div>
 
-        <div className="space-y-2 border-t border-slate-200 p-2.5">
-          <div className="rounded-lg border border-slate-200 bg-white p-2.5">
-            <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-700">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              AI preview
+        <div className="space-y-2.5 border-t border-slate-200 p-2.5">
+          <div className="rounded-lg border border-slate-200 bg-white p-3">
+            <div className="flex items-center gap-1.5 text-[10.5px] font-medium text-slate-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-violet-400" />
+              Interactive demo
             </div>
-            <p className="mt-1 text-[9.5px] leading-relaxed text-slate-400">
-              Chat here to see how it feels. Your changes happen in Harness Studio.
+            <p className="mt-1 text-[10px] leading-relaxed text-slate-400">
+              A guided look at the conversation. No account needed.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 rounded-lg px-1 py-1">
-            <div
-              className={cn(
-                "flex h-6 w-6 items-center justify-center rounded-full text-[9px] font-semibold text-slate-700",
-                user
-                  ? "bg-gradient-to-br from-sky-500/30 to-violet-500/30"
-                  : "border border-slate-200 bg-slate-50"
-              )}
-            >
-              {user ? initialsFor(user.name) : "GS"}
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="truncate text-[10.5px] text-slate-700">
-                {user ? user.name : "Guest workspace"}
-              </div>
-              <div className="truncate text-[9px] text-slate-400">
-                {user ? `${providerLabel(user.provider)} · preview session` : "Not signed in"}
-              </div>
-            </div>
-            {user ? (
-              <button
-                type="button"
-                onClick={signOut}
-                className="rounded p-1 text-slate-400 hover:text-slate-700"
-                aria-label="Sign out"
-                title="Sign out"
-              >
-                <LogOut className="h-3 w-3" />
-              </button>
-            ) : (
-              <Link
-                to="/login"
-                className="rounded p-1 text-slate-400 hover:text-slate-700"
-                aria-label="Sign in"
-                title="Sign in"
-              >
-                <LogIn className="h-3 w-3" />
-              </Link>
-            )}
+          <div className="flex items-center justify-between gap-2 px-1 py-0.5">
+            <span className="text-[9.5px] text-slate-400">Conversations stay in this browser.</span>
             <Link
               to="/"
-              className="rounded p-1 text-slate-400 hover:text-slate-700"
-              aria-label="Back to website"
-              title="Back to website"
+              className="inline-flex items-center gap-1 rounded p-1 text-[9.5px] text-slate-400 hover:text-slate-700"
             >
               <ArrowLeft className="h-3 w-3" />
+              Site
             </Link>
           </div>
-          <LegalLinks className="px-1 pt-0.5" />
+          <LegalLinks className="px-1 pt-0.5" showContact={false} />
         </div>
       </aside>
 
@@ -483,9 +441,9 @@ export default function Console() {
           </button>
 
           <div className="flex min-w-0 items-center gap-2">
-            <span className="text-[11.5px] font-medium text-slate-700">Harness Studio AI</span>
-            <span className="rounded-full border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[9px] text-violet-700">
-              Preview
+            <span className="text-[12px] font-semibold text-slate-800">Harness Studio AI</span>
+            <span className="rounded-full border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[9px] font-medium text-slate-500">
+              Demo
             </span>
           </div>
 
@@ -515,16 +473,16 @@ export default function Console() {
                   <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <LogoMark className="h-7 w-7" />
                   </div>
-                  <h1 className="text-[26px] font-semibold tracking-[-0.03em] text-slate-900 sm:text-3xl">
+                  <h1 className="text-[30px] font-semibold tracking-[-0.035em] text-slate-900 sm:text-[34px]">
                     What would you like to build?
                   </h1>
-                  <p className="mx-auto mt-2 max-w-md text-[12.5px] leading-relaxed text-slate-500">
+                  <p className="mx-auto mt-2.5 max-w-md text-[13.5px] leading-relaxed text-slate-500">
                     Describe a change in your own words. Harness will talk it through and show you
                     what it would do in Harness Studio.
                   </p>
-                  <div className="mx-auto mt-3 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[9.5px] text-slate-500">
-                    <span className="h-1 w-1 rounded-full bg-emerald-400" />
-                    Preview conversation · no account needed
+                  <div className="mx-auto mt-3 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] text-slate-500">
+                    <span className="h-1 w-1 rounded-full bg-violet-400" />
+                    Interactive demo · no account needed
                   </div>
                 </div>
 
@@ -540,7 +498,7 @@ export default function Console() {
                         <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border border-slate-200 bg-slate-50 text-slate-500 transition group-hover:text-violet-700">
                           <span className="text-[8px]">↗</span>
                         </span>
-                        <span className="text-[11.5px] leading-relaxed text-slate-600 group-hover:text-slate-800">
+                                                  <span className="text-[12.5px] leading-relaxed text-slate-600 group-hover:text-slate-800">
                           {suggestion}
                         </span>
                       </div>
@@ -612,7 +570,7 @@ export default function Console() {
 
             <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1 px-1 text-[9px] text-slate-400">
               <span>Enter to send · Shift+Enter for a new line</span>
-              <span>Preview conversation · changes are simulated</span>
+              <span>Interactive demo · changes are simulated</span>
             </div>
           </div>
         </div>

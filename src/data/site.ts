@@ -152,8 +152,8 @@ export const faqs = [
     a: "Fix a broken button, add a page, change how something looks, explain part of your project, or help you decide what to build next. If you can describe it, it’s worth asking.",
   },
   {
-    q: "Is the web preview the full app?",
-    a: "The web preview lets you try the conversation. The full experience — your project, the changes and the review — happens inside Harness Studio.",
+    q: "Is the demo the full app?",
+    a: "No. The demo lets you try the conversation in your browser. The full experience — your project, the changes and the review — happens inside Harness Studio.",
   },
   {
     q: "What if I don’t like a change?",

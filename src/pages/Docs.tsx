@@ -35,8 +35,8 @@ const sections = [
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <section id={id} className="scroll-mt-24 border-t border-slate-200 py-9 first:border-0 first:pt-2">
-      <h2 className="text-xl font-semibold tracking-[-0.02em] text-slate-900">{title}</h2>
-      <div className="mt-4 space-y-4 text-[13px] leading-relaxed text-slate-600">{children}</div>
+      <h2 className="text-[22px] font-semibold tracking-[-0.025em] text-slate-900">{title}</h2>
+      <div className="mt-4 space-y-4 text-[14px] leading-[1.8] text-slate-600">{children}</div>
     </section>
   );
 }
@@ -48,16 +48,16 @@ function Step({ number, title, children }: { number: string; title: string; chil
         <span className="flex h-5 w-5 items-center justify-center rounded-full border border-violet-200 bg-violet-50 text-[9px] font-semibold text-violet-700">
           {number}
         </span>
-        <h3 className="text-[12.5px] font-semibold text-slate-800">{title}</h3>
+        <h3 className="text-[13.5px] font-semibold text-slate-800">{title}</h3>
       </div>
-      <p className="mt-2 text-[11.5px] leading-relaxed text-slate-500">{children}</p>
+      <p className="mt-2 text-[12.5px] leading-relaxed text-slate-500">{children}</p>
     </div>
   );
 }
 
 function Tip({ children }: { children: ReactNode }) {
   return (
-    <div className="flex gap-2.5 rounded-xl border border-sky-200 bg-sky-50 p-3 text-[12px] leading-relaxed text-slate-600">
+    <div className="flex gap-2.5 rounded-xl border border-sky-200 bg-sky-50 p-3 text-[13px] leading-relaxed text-slate-600">
       <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sky-600" />
       <div>{children}</div>
     </div>
@@ -80,8 +80,8 @@ export default function Docs() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#f7f8fb]">
-      <header className="sticky top-0 z-40 border-b border-slate-200 bg-[#f7f8fb]/90 backdrop-blur-xl">
+    <div className="min-h-screen bg-[#f8f8f6]">
+      <header className="sticky top-0 z-40 border-b border-slate-200 bg-[#f8f8f6]/90 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5 lg:px-8">
           <div className="flex items-center gap-5">
             <Link to="/" aria-label="Harness Studio home">
@@ -103,8 +103,8 @@ export default function Docs() {
               <ArrowLeft className="h-3.5 w-3.5" />
               Back to site
             </Link>
-            <Link to="/console" className="btn-primary h-8 px-3 text-[12px]">
-              Try the AI
+            <Link to="/console" className="btn-primary h-8 px-3.5 text-[12px]">
+              Try the demo
               <ArrowUpRight className="h-3 w-3" />
             </Link>
           </div>
@@ -127,7 +127,7 @@ export default function Docs() {
                 Start with a sentence. There’s no setup and no special format.
               </p>
               <Link to="/console" className="mt-2 inline-flex text-[10.5px] text-violet-700">
-                Try the AI →
+                Try the demo →
               </Link>
             </div>
           </div>
@@ -142,14 +142,14 @@ export default function Docs() {
             <h1 className="text-3xl font-bold tracking-[-0.03em] text-slate-900 sm:text-4xl">
               Build with a conversation.
             </h1>
-            <p className="mt-3 max-w-2xl text-[13.5px] leading-relaxed text-slate-600">
+            <p className="mt-3 max-w-2xl text-[15px] leading-[1.75] text-slate-600">
               Everything you need to start working with the Harness Studio AI — without learning a
               new language or reading a developer manual.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               <Link to="/console" className="btn-primary h-9 px-3.5 text-[12px]">
                 <MessageSquare className="h-3.5 w-3.5" />
-                Try the AI
+                Try the demo
               </Link>
               <a href="#getting-started" className="btn-ghost h-9 px-3.5 text-[12px]">
                 Start with the basics
@@ -194,7 +194,7 @@ export default function Docs() {
                 Have the project you want to work on open in Harness Studio.
               </Step>
               <Step number="2" title="Open the chat">
-                Go to the AI in your browser. No setup required for the preview.
+                Go to the AI in your browser. No account is needed for the demo.
               </Step>
               <Step number="3" title="Say what you want">
                 Describe the change in a sentence. Harness will take it from there.
@@ -350,7 +350,7 @@ export default function Docs() {
               {[
                 [
                   "Nothing seems to have changed",
-                  "Check that your project is open in Harness Studio and that you’re looking at the right screen. If you’re using the preview, the change is simulated — the full experience lives in the app.",
+                  "Check that your project is open in Harness Studio and that you’re looking at the right screen. If you’re using the demo, the change is simulated — the full experience lives in the app.",
                 ],
                 [
                   "It changed the wrong thing",
@@ -387,7 +387,7 @@ export default function Docs() {
                 <ArrowRight className="h-3.5 w-3.5" />
               </a>
               <Link to="/console" className="btn-ghost h-9 px-3.5 text-[12px]">
-                Try the AI
+                Try the demo
               </Link>
             </div>
           </Section>

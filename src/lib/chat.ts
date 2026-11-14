@@ -167,7 +167,7 @@ const greetingResponse = [
   "- `The sign-up page feels a little plain`",
   "- `Explain what this project does`",
   "",
-  "This is a preview, so the conversation is simulated. The real work happens in Harness Studio.",
+  "This is an interactive demo, so replies are simulated. The real work happens in Harness Studio.",
 ].join("\n");
 
 const debugResponse = [
@@ -342,7 +342,7 @@ async function* streamSimulated(opts: StreamOptions): AsyncGenerator<StreamEvent
           '  "confidence": 0.86',
           "}",
           "",
-          "This preview is set to a structured format. Send a normal message and I will reply in plain language.",
+          "This demo is set to a structured format. Send a normal message and I will reply in plain language.",
         ].join("\n")
       : responses[intent];
 

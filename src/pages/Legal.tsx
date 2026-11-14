@@ -94,7 +94,7 @@ function LegalPage({ doc, kind }: { doc: LegalDocument; kind: "privacy" | "terms
   }, [doc.title]);
 
   return (
-    <div className="min-h-screen bg-[#f7f8fb] text-slate-800">
+    <div className="min-h-screen bg-[#f8f8f6] text-slate-800">
       <Nav />
       <main className="relative overflow-hidden pb-24 pt-28">
         <div className="grid-bg absolute inset-x-0 top-0 h-[420px]" />

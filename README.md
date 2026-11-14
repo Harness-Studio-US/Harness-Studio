@@ -1,7 +1,7 @@
-# Harness Studio — website & AI preview
+# Harness Studio — official website
 
-The marketing site and friendly AI preview for Harness Studio, the development app where you
-talk to your AI teammate in the browser while the work happens in the app.
+The public website for Harness Studio, the development app where you talk to an AI teammate in the
+browser while the work happens inside your project.
 
 ## Run locally
 
@@ -38,22 +38,21 @@ custom base path.
 
 - `/` — home page: talk to the AI, see the changes in Harness Studio
 - `/docs` — plain-language guide for new users
-- `/brand` — brand assets, palette and usage rules
-- `/console` — friendly AI conversation preview
-- `/login` — optional local preview sign-in
+- `/brand` — official brand assets, palette and usage rules
+- `/console` — interactive product demo
+- `/get-started` — contact path for teams and individual builders
 - `/privacy` — Privacy Policy
 - `/terms` — Terms & Conditions
 
 ## Notes
 
-- The AI preview uses a local simulated conversation engine. It needs no account, key or provider
-  setup, and it clearly labels responses as a preview.
-- Conversations are stored in this browser's localStorage.
-- The Google/Apple login is a local preview session: it does not contact Google or Apple and stores
-  only a demo profile in localStorage.
+- The interactive chat is deliberately a local, simulated demo. It needs no account or provider
+  setup, and the page says clearly that changes are simulated.
+- Demo conversations are stored in this browser's localStorage.
+- `/login` redirects to `/get-started`; the previous simulated Google/Apple sign-in has been removed.
 - The logo, banner and favicon in `public/brand/` are SVGs based on the supplied artwork. Replace
   them with the original files if exact raster parity is required.
 - `dist/` is the BrowserRouter build; a host serving it directly needs an SPA fallback so `/docs`,
-  `/brand`, `/console` and `/login` resolve.
+  `/brand`, `/console` and `/get-started` resolve.
 - `dist-gh-pages/` is the static GitHub Pages build. It uses HashRouter and relative assets, so no
   fallback rewrite is required.
