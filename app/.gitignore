@@ -1,8 +1,0 @@
-node_modules
-dist
-dist-gh-pages
-.env
-.env.local
-.DS_Store
-*.log
-/freebuff-sites-build/

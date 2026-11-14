@@ -6,3 +6,5 @@ dist-gh-pages
 .DS_Store
 *.log
 /freebuff-sites-build/
+
+app/
