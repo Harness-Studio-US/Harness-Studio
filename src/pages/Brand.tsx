@@ -41,7 +41,7 @@ export default function Brand() {
               Back to site
             </Link>
             <Link to="/console" className="btn-primary h-8 px-3 text-[12px]">
-              Open console
+              Try the AI
             </Link>
           </div>
         </div>

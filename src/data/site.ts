@@ -136,24 +136,28 @@ export const plans = [
 
 export const faqs = [
   {
-    q: "Is Harness Code really OpenAI-compatible?",
-    a: "Yes. Point any OpenAI SDK at https://api.harness.studio/v1, keep your existing message format and tool schemas, and change the model name. Streaming, tool calling, structured outputs and embeddings follow the same shapes, with Harness-specific extensions for coding agents.",
+    q: "What is Harness Studio?",
+    a: "Harness Studio is a development app for building software. It comes with an AI teammate you can talk to in your browser, and the app is where the work actually happens.",
   },
   {
-    q: "How does tool use work?",
-    a: "Declare tools with JSON Schema like you would with OpenAI function calling, or enable the built-in tools (code execution, web search, file search, browser). Harness Code emits tool calls, your runtime executes them, and the loop continues until max_tool_rounds or a final answer.",
+    q: "Where do I talk to the AI?",
+    a: "In your browser. Open the chat, describe what you want in your own words, and Harness will work inside Harness Studio to make it happen.",
   },
   {
-    q: "What happens to my code and prompts?",
-    a: "API data is never used to train models. Zero-retention mode is available on Pro and Enterprise, and Enterprise can run the model inside a private VPC. Logs are visible only to your workspace and can be disabled entirely.",
+    q: "Do I need to know how to code?",
+    a: "No. You can ask for changes in plain language. If you do code, you can go as deep as you like — but you never need special syntax or developer-only settings to get started.",
   },
   {
-    q: "Can I self-host?",
-    a: "Enterprise customers can deploy Harness Code inside a private VPC or on-prem cluster with the same API surface. Contact sales for hardware requirements and the deployment runbook.",
+    q: "What can I ask it to do?",
+    a: "Fix a broken button, add a page, change how something looks, explain part of your project, or help you decide what to build next. If you can describe it, it’s worth asking.",
   },
   {
-    q: "How is usage billed?",
-    a: "Per million tokens, split into input and output. Cached input tokens are 90% cheaper. Plans include monthly token allowances, and you can set hard spend limits per key from the developer console.",
+    q: "Is the web preview the full app?",
+    a: "The web preview lets you try the conversation. The full experience — your project, the changes and the review — happens inside Harness Studio.",
+  },
+  {
+    q: "What if I don’t like a change?",
+    a: "Ask Harness to try a different direction, or undo it. You’re always in control of what stays.",
   },
 ];
 

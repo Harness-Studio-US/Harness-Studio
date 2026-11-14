@@ -75,6 +75,9 @@ function activeTools(tools: ToolFlags): ToolName[] {
 
 type Intent =
   | "greeting"
+  | "design"
+  | "create"
+  | "explain"
   | "debug"
   | "api"
   | "database"
@@ -85,26 +88,32 @@ function detectIntent(prompt: string): Intent {
   const p = prompt.toLowerCase();
   if (/^(hi|hey|hello|yo|good (morning|evening))\b/.test(p.trim()) || p.trim().length < 12)
     return "greeting";
-  if (/(bug|error|fail|broken|crash|stack trace|debug|why does|not working)/.test(p))
+  if (/(bug|error|fail|broken|crash|debug|not working|doesn.t work|isn.t working|won.t work)/.test(p))
     return "debug";
+  if (/(explain|walk me through|what does this project do|what is this project|how does .* work|understand)/.test(p))
+    return "explain";
+  if (/(design|look|feel|colou?r|spacing|layout|crowded|plain|clean|style|warmer|friendlier|easier to scan|dashboard)/.test(p))
+    return "design";
+  if (/(add|create|build|new page|settings page|feature|section)/.test(p)) return "create";
   if (/(api|sdk|endpoint|integrat|openai|webhook|curl|fetch)/.test(p)) return "api";
   if (/(sql|database|schema|postgres|migration|index|query)/.test(p)) return "database";
-  if (/(react|component|hook|ui|tailwind|frontend|state)/.test(p)) return "component";
+  if (/(react|component|hook|frontend|state)/.test(p)) return "component";
   return "default";
 }
 
 function thinkingFor(intent: Intent, tools: ToolName[]): string[] {
   const base = [
-    "Parsing the request and identifying the affected surface area.",
-    "Checking the repository conventions and existing dependencies.",
+    "Reading your request.",
+    "Looking at the part of your project that needs to change.",
   ];
-  if (tools.includes("web_search")) base.push("Looking up current upstream documentation before proposing an API.");
-  if (tools.includes("code_execution")) base.push("Planning a small verification run before recommending the change.");
-  if (intent === "debug") base.push("Reproducing the failure path and isolating the first incorrect state.");
-  if (intent === "database") base.push("Reviewing the schema for locking and rollback behaviour.");
-  if (intent === "api") base.push("Validating the request/response shape against the published spec.");
-  base.push("Drafting a minimal, reversible patch with tests.");
-  return base.slice(0, intent === "greeting" ? 2 : 6);
+  if (tools.includes("web_search")) base.push("Checking the latest details before I suggest anything.");
+  if (tools.includes("code_execution")) base.push("Making sure the change holds together.");
+  if (intent === "debug") base.push("Finding where things start to go wrong.");
+  if (intent === "design") base.push("Thinking about the smallest change that makes the biggest difference.");
+  if (intent === "create") base.push("Planning the new piece so it fits with everything else.");
+  if (intent === "explain") base.push("Finding a clear way to explain it without jargon.");
+  base.push("Putting together a first version for you to review.");
+  return base.slice(0, intent === "greeting" ? 2 : 5);
 }
 
 function toolPlan(intent: Intent, tools: ToolName[]): ToolName[] {
@@ -127,118 +136,54 @@ function toolPlan(intent: Intent, tools: ToolName[]): ToolName[] {
 
 const toolMeta: Record<ToolName, { label: string; args: (prompt: string) => Record<string, unknown>; result: string }> = {
   web_search: {
-    label: "Web search",
+    label: "Looking things up",
     args: (prompt) => ({ query: prompt.slice(0, 90), freshness: "2026", top_k: 5 }),
     result: "5 results · docs.harness.studio, openai.com, nodejs.org · citations attached",
   },
   code_execution: {
-    label: "Code execution",
+    label: "Trying it out",
     args: () => ({ language: "node", command: "npm test -- --runInBand", timeout_ms: 120000 }),
     result: "Sandbox exited 0 · 34 tests passed · no regressions in auth or session modules",
   },
   file_search: {
-    label: "File search",
+    label: "Looking through your project",
     args: () => ({ query: "auth session refresh token rotation", repo: "acme/platform", path: "src/server/auth" }),
     result: "Matched 6 files · src/server/auth/session.ts, tokens.ts, middleware.ts",
   },
   browser: {
-    label: "Browser",
+    label: "Checking the result",
     args: (prompt) => ({ url: "https://docs.harness.studio/api/tool-calling", action: "extract", query: prompt.slice(0, 60) }),
     result: "Fetched page (42KB) · extracted the tool-calling contract and limits table",
   },
 };
 
 const greetingResponse = [
-  "Hey — Harness Code here.",
+  "Hey — I'm Harness, your AI teammate in **Harness Studio**.",
   "",
-  "I'm the agentic coding model from **Harness Studio**. I can plan multi-file changes, run code, search your repo and browse docs before I answer. Right now you're talking to the in-console demo engine, so responses are local and deterministic.",
+  "I can help you change how something looks, fix what isn't working, add a new screen, or explain part of your project. Just tell me what you want in your own words.",
   "",
   "Things worth trying:",
-  "- `Debug why my session cookie isn't refreshing`",
-  "- `Add rate limiting to the /api/chat route`",
-  "- `Write a Postgres migration for soft-deleted users`",
+  "- `Make the dashboard easier to scan`",
+  "- `The sign-up page feels a little plain`",
+  "- `Explain what this project does`",
   "",
-  "Open **Settings** to change the model, sampling parameters, built-in tools and API keys. Dev tools there will generate a live request body and SDK snippet for whatever you configure.",
+  "This is a preview, so the conversation is simulated. The real work happens in Harness Studio.",
 ].join("\n");
 
 const debugResponse = [
-  "Short answer: the refresh cookie is being set on the response but dropped by the browser because its `Path` is scoped to `/auth`, while the refresh call happens at `/`. The session never refreshes, so the access token expires and the next request 401s.",
+  "Let's track it down together. I'd start by reproducing the issue on the screen where it happens, then compare what you expected with what actually occurred.",
   "",
-  "### What I'd check, in order",
-  "1. The `Set-Cookie` attributes on `POST /auth/login` — is `Path=/` present?",
-  "2. Whether `SameSite=Lax` blocks the cross-site refresh during a top-level navigation.",
-  "3. Clock skew between the signing service and the API (JWT `nbf`).",
+  "The most useful clues are: which screen you're on, what you tapped or typed, and what happened next. If it only happens on mobile, for example, I'd check whether the layout or the tap target is getting in the way.",
   "",
-  "### Minimal fix",
-  "```ts",
-  "// src/server/auth/session.ts",
-  "export function setRefreshCookie(res: Response, token: string) {",
-  "  res.headers.append(",
-  "    \"Set-Cookie\",",
-  "    serialize(\"refresh_token\", token, {",
-  "      httpOnly: true,",
-  "      secure: process.env.NODE_ENV === \"production\",",
-  "      sameSite: \"lax\",",
-  "      path: \"/\",              // was \"/auth\" — the refresh call was never sent",
-  "      maxAge: 60 * 60 * 24 * 30,",
-  "    }),",
-  "  );",
-  "}",
-  "```",
-  "",
-  "Then add a regression test so this does not come back:",
-  "",
-  "```ts",
-  "it(\"sends the refresh cookie for every API path\", async () => {",
-  "  const res = await request(app).post(\"/auth/login\").send(creds);",
-  "  const cookie = res.headers[\"set-cookie\"][0];",
-  "  expect(cookie).toContain(\"Path=/\");",
-  "  expect(cookie).toContain(\"HttpOnly\");",
-  "});",
-  "```",
-  "",
-  "Two things worth verifying before you deploy: rotate the refresh token on every use (one-time tokens stop replay), and keep a short overlap window so concurrent tabs don't invalidate each other.",
+  "Tell me the screen and what you expected — I can narrow it down from there.",
 ].join("\n");
 
 const apiResponse = [
-  "Use the OpenAI SDK — Harness is wire-compatible, so the change is the base URL and the model name.",
+  "You don't need an API or any developer setup to use the Harness Studio AI.",
   "",
-  "```ts",
-  "import OpenAI from \"openai\";",
+  "Open the chat in your browser, describe what you want, and Harness works inside your app. If you're curious about connecting your own tools later, that's an optional path — not something you need to get started.",
   "",
-  "const harness = new OpenAI({",
-  "  apiKey: process.env.HARNESS_API_KEY,",
-  "  baseURL: \"https://api.harness.studio/v1\",",
-  "});",
-  "",
-  "const res = await harness.chat.completions.create({",
-  "  model: \"harness-code-1\",",
-  "  messages: [{ role: \"user\", content: \"Summarise this diff\" }],",
-  "  stream: true,",
-  "  tools: [",
-  "    {",
-  "      type: \"function\",",
-  "      function: {",
-  "        name: \"run_tests\",",
-  "        description: \"Run the test suite for a package\",",
-  "        parameters: {",
-  "          type: \"object\",",
-  "          properties: { pkg: { type: \"string\" } },",
-  "          required: [\"pkg\"],",
-  "        },",
-  "      },",
-  "    },",
-  "  ],",
-  "});",
-  "```",
-  "",
-  "Notes that save time:",
-  "- Send `X-Harness-Tools: web_search,code_execution` to enable built-in tools without declaring schemas.",
-  "- Cached prefixes are 90% cheaper; keep your system prompt at the start and stable.",
-  "- Use `max_tool_rounds` (1–20) to bound agent loops; the API returns `finish_reason: \"tool_limit\"` when it stops.",
-  "- Errors are OpenAI-shaped: `429` includes `retry_after_ms`, `413` means the context window was exceeded.",
-  "",
-  "In the panel, open **Dev tools → Playground** and the request body will mirror this message's settings exactly.",
+  "Want to try a change instead?",
 ].join("\n");
 
 const databaseResponse = [
@@ -308,45 +253,38 @@ const componentResponse = [
 ].join("\n");
 
 const defaultResponse = [
-  "Here's how I'd approach it, with the smallest change that is easy to review.",
+  "Got it. I'd start with the simplest version of that change, make it in your app, and show you the result before going further.",
   "",
-  "### Plan",
-  "1. Add the capability behind a feature flag so it can be reverted without a deploy.",
-  "2. Keep the new path pure and unit-test the edge cases before wiring it to the UI.",
-  "3. Ship it dark, verify with real traffic, then flip the flag.",
+  "If you tell me which screen you're looking at or how you want it to feel, I can make the first pass more precise. Want me to take a look?",
+].join("\n");
+
+const designResponse = [
+  "I'd make a few small changes to give it a clearer rhythm:",
   "",
-  "```ts",
-  "type RateLimitOptions = { limit: number; windowMs: number };",
+  "- Group related things so the page reads in sections.",
+  "- Let the most important action stand out.",
+  "- Add a little breathing room and soften the background.",
   "",
-  "export function createRateLimiter({ limit, windowMs }: RateLimitOptions) {",
-  "  const hits = new Map<string, number[]>();",
+  "I can try that in Harness Studio and show you the result. Want it subtle or a bigger refresh?",
+].join("\n");
+
+const createResponse = [
+  "Absolutely. I'd add the new page with a simple profile section at the top — photo, name and email — then keep the rest of the settings in calm, clearly labelled groups.",
   "",
-  "  return function allow(key: string): boolean {",
-  "    const now = Date.now();",
-  "    const recent = (hits.get(key) ?? []).filter((t) => now - t < windowMs);",
-  "    recent.push(now);",
-  "    hits.set(key, recent);",
-  "    return recent.length <= limit;",
-  "  };",
-  "}",
-  "```",
+  "I'll match the spacing, type and colours already in your app so it feels like it belongs. Want me to build the first version and let you review it?",
+].join("\n");
+
+const explainResponse = [
+  "Happy to. At a high level, this project is the app you're working in: it has screens for the main tasks, a shared design system and a place where the data lives.",
   "",
-  "That in-memory version is fine for a single process. In production, use Redis with a sliding window or a token bucket, and return `RateLimit-*` headers so clients can back off politely:",
-  "",
-  "```ts",
-  "if (!allow(userId)) {",
-  "  return new Response(\"slow down\", {",
-  "    status: 429,",
-  "    headers: { \"Retry-After\": \"30\" },",
-  "  });",
-  "}",
-  "```",
-  "",
-  "If you share the route handler and the target environment, I can turn this into a concrete diff instead of a sketch. Toggle the built-in tools in **Settings → Tools** and I'll run the tests against your sandbox.",
+  "I can walk through one part at a time — the home screen, the sign-up flow, or how the pages fit together. Where would you like to start?",
 ].join("\n");
 
 const responses: Record<Intent, string> = {
   greeting: greetingResponse,
+  design: designResponse,
+  create: createResponse,
+  explain: explainResponse,
   debug: debugResponse,
   api: apiResponse,
   database: databaseResponse,
@@ -404,7 +342,7 @@ async function* streamSimulated(opts: StreamOptions): AsyncGenerator<StreamEvent
           '  "confidence": 0.86',
           "}",
           "",
-          "Response format is set to `json_object`, so the demo engine is returning JSON. Switch it back to text under Settings → Model for prose.",
+          "This preview is set to a structured format. Send a normal message and I will reply in plain language.",
         ].join("\n")
       : responses[intent];
 
@@ -550,37 +488,11 @@ async function* streamProvider(opts: StreamOptions): AsyncGenerator<StreamEvent>
 }
 
 export async function* streamAssistant(opts: StreamOptions): AsyncGenerator<StreamEvent> {
-  const provider = opts.settings.provider;
-  if (provider?.baseUrl && provider?.apiKey) {
-    try {
-      yield* streamProvider(opts);
-      return;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown provider error";
-      yield {
-        type: "token",
-        text: [
-          "**Provider request failed.**",
-          "",
-          `\`${message}\``,
-          "",
-          "Check the base URL, model name and key under **Settings → API keys → Provider**, then retry. Falling back would hide a real configuration problem, so the demo engine is not answering this one.",
-        ].join("\n"),
-      };
-      yield {
-        type: "done",
-        usage: { in: estimateTokens(opts.prompt), out: 40 },
-        latencyMs: 0,
-        ttftMs: 0,
-      };
-      return;
-    }
-  }
   yield* streamSimulated(opts);
 }
 
-export function titleForConversation(text: string): string {
-  const clean = text.replace(/\s+/g, " ").trim();
-  if (!clean) return "New conversation";
-  return clean.length > 46 ? `${clean.slice(0, 46).trimEnd()}…` : clean;
+export function titleForConversation(prompt: string): string {
+  const clean = prompt.replace(/\s+/g, " ").trim();
+  if (!clean) return "New chat";
+  return clean.length > 48 ? `${clean.slice(0, 48).trimEnd()}…` : clean;
 }

@@ -8,9 +8,9 @@ import { initialsFor, providerLabel, useAuth } from "../../lib/auth";
 
 const links = [
   { label: "Product", to: "/#product" },
-  { label: "Models", to: "/#models" },
-  { label: "Pricing", to: "/#pricing" },
-  { label: "Docs", to: "/docs" },
+  { label: "How it works", to: "/#how-it-works" },
+  { label: "Examples", to: "/#examples" },
+  { label: "Guide", to: "/docs" },
   { label: "Brand", to: "/brand" },
 ];
 
@@ -91,7 +91,7 @@ export function Nav() {
             </Link>
           )}
           <Link to="/console" className="btn-primary h-9 px-4 text-[13px]">
-            Open console
+            Try the AI
             <ArrowUpRight className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -151,7 +151,7 @@ export function Nav() {
               </Link>
             )}
             <Link to="/console" className="btn-primary mt-2 h-10 px-4 text-sm">
-              Open console
+              Try the AI
             </Link>
             <LegalLinks className="mt-3 px-3" />
           </nav>

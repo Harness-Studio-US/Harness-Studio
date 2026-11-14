@@ -3,26 +3,19 @@ import { Link } from "react-router-dom";
 import {
   ArrowLeft,
   BookOpen,
-  Compass,
   LogIn,
   LogOut,
-  FileText,
-  Globe,
   Menu,
   Plus,
   Search,
   Send,
-  SlidersHorizontal,
   Square,
-  Terminal,
   Trash2,
   X,
 } from "lucide-react";
 import { ChatMessageView } from "../components/console/ChatMessageView";
-import { SettingsPanel } from "../components/console/SettingsPanel";
 import { Logo, LogoMark } from "../components/Logo";
 import { LegalLinks } from "../components/LegalLinks";
-import { models } from "../data/site";
 import { streamAssistant, titleForConversation, type ChatMessage } from "../lib/chat";
 import { estimateTokens, useSettings } from "../lib/settings";
 import { cn } from "../lib/cn";
@@ -38,17 +31,10 @@ type Conversation = {
 const CHATS_KEY = "harness-conversations-v1";
 
 const suggestions = [
-  "Debug a flaky test that only fails in CI",
-  "Refactor auth to rotate refresh tokens safely",
-  "Add rate limiting to an API route",
-  "Write a Postgres migration for soft deletes",
-];
-
-const quickTools = [
-  { key: "web" as const, label: "Web", icon: Globe },
-  { key: "code" as const, label: "Code", icon: Terminal },
-  { key: "files" as const, label: "Files", icon: FileText },
-  { key: "browser" as const, label: "Browser", icon: Compass },
+  "Make the dashboard easier to scan",
+  "The sign-up page feels a little plain",
+  "Add a settings page with a profile photo",
+  "Explain what this project does",
 ];
 
 function uid(): string {
@@ -60,7 +46,7 @@ function uid(): string {
 }
 
 function emptyConversation(): Conversation {
-  return { id: uid(), title: "New conversation", messages: [], updatedAt: Date.now() };
+  return { id: uid(), title: "New chat", messages: [], updatedAt: Date.now() };
 }
 
 function loadConversations(): Conversation[] {
@@ -89,13 +75,12 @@ function formatRelative(timestamp: number): string {
 }
 
 export default function Console() {
-  const { settings, update, setTool, logRequest } = useSettings();
+  const { settings, logRequest } = useSettings();
   const { user, signOut } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>(loadConversations);
   const [activeId, setActiveId] = useState<string>("");
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState<{ convId: string; messageId: string } | null>(null);
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [query, setQuery] = useState("");
   const cancelledRef = useRef(false);
@@ -103,7 +88,7 @@ export default function Console() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    document.title = "Console — Harness Studio";
+    document.title = "Harness Studio AI — Preview";
   }, []);
 
   const activeConversation =
@@ -313,12 +298,10 @@ export default function Console() {
     if (activeId === id) setActiveId(remaining[0].id);
   }
 
-  const tokensUsed = settings.logs.reduce((sum, log) => sum + log.tokensIn + log.tokensOut, 0);
   const filteredConversations = conversations.filter((conversation) =>
     conversation.title.toLowerCase().includes(query.trim().toLowerCase())
   );
   const isStreaming = streaming !== null;
-  const providerConnected = Boolean(settings.provider?.baseUrl && settings.provider?.apiKey);
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#f7f8fb] text-slate-800">
@@ -426,23 +409,13 @@ export default function Console() {
 
         <div className="space-y-2 border-t border-slate-200 p-2.5">
           <div className="rounded-lg border border-slate-200 bg-white p-2.5">
-            <div className="flex items-center justify-between text-[9.5px]">
-              <span className="text-slate-500">Tokens this month</span>
-              <span className="font-mono text-slate-600">{tokensUsed.toLocaleString()}</span>
+            <div className="flex items-center gap-1.5 text-[10px] font-medium text-slate-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              AI preview
             </div>
-            <div className="mt-1.5 h-1 rounded-full bg-slate-100">
-              <div
-                className="h-1 rounded-full bg-gradient-to-r from-sky-400 to-violet-500"
-                style={{ width: `${Math.min(100, Math.max(2, (tokensUsed / 5_000_000) * 100))}%` }}
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => setSettingsOpen(true)}
-              className="mt-2 text-[9.5px] text-violet-700 hover:text-violet-700"
-            >
-              Manage keys &amp; limits →
-            </button>
+            <p className="mt-1 text-[9.5px] leading-relaxed text-slate-400">
+              Chat here to see how it feels. Your changes happen in Harness Studio.
+            </p>
           </div>
 
           <div className="flex items-center gap-2 rounded-lg px-1 py-1">
@@ -510,63 +483,20 @@ export default function Console() {
           </button>
 
           <div className="flex min-w-0 items-center gap-2">
-            <span className="hidden text-[11.5px] font-medium text-slate-700 sm:block">Harness Code</span>
-            <span className="hidden h-3.5 w-px bg-slate-200 sm:block" />
-            <div className="flex items-center gap-1.5">
-              <select
-                value={settings.model}
-                onChange={(event) => update({ model: event.target.value })}
-                aria-label="Active model"
-                className="field h-8 py-0 pr-7 text-[10.5px] font-medium text-slate-700"
-                style={{ width: "auto" }}
-              >
-                {models
-                  .filter((model) => model.id !== "harness-embed-1")
-                  .map((model) => (
-                    <option key={model.id} value={model.id}>
-                      {model.name}
-                    </option>
-                  ))}
-              </select>
-            </div>
-            <span
-              className={cn(
-                "hidden items-center gap-1 rounded-full border px-1.5 py-0.5 text-[9px] sm:flex",
-                settings.environment === "sandbox"
-                  ? "border-amber-200 bg-amber-50 text-amber-700"
-                  : "border-emerald-200 bg-emerald-50 text-emerald-700"
-              )}
-            >
-              <span className="h-1 w-1 rounded-full bg-current" />
-              {settings.environment}
+            <span className="text-[11.5px] font-medium text-slate-700">Harness Studio AI</span>
+            <span className="rounded-full border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[9px] text-violet-700">
+              Preview
             </span>
           </div>
 
           <div className="ml-auto flex items-center gap-1.5">
-            <span className="hidden items-center gap-1.5 rounded-full border border-slate-200 px-2 py-0.5 text-[9px] text-slate-500 md:flex">
-              <span
-                className={cn(
-                  "h-1 w-1 rounded-full",
-                  providerConnected ? "bg-emerald-400" : "bg-violet-400"
-                )}
-              />
-              {providerConnected ? "live provider" : "demo engine"}
-            </span>
             <Link
               to="/docs"
               className="hidden items-center gap-1.5 rounded-md px-2 py-1.5 text-[10.5px] text-slate-600 hover:bg-slate-100 hover:text-slate-900 sm:flex"
             >
               <BookOpen className="h-3 w-3" />
-              Docs
+              Guide
             </Link>
-            <button
-              type="button"
-              onClick={() => setSettingsOpen(true)}
-              className="flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-[10.5px] font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
-            >
-              <SlidersHorizontal className="h-3 w-3" />
-              <span className="hidden sm:inline">Settings</span>
-            </button>
             <Link
               to="/"
               className="hidden rounded-lg p-1.5 text-slate-500 hover:text-slate-800 sm:block"
@@ -586,15 +516,15 @@ export default function Console() {
                     <LogoMark className="h-7 w-7" />
                   </div>
                   <h1 className="text-[26px] font-semibold tracking-[-0.03em] text-slate-900 sm:text-3xl">
-                    What are we shipping today?
+                    What would you like to build?
                   </h1>
                   <p className="mx-auto mt-2 max-w-md text-[12.5px] leading-relaxed text-slate-500">
-                    Harness Code reads, runs and edits. Ask for a fix, a plan or a review — then tune
-                    the request in Settings.
+                    Describe a change in your own words. Harness will talk it through and show you
+                    what it would do in Harness Studio.
                   </p>
                   <div className="mx-auto mt-3 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[9.5px] text-slate-500">
                     <span className="h-1 w-1 rounded-full bg-emerald-400" />
-                    {providerConnected ? "connected to your provider" : "local demo engine · no key needed"}
+                    Preview conversation · no account needed
                   </div>
                 </div>
 
@@ -646,34 +576,15 @@ export default function Console() {
                   }
                 }}
                 rows={1}
-                placeholder="Ask Harness Code to build, debug or explain…"
+                placeholder="Ask Harness to change, fix or explain something…"
                 className="max-h-[180px] w-full resize-none bg-transparent px-0.5 py-0.5 text-[13px] leading-relaxed text-slate-800 outline-none placeholder:text-slate-400"
-                aria-label="Message Harness Code"
+                aria-label="Message Harness"
               />
 
-              <div className="mt-2 flex items-center gap-1">
-                {quickTools.map((tool) => (
-                  <button
-                    key={tool.key}
-                    type="button"
-                    onClick={() => setTool(tool.key, !settings.tools[tool.key])}
-                    title={`${settings.tools[tool.key] ? "Disable" : "Enable"} ${tool.label}`}
-                    className={cn(
-                      "flex items-center gap-1 rounded-md border px-1.5 py-1 text-[9.5px] transition",
-                      settings.tools[tool.key]
-                        ? "border-violet-200 bg-violet-50 text-violet-700"
-                        : "border-slate-200 bg-transparent text-slate-400 hover:text-slate-600"
-                    )}
-                  >
-                    <tool.icon className="h-2.5 w-2.5" />
-                    {tool.label}
-                  </button>
-                ))}
-
-                <span className="ml-auto hidden font-mono text-[9px] text-slate-400 sm:block">
-                  {estimateTokens(input).toLocaleString()} tok
+              <div className="mt-2 flex items-center justify-end gap-1">
+                <span className="mr-auto hidden text-[9.5px] text-slate-400 sm:block">
+                  No special commands needed.
                 </span>
-
                 {isStreaming ? (
                   <button
                     type="button"
@@ -700,24 +611,13 @@ export default function Console() {
             </div>
 
             <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1 px-1 text-[9px] text-slate-400">
-              <span>
-                Enter to send · Shift+Enter for a new line
-                {!providerConnected && " · responses are simulated locally"}
-              </span>
-              <button
-                type="button"
-                onClick={() => setSettingsOpen(true)}
-                className="text-slate-500 hover:text-slate-700"
-              >
-                {models.find((model) => model.id === settings.model)?.name ?? settings.model} ·{" "}
-                {settings.maxTokens.toLocaleString()} max tokens
-              </button>
+              <span>Enter to send · Shift+Enter for a new line</span>
+              <span>Preview conversation · changes are simulated</span>
             </div>
           </div>
         </div>
       </div>
 
-      <SettingsPanel open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </div>
   );
 }

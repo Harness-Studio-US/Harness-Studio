@@ -6,19 +6,10 @@ const columns = [
   {
     title: "Product",
     links: [
-      { label: "Harness Code", to: "/#models" },
-      { label: "Console", to: "/console" },
-      { label: "Pricing", to: "/#pricing" },
-      { label: "Changelog", to: "/docs#changelog" },
-    ],
-  },
-  {
-    title: "Developers",
-    links: [
-      { label: "Documentation", to: "/docs" },
-      { label: "API reference", to: "/docs#chat-completions" },
-      { label: "Tool calling", to: "/docs#tool-calling" },
-      { label: "Status", to: "/docs#status" },
+      { label: "How it works", to: "/#how-it-works" },
+      { label: "Examples", to: "/#examples" },
+      { label: "Try the AI", to: "/console" },
+      { label: "Guide", to: "/docs" },
     ],
   },
   {
@@ -26,8 +17,15 @@ const columns = [
     links: [
       { label: "About", to: "/#studio" },
       { label: "Brand assets", to: "/brand" },
-      { label: "Careers", to: "/#studio" },
-      { label: "Contact", to: "/#studio" },
+      { label: "Questions", to: "/#faq" },
+    ],
+  },
+  {
+    title: "The fine print",
+    links: [
+      { label: "Privacy Policy", to: "/privacy" },
+      { label: "Terms & Conditions", to: "/terms" },
+      { label: "Security", to: "/privacy" },
     ],
   },
 ];
@@ -42,8 +40,8 @@ export function Footer() {
               <Logo stacked={false} />
             </Link>
             <p className="mt-5 max-w-xs text-[13px] leading-relaxed text-slate-500">
-              Harness Studio builds agentic software for people who ship. Create, build, innovate —
-              from the first prompt to production.
+              Harness Studio is a development app with an AI teammate. Talk to it on the web. Build
+              in the app. Keep the good parts.
             </p>
             <div className="mt-5 flex items-center gap-2">
               {[
@@ -93,23 +91,13 @@ export function Footer() {
             <Link to="/terms" className="transition hover:text-slate-700">
               Terms &amp; Conditions
             </Link>
-            <span>Security</span>
-            <a
-              href="mailto:HarnessStudio@Outlook.com"
-              className="transition hover:text-slate-700"
-            >
+            <a href="mailto:HarnessStudio@Outlook.com" className="transition hover:text-slate-700">
               Contact
             </a>
           </div>
-          <div className="flex items-center gap-4 text-[11px] text-slate-500">
-            <span className="inline-flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              All systems operational
-            </span>
-            <Link to="/docs" className="inline-flex items-center gap-1 hover:text-slate-700">
-              Status
-              <ArrowUpRight className="h-3 w-3" />
-            </Link>
+          <div className="flex items-center gap-2 text-[11px] text-slate-500">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            Made for people who build
           </div>
         </div>
       </div>

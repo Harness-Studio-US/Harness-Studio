@@ -4,10 +4,10 @@ import {
   ArrowLeft,
   ArrowRight,
   Check,
-  KeyRound,
   Loader2,
+  MessageSquare,
+  ShieldCheck,
   Sparkles,
-  Terminal,
 } from "lucide-react";
 import { Logo } from "../components/Logo";
 import { LegalLinks } from "../components/LegalLinks";
@@ -117,7 +117,7 @@ export default function Login() {
                   </span>
                 </div>
                 <Link to={destination} className="btn-primary mt-5 h-11 w-full text-sm">
-                  Open console
+                  Open the AI preview
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <button
@@ -135,11 +135,11 @@ export default function Login() {
                   Preview sign-in
                 </span>
                 <h1 className="mt-4 text-2xl font-bold tracking-[-0.03em] text-slate-900 sm:text-[28px]">
-                  Sign in to Harness
+                  Welcome to Harness Studio.
                 </h1>
                 <p className="mt-2 text-[12.5px] leading-relaxed text-slate-500">
-                  Continue with Google or Apple to open your workspace. Your settings stay on this
-                  device.
+                  Sign in to keep your conversations together. This preview keeps everything on this
+                  device — no account setup required.
                 </p>
 
                 <div className="mt-6 space-y-2.5">
@@ -180,9 +180,9 @@ export default function Login() {
                 </div>
 
                 <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-[10.5px] leading-relaxed text-slate-500">
-                  <span className="font-medium text-amber-700/90">This static build does not contact Google or Apple.</span>{" "}
-                  It creates a local preview session so you can try the console. Real OAuth needs
-                  provider client IDs and a deployed callback URL.
+                  <span className="font-medium text-amber-700/90">This is a preview.</span>{" "}
+                  It doesn&apos;t contact Google or Apple yet — it creates a local session so you can
+                  try the AI without an account.
                 </div>
 
                 <p className="mt-5 text-center text-[10.5px] leading-relaxed text-slate-400">
@@ -200,8 +200,8 @@ export default function Login() {
             )}
           </div>
 
-          <p className="mt-5 text-center font-mono text-[9.5px] text-slate-400">
-            console.harness.studio · local session · no backend
+          <p className="mt-5 text-center text-[9.5px] text-slate-400">
+            Preview · your session stays on this device
           </p>
           <LegalLinks className="mt-3 justify-center" />
         </div>
@@ -210,32 +210,32 @@ export default function Login() {
           <div className="ml-auto max-w-lg rounded-3xl border border-slate-200 bg-white/70 p-6 shadow-sm backdrop-blur-sm xl:p-8">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10.5px] text-slate-600">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-              Agentic engineering, one workspace
+              A calmer way to build
             </span>
             <h2 className="mt-5 text-4xl font-extrabold leading-[1.05] tracking-[-0.035em] text-slate-900 xl:text-5xl">
               Pick up where <span className="gradient-text">you left off.</span>
             </h2>
             <p className="mt-4 max-w-md text-[13.5px] leading-relaxed text-slate-600">
-              Sign in and the console keeps its model, tools, keys and conversation history ready
-              for the next patch.
+              Your conversations stay close, so you can come back to an idea and keep going — without
+              remembering the right words or the right settings.
             </p>
 
             <div className="mt-8 grid gap-2.5">
               {[
                 {
-                  icon: KeyRound,
-                  title: "Your workspace, remembered",
-                  body: "Settings and keys persist on this browser between visits.",
-                },
-                {
-                  icon: Terminal,
-                  title: "Every tool in reach",
-                  body: "Sampling, web search, code execution and request logs in one place.",
+                  icon: MessageSquare,
+                  title: "Your chats, together",
+                  body: "Come back to the conversation where you left off.",
                 },
                 {
                   icon: Sparkles,
-                  title: "No credit card",
-                  body: "Start with the local demo engine. Add a provider key when you need live inference.",
+                  title: "Ask in plain English",
+                  body: "Describe the change. Harness figures out the details.",
+                },
+                {
+                  icon: ShieldCheck,
+                  title: "Nothing to configure",
+                  body: "No keys, no setup, no developer settings to learn.",
                 },
               ].map((item) => (
                 <div
@@ -253,19 +253,26 @@ export default function Login() {
               ))}
             </div>
 
-            <div className="mt-8 rounded-2xl border border-slate-200 bg-white/80 p-4 font-mono text-[10px] leading-relaxed text-slate-500">
-              <div className="flex items-center gap-1.5 text-slate-400">
-                <span className="h-2 w-2 rounded-full bg-rose-400/70" />
-                <span className="h-2 w-2 rounded-full bg-amber-400/70" />
-                <span className="h-2 w-2 rounded-full bg-emerald-400/70" />
-                <span className="ml-2">harness — workspace</span>
+            <div className="mt-8 rounded-2xl border border-slate-200 bg-white/80 p-4">
+              <div className="flex items-center gap-1.5 border-b border-slate-200 pb-2.5">
+                <span className="flex h-5 w-5 items-center justify-center rounded-md bg-slate-900">
+                  <Sparkles className="h-3 w-3 text-white" />
+                </span>
+                <span className="text-[10px] font-medium text-slate-600">Harness Studio AI</span>
+                <span className="ml-auto flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[7.5px] text-emerald-700">
+                  <span className="h-1 w-1 rounded-full bg-emerald-400" />
+                  Preview
+                </span>
               </div>
-              <div className="mt-3 flex items-center gap-2">
-                <span className="text-emerald-700">$</span>
-                <span className="text-slate-700">harness chat --model harness-code-1</span>
-                <span className="caret" />
+              <div className="mt-3 space-y-2">
+                <div className="ml-auto max-w-[85%] rounded-xl rounded-tr-sm border border-slate-200 bg-slate-100 px-3 py-2 text-[10.5px] leading-relaxed text-slate-600">
+                  The settings page feels a little crowded.
+                </div>
+                <div className="max-w-[88%] rounded-xl rounded-tl-sm border border-slate-200 bg-[#fbfcfe] px-3 py-2 text-[10.5px] leading-relaxed text-slate-600">
+                  I can give the sections more room and make the labels easier to scan. Want me to
+                  try that in your app?
+                </div>
               </div>
-              <div className="mt-2 text-slate-400"># reading repository · 12 files matched</div>
             </div>
           </div>
         </div>
