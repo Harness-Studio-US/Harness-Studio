@@ -66,17 +66,17 @@ function Tip({ children }: { children: ReactNode }) {
 
 const requestTips = [
   ["Say what you want to happen", "“Make the save button easier to find.” You don’t need to name the file or the fix."],
-  ["Mention where you are", "“On the settings page…” or “On mobile…” helps Harness look in the right place."],
+  ["Mention where you are", "“On the settings page…” or “On mobile…” helps Copilot look in the right place."],
   ["Describe the feeling", "“It feels too crowded” is useful. Design feedback doesn’t need to be technical."],
   ["Ask for options", "“Show me two versions” works when you’re not sure what you want yet."],
-  ["Follow up", "“A little smaller” or “keep that, change the colour” is enough. Harness remembers the thread."],
+  ["Follow up", "“A little smaller” or “keep that, change the colour” is enough. Copilot remembers the thread."],
 ];
 
 export default function Docs() {
   const active = useActiveHeading(sections.map((s) => s.id));
 
   useEffect(() => {
-    document.title = "Guide — Harness Studio";
+    document.title = "Harness Copilot guide — Harness Studio";
   }, []);
 
   return (
@@ -143,8 +143,8 @@ export default function Docs() {
               Build with a conversation.
             </h1>
             <p className="mt-3 max-w-2xl text-[15px] leading-[1.75] text-slate-600">
-              Everything you need to start working with the Harness Studio AI — without learning a
-              new language or reading a developer manual.
+              Everything you need to start working with Harness Copilot — without learning a new
+              language or reading a developer manual.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
               <Link to="/console" className="btn-primary h-9 px-3.5 text-[12px]">
@@ -159,7 +159,7 @@ export default function Docs() {
             <div className="mt-7 grid gap-3 sm:grid-cols-3">
               {[
                 { icon: MessageSquare, title: "On the web", body: "Chat in your browser." },
-                { icon: Monitor, title: "In the app", body: "Changes happen in Harness Studio." },
+                { icon: Monitor, title: "In the app", body: "The work happens in your project." },
                 { icon: Eye, title: "On your terms", body: "Review, tweak or undo." },
               ].map((item) => (
                 <div key={item.title} className="rounded-lg border border-slate-200 bg-white p-3">
@@ -173,16 +173,16 @@ export default function Docs() {
 
           <Section id="welcome" title="Welcome">
             <p>
-              Harness Studio is a development app for building software. It has an AI teammate who
-              lives on the web, so you can talk through an idea from anywhere — while the work
-              happens in your project inside the app.
+              Harness Copilot is the AI development app from Harness Studio. It lives on the web,
+              so you can talk through an idea from anywhere — while the work happens in your
+              project.
             </p>
             <p>
               You don’t need to know the right words, the right file or the right setting. Describe
-              what you want, and Harness will figure out the rest with you.
+              what you want, and Harness Copilot will figure out the rest with you.
             </p>
             <Tip>
-              If you can explain it to a teammate, you can ask Harness. There’s no secret command
+              If you can explain it to a teammate, you can ask Copilot. There’s no secret command
               and no wrong way to start.
             </Tip>
           </Section>
@@ -191,13 +191,14 @@ export default function Docs() {
             <p>Your first change takes three small steps.</p>
             <div className="grid gap-3 sm:grid-cols-3">
               <Step number="1" title="Open your project">
-                Have the project you want to work on open in Harness Studio.
+                Have the project you want to work on open in your workspace.
               </Step>
-              <Step number="2" title="Open the chat">
-                Go to the AI in your browser. A quick demo sign-in gets you into the chat.
+              <Step number="2" title="Open Harness Copilot">
+                Open Harness Copilot in your browser. Accept the terms once, and the workspace is
+                ready.
               </Step>
               <Step number="3" title="Say what you want">
-                Describe the change in a sentence. Harness will take it from there.
+                Describe the change in a sentence. Harness Copilot will take it from there.
               </Step>
             </div>
             <p>
@@ -228,20 +229,20 @@ export default function Docs() {
             </div>
             <p>
               From there, keep the conversation going: “yes, try it”, “make the heading smaller”,
-              or “actually, keep the original colours”. Harness follows the thread.
+              or “actually, keep the original colours”. Copilot follows the thread.
             </p>
           </Section>
 
           <Section id="changes" title="How changes work">
             <p>
-              The chat is where you describe the outcome. Harness Studio is where the change takes
-              shape. You’ll see a summary of what Harness did, in plain language, rather than a wall
+              The chat is where you describe the outcome. Harness Copilot is where the change takes
+              shape. You’ll see a summary of what Copilot did, in plain language, rather than a wall
               of code.
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
               {[
                 ["You describe it", "A sentence, a screenshot or a quick note about the screen."],
-                ["Harness makes it", "The app is updated in the place where your project lives."],
+                ["Copilot makes it", "The app is updated in the place where your project lives."],
                 ["You review it", "Try the result, ask for a tweak or undo it."],
                 ["You keep it", "Only the changes you’re happy with stay."],
               ].map(([title, body]) => (
@@ -262,7 +263,7 @@ export default function Docs() {
 
           <Section id="review" title="Reviewing & undoing">
             <p>
-              You’re never stuck with a change. When Harness shows you the result, you have a few
+              You’re never stuck with a change. When Copilot shows you the result, you have a few
               simple choices:
             </p>
             <div className="space-y-2.5">
@@ -317,8 +318,8 @@ export default function Docs() {
 
           <Section id="project" title="Working with your project">
             <p>
-              Think of the web chat as the place you explain the idea, and Harness Studio as the
-              place where it becomes real. You can keep the chat open while you look at the app.
+              Think of the chat as the place you explain the idea, and Harness Copilot as the place
+              where it becomes real. You can keep the chat open while you look at the app.
             </p>
             <p>
               Start with the screen in front of you. You don’t need to know the file name, the
@@ -326,15 +327,15 @@ export default function Docs() {
               it’s optional.
             </p>
             <Tip>
-              Not sure where to start? Ask Harness to walk you through the project first. A quick
+              Not sure where to start? Ask Copilot to walk you through the project first. A quick
               tour can make the next request much easier.
             </Tip>
           </Section>
 
           <Section id="privacy" title="Privacy & control">
             <p>
-              Your project is yours. Harness is designed to keep you informed about what it is doing
-              and to let you decide what stays.
+              Your project is yours. Harness Copilot is designed to keep you informed about what it
+              is doing and to let you decide what stays.
             </p>
             <div className="flex gap-3 rounded-xl border border-emerald-200 bg-emerald-50 p-3">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-700" />
@@ -350,15 +351,15 @@ export default function Docs() {
               {[
                 [
                   "Nothing seems to have changed",
-                  "Check that your project is open in Harness Studio and that you’re looking at the right screen. If you’re using the demo, the change is simulated — the full experience lives in the app.",
+                  "Check that your project is open in your workspace and that you’re looking at the right screen. If you’re using the demo, the change is simulated — the full experience lives in the app.",
                 ],
                 [
                   "It changed the wrong thing",
-                  "Tell Harness what’s off and ask it to undo. Then point to the screen or detail you meant. “Not that button — the one at the bottom” is a perfectly good correction.",
+                  "Tell Copilot what’s off and ask it to undo. Then point to the screen or detail you meant. “Not that button — the one at the bottom” is a perfectly good correction.",
                 ],
                 [
                   "I don’t know what to ask",
-                  "Start with what you see: “This feels confusing”, “I want to add a page” or “Explain this screen to me.” Harness can help you turn that into a concrete next step.",
+                  "Start with what you see: “This feels confusing”, “I want to add a page” or “Explain this screen to me.” Copilot can help you turn that into a concrete next step.",
                 ],
                 [
                   "I want a fresh start",

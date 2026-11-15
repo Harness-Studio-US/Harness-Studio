@@ -9,6 +9,9 @@ export type LegalSection = {
   blocks: LegalBlock[];
 };
 
+export const legalVersion = "2026-11-15";
+export const legalEffectiveLabel = "15 November 2026";
+
 export type LegalDocument = {
   eyebrow: string;
   title: string;
@@ -21,11 +24,11 @@ export type LegalDocument = {
 export const privacyPolicy: LegalDocument = {
   eyebrow: "Legal · Privacy",
   title: "Privacy Policy",
-  effective: "13 November 2026",
+  effective: legalEffectiveLabel,
   summary:
-    "How Harness Studio handles information for the Harness Studio app for Windows devices and web browsers.",
+    "How Harness Studio handles information for the Harness Copilot app for Windows devices and web browsers.",
   intro: [
-    `This privacy policy applies to the Harness Studio app for Windows devices and web browsers, together with any related services operated by Harness Studio (collectively, the "Application"). Harness Studio is hereby referred to as the "Service Provider".`,
+    `This privacy policy applies to the Harness Copilot app for Windows devices and web browsers, together with any related services operated by Harness Studio (collectively, the "Application"). Harness Studio is hereby referred to as the "Service Provider".`,
   ],
   sections: [
     {
@@ -83,7 +86,7 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `The Application is not intended for children under 18 years of age, or such higher age as required by applicable law. The Service Provider does not knowingly solicit data from children or market to them. Since the Application does not collect personal information through normal use, children's data is not at risk from use of the Application alone. If you voluntarily provide personal information through other means and are under 18 years of age, your parent or guardian must provide consent on your behalf where permitted by law.`,
+          text: `The Application is not intended for children under 16 years of age, or such higher age as required by applicable law. The Service Provider does not knowingly solicit data from children or market to them. Since the Application does not collect personal information through normal use, children's data is not at risk from use of the Application alone. If you voluntarily provide personal information through other means and are under 16 years of age, your parent or guardian must provide consent on your behalf where permitted by law.`,
         },
       ],
     },
@@ -121,7 +124,7 @@ export const privacyPolicy: LegalDocument = {
         },
         {
           type: "p",
-          text: `This privacy policy is effective as of 2026-11-13.`,
+          text: `This privacy policy is effective as of ${legalVersion}.`,
         },
       ],
     },
@@ -151,11 +154,11 @@ export const privacyPolicy: LegalDocument = {
 export const termsOfService: LegalDocument = {
   eyebrow: "Legal · Terms",
   title: "Terms & Conditions",
-  effective: "13 November 2026",
+  effective: legalEffectiveLabel,
   summary:
-    "The terms that govern use of the Harness Studio app for Windows devices and web browsers.",
+    "The terms that govern use of the Harness Copilot app for Windows devices and web browsers.",
   intro: [
-    `These terms and conditions apply to the Harness Studio app for Windows devices and web browsers, together with any related services operated by Harness Studio (collectively, the "Application"). Harness Studio is hereby referred to as the "Service Provider".`,
+    `These terms and conditions apply to the Harness Copilot app for Windows devices and web browsers, together with any related services operated by Harness Studio (collectively, the "Application"). Harness Studio is hereby referred to as the "Service Provider".`,
     `By downloading or using the Application, you agree to these Terms and Conditions. You should read them carefully before using the Application.`,
   ],
   sections: [
@@ -197,7 +200,7 @@ export const termsOfService: LegalDocument = {
         },
         {
           type: "p",
-          text: `By accessing and using this Application, you represent that you are legally permitted to use it in your jurisdiction. You must be at least 18 years of age (the age of digital consent in your jurisdiction) to use the Application. If you are below 18, a parent or legal guardian must review and accept these Terms on your behalf.`,
+          text: `By accessing and using this Application, you represent that you are legally permitted to use it in your jurisdiction. You must be at least 16 years of age (the age of digital consent in your jurisdiction) to use the Application. If you are below 16, a parent or legal guardian must review and accept these Terms on your behalf.`,
         },
         {
           type: "p",
@@ -444,7 +447,7 @@ export const termsOfService: LegalDocument = {
         },
         {
           type: "p",
-          text: `These terms and conditions are effective as of 2026-11-13.`,
+          text: `These terms and conditions are effective as of ${legalVersion}.`,
         },
       ],
     },

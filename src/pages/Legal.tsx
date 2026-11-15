@@ -90,7 +90,7 @@ function LegalPage({ doc, kind }: { doc: LegalDocument; kind: "privacy" | "terms
       : { label: "Privacy Policy", to: "/privacy" };
 
   useEffect(() => {
-    window.document.title = `${doc.title} — Harness Studio`;
+    window.document.title = `${doc.title} — Harness Copilot`;
   }, [doc.title]);
 
   return (

@@ -6,7 +6,7 @@ const columns = [
   {
     title: "Products",
     links: [
-      { label: "Harness Studio AI", to: "/#products" },
+      { label: "Harness Copilot", to: "/#products" },
       { label: "How it works", to: "/#how-it-works" },
       { label: "Interactive demo", to: "/console" },
       { label: "Product guide", to: "/docs" },
@@ -40,8 +40,8 @@ export function Footer() {
               <Logo />
             </Link>
             <p className="mt-5 max-w-xs text-[13.5px] leading-relaxed text-slate-500">
-              Harness Studio is an independent software company. Our first product is an AI
-              development app that makes building software feel like a conversation.
+              Harness Studio is an independent software company. Our first product is Harness
+              Copilot, an AI development app that makes building software feel like a conversation.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <a

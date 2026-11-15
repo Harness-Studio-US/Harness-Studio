@@ -81,7 +81,7 @@ export function HeroDemo() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="mb-2 flex items-center gap-2">
-                  <span className="text-[12px] font-semibold text-zinc-200">Harness Studio</span>
+                  <span className="text-[12px] font-semibold text-zinc-200">Harness Copilot</span>
                   <span className="rounded-full border border-violet-400/20 bg-violet-500/10 px-2 py-0.5 text-[9px] text-violet-300">
                     AI teammate
                   </span>
@@ -186,7 +186,7 @@ export function HeroDemo() {
             <div className="mt-2.5 rounded-xl border border-slate-200 bg-white p-2.5">
               <div className="flex items-center gap-2 text-[8.5px] text-slate-500">
                 <MessageSquare className="h-3 w-3 text-violet-500" />
-                Harness Studio updated this view
+                Harness Copilot updated this view
                 <Check className="ml-auto h-3 w-3 text-emerald-500" />
               </div>
             </div>

@@ -137,15 +137,15 @@ export const plans = [
 export const faqs = [
   {
     q: "What is Harness Studio?",
-    a: "Harness Studio is an independent software company. It is also the name of its first product: an AI development app where you describe what you want in your browser and review the changes inside your project.",
+    a: "Harness Studio is an independent software company. Its first product is Harness Copilot, an AI development app where you describe what you want in your browser and review the changes inside your project.",
   },
   {
-    q: "Why do the company and the product share a name?",
-    a: "The company and its AI development app are both called Harness Studio. On this site, “Harness Studio” usually means the company; “the Harness Studio app” or “Harness Studio AI” makes it clear we mean the product.",
+    q: "What is Harness Copilot?",
+    a: "Harness Copilot is the AI development app from Harness Studio. You describe what you want in your own words, and Copilot works through the change with you.",
   },
   {
     q: "Where do I talk to the AI?",
-    a: "In the Harness Studio app, in your browser. Describe what you want in your own words, and the AI teammate will work inside your project to make it happen.",
+    a: "In Harness Copilot, in your browser. Describe what you want in your own words, and Copilot will work through the change with you.",
   },
   {
     q: "Do I need to know how to code?",
@@ -157,7 +157,7 @@ export const faqs = [
   },
   {
     q: "Is the demo the full app?",
-    a: "No. The demo lets you try the conversation in your browser. The full experience — your project, the changes and the review — happens inside the Harness Studio app.",
+    a: "No. The demo lets you try the Harness Copilot conversation in your browser. The full experience — your project, the changes and the review — happens inside the app.",
   },
   {
     q: "What if I don’t like a change?",

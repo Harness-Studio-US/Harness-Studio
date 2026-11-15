@@ -3,34 +3,27 @@ import { Link } from "react-router-dom";
 import {
   ArrowLeft,
   BookOpen,
-  LogOut,
   Menu,
-  PlugZap,
   Plus,
   Search,
   Send,
+  Sparkles,
   Square,
   Trash2,
-  Wifi,
-  WifiOff,
   X,
 } from "lucide-react";
 import { ChatMessageView } from "../components/console/ChatMessageView";
-import { AiLogin, BrowserConnect, FirstRunGuide } from "../components/console/AiOnboarding";
+import { FirstRunGuide, LegalConsent } from "../components/console/CopilotOnboarding";
 import { Logo, LogoMark } from "../components/Logo";
 import { LegalLinks } from "../components/LegalLinks";
 import { streamAssistant, titleForConversation, type ChatMessage } from "../lib/chat";
 import { estimateTokens, useSettings } from "../lib/settings";
 import {
-  clearAiSession,
-  hasSeenAiGuide,
-  loadAiSession,
-  markAiGuideSeen,
-  saveAiSession,
-  type AiSession,
-  type AiUser,
-  type BrowserConnection,
-} from "../lib/aiSession";
+  acceptCopilotTerms,
+  hasAcceptedCopilotTerms,
+  hasSeenCopilotGuide,
+  markCopilotGuideSeen,
+} from "../lib/copilotState";
 import { cn } from "../lib/cn";
 
 type Conversation = {
@@ -88,7 +81,7 @@ function formatRelative(timestamp: number): string {
 
 export default function Console() {
   const { settings, logRequest } = useSettings();
-  const [session, setSession] = useState<AiSession | null>(loadAiSession);
+  const [acceptedTerms, setAcceptedTerms] = useState(hasAcceptedCopilotTerms);
   const [guideOpen, setGuideOpen] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>(loadConversations);
   const [activeId, setActiveId] = useState<string>("");
@@ -101,22 +94,18 @@ export default function Console() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    document.title = !session
-      ? "Sign in — Harness Studio AI"
-      : !session.connection
-        ? "Connect this browser — Harness Studio AI"
-        : "Harness Studio AI — Browser chat";
-  }, [session]);
+    document.title = "Harness Copilot — AI workspace";
+  }, []);
 
   useEffect(() => {
-    if (!session?.connection) {
+    if (!acceptedTerms) {
       setGuideOpen(false);
       return;
     }
-    if (hasSeenAiGuide()) return;
+    if (hasSeenCopilotGuide()) return;
     const timer = window.setTimeout(() => setGuideOpen(true), 700);
     return () => window.clearTimeout(timer);
-  }, [session?.connection]);
+  }, [acceptedTerms]);
 
   const activeConversation =
     conversations.find((conversation) => conversation.id === activeId) ?? conversations[0] ?? null;
@@ -325,38 +314,13 @@ export default function Console() {
     if (activeId === id) setActiveId(remaining[0].id);
   }
 
-  function signIn(user: AiUser) {
-    const nextSession: AiSession = { user, connection: null, signedInAt: Date.now() };
-    saveAiSession(nextSession);
-    setSession(nextSession);
-    setSidebarOpen(false);
-  }
-
-  function finishConnection(connection: BrowserConnection) {
-    if (!session) return;
-    const nextSession: AiSession = { ...session, connection };
-    saveAiSession(nextSession);
-    setSession(nextSession);
-  }
-
-  function connectBrowser() {
-    if (!session) return;
-    const nextSession: AiSession = { ...session, connection: null };
-    saveAiSession(nextSession);
-    setSession(nextSession);
-    setGuideOpen(false);
-  }
-
-  function signOut() {
-    cancelledRef.current = true;
-    clearAiSession();
-    setSession(null);
-    setGuideOpen(false);
-    setSidebarOpen(false);
+  function acceptTerms() {
+    acceptCopilotTerms();
+    setAcceptedTerms(true);
   }
 
   function dismissGuide() {
-    markAiGuideSeen();
+    markCopilotGuideSeen();
     setGuideOpen(false);
   }
 
@@ -364,21 +328,9 @@ export default function Console() {
     conversation.title.toLowerCase().includes(query.trim().toLowerCase())
   );
   const isStreaming = streaming !== null;
-  const browserConnected = session?.connection === "connected";
-  const userInitial = session?.user.name.trim().charAt(0).toUpperCase() || "H";
 
-  if (!session) {
-    return <AiLogin onLogin={signIn} />;
-  }
-
-  if (!session.connection) {
-    return (
-      <BrowserConnect
-        user={session.user}
-        onDone={(connected) => finishConnection(connected ? "connected" : "skipped")}
-        onChangeAccount={signOut}
-      />
-    );
+  if (!acceptedTerms) {
+    return <LegalConsent onAccept={acceptTerms} />;
   }
 
   return (
@@ -487,61 +439,25 @@ export default function Console() {
 
         <div className="space-y-2.5 border-t border-slate-200 p-2.5">
           <div className="rounded-xl border border-slate-200 bg-white p-3">
-            <div className="flex items-center gap-1.5 text-[10.5px] font-medium text-slate-700">
-              {browserConnected ? (
-                <Wifi className="h-3 w-3 text-emerald-600" />
-              ) : (
-                <WifiOff className="h-3 w-3 text-amber-600" />
-              )}
-              <span>{browserConnected ? "Browser connected" : "Not connected"}</span>
-              <span
-                className={cn(
-                  "ml-auto h-1.5 w-1.5 rounded-full",
-                  browserConnected
-                    ? "ai-live-dot bg-emerald-500 text-emerald-500"
-                    : "bg-amber-400"
-                )}
-              />
+            <div className="flex items-center gap-2">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-violet-200 bg-violet-50">
+                <Sparkles className="h-3.5 w-3.5 text-violet-600" />
+              </span>
+              <div className="min-w-0">
+                <div className="text-[11px] font-semibold text-slate-800">Harness Copilot</div>
+                <div className="text-[9px] text-slate-400">AI workspace</div>
+              </div>
+              <span className="ml-auto rounded-full border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.1em] text-violet-700">
+                Demo
+              </span>
             </div>
-            <p className="mt-1 text-[9.5px] leading-relaxed text-slate-400">
-              {browserConnected
-                ? "This browser is linked. Your chat can continue here next time."
-                : "You can keep chatting. Connect whenever you want the browser remembered."}
+            <p className="mt-2 text-[9.5px] leading-relaxed text-slate-400">
+              The full chat experience, with simulated replies. Chats stay in this browser.
             </p>
-
-            <div className="mt-2.5 flex items-center gap-2 border-t border-slate-100 pt-2.5">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-[9px] font-semibold text-slate-600">
-                {userInitial}
-              </span>
-              <span className="min-w-0 flex-1 truncate text-[9.5px] text-slate-500">
-                {session.user.email}
-              </span>
-            </div>
-
-            <div className="mt-2 flex gap-1.5">
-              {!browserConnected && (
-                <button
-                  type="button"
-                  onClick={connectBrowser}
-                  className="flex h-7 flex-1 items-center justify-center gap-1 rounded-md border border-slate-200 bg-slate-50 text-[9px] font-medium text-slate-600 transition hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
-                >
-                  <PlugZap className="h-2.5 w-2.5" />
-                  Connect
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={signOut}
-                className="flex h-7 flex-1 items-center justify-center gap-1 rounded-md border border-slate-200 text-[9px] font-medium text-slate-500 transition hover:bg-slate-50 hover:text-slate-800"
-              >
-                <LogOut className="h-2.5 w-2.5" />
-                Sign out
-              </button>
-            </div>
           </div>
 
           <div className="flex items-center justify-between gap-2 px-1 py-0.5">
-            <span className="text-[9px] text-slate-400">Chats stay in this browser.</span>
+            <span className="text-[9px] text-slate-400">Private to this browser.</span>
             <Link
               to="/"
               className="inline-flex items-center gap-1 rounded p-1 text-[9px] text-slate-400 hover:text-slate-700"
@@ -567,26 +483,9 @@ export default function Console() {
           </button>
 
           <div className="flex min-w-0 items-center gap-2">
-            <span className="text-[12px] font-semibold text-slate-800">Harness Studio AI</span>
-            <span
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-1.5 py-0.5 text-[9px] font-medium",
-                browserConnected
-                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                  : "border-amber-200 bg-amber-50 text-amber-700"
-              )}
-              aria-label={browserConnected ? "Browser connected" : "Browser not connected"}
-            >
-              <span
-                className={cn(
-                  "h-1 w-1 rounded-full",
-                  browserConnected ? "bg-emerald-500" : "bg-amber-500"
-                )}
-              />
-              <span className="sm:hidden">{browserConnected ? "Connected" : "Offline"}</span>
-              <span className="hidden sm:inline">
-                {browserConnected ? "Browser connected" : "Not connected"}
-              </span>
+            <span className="text-[12px] font-semibold text-slate-800">Harness Copilot</span>
+            <span className="rounded-full border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.12em] text-violet-700">
+              Demo
             </span>
           </div>
 
@@ -620,26 +519,12 @@ export default function Console() {
                     What would you like to build?
                   </h1>
                   <p className="mx-auto mt-2.5 max-w-md text-[13.5px] leading-relaxed text-slate-500">
-                    Describe a change in your own words. Harness will talk it through and show you
-                    what it would do in Harness Studio.
+                    Describe a change in your own words. Harness Copilot will talk it through and
+                    help you decide what to do next.
                   </p>
-                  <div
-                    className={cn(
-                      "mx-auto mt-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium",
-                      browserConnected
-                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                        : "border-amber-200 bg-amber-50 text-amber-700"
-                    )}
-                  >
-                    <span
-                      className={cn(
-                        "h-1 w-1 rounded-full",
-                        browserConnected ? "bg-emerald-500" : "bg-amber-500"
-                      )}
-                    />
-                    {browserConnected
-                      ? "Browser connected · ready when you are"
-                      : "Chatting without a browser connection"}
+                  <div className="mx-auto mt-3 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-medium text-slate-500">
+                    <Sparkles className="h-2.5 w-2.5 text-violet-600" />
+                    Demo workspace · replies are simulated
                   </div>
                 </div>
 
@@ -693,9 +578,9 @@ export default function Console() {
                   }
                 }}
                 rows={1}
-                placeholder="Ask Harness to change, fix or explain something…"
+                placeholder="Ask Harness Copilot to change, fix or explain something…"
                 className="max-h-[180px] w-full resize-none bg-transparent px-0.5 py-0.5 text-[13px] leading-relaxed text-slate-800 outline-none placeholder:text-slate-400"
-                aria-label="Message Harness"
+                aria-label="Message Harness Copilot"
               />
 
               <div className="mt-2 flex items-center justify-end gap-1">
@@ -729,18 +614,13 @@ export default function Console() {
 
             <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1 px-1 text-[9px] text-slate-400">
               <span>Enter to send · Shift+Enter for a new line</span>
-              <span>Browser chat · replies are simulated</span>
+              <span>Harness Copilot demo · replies are simulated</span>
             </div>
           </div>
         </div>
       </div>
 
-      <FirstRunGuide
-        open={guideOpen}
-        onClose={dismissGuide}
-        user={session.user}
-        connected={browserConnected}
-      />
+      <FirstRunGuide open={guideOpen} onClose={dismissGuide} />
     </div>
   );
 }

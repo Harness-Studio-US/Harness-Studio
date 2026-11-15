@@ -60,7 +60,7 @@ export function ChatMessageView({ message, streaming }: { message: ChatMessage; 
 
       <div className="min-w-0 flex-1">
         <div className="mb-1.5 flex flex-wrap items-center gap-2">
-          <span className="text-[12px] font-semibold text-slate-900">Harness</span>
+          <span className="text-[12px] font-semibold text-slate-900">Harness Copilot</span>
           {message.error && (
             <span className="inline-flex items-center gap-1 rounded border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-[8.5px] text-rose-600">
               <AlertTriangle className="h-2.5 w-2.5" />

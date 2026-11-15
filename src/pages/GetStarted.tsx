@@ -14,8 +14,8 @@ const nextSteps = [
     body: "A real person on the company reads every message and replies directly.",
   },
   {
-    title: "Try Harness Studio",
-    body: "We’ll walk you through the app and your first change.",
+    title: "Try Harness Copilot",
+    body: "We’ll walk you through the workspace and your first change.",
   },
 ];
 
@@ -42,7 +42,7 @@ export default function GetStarted() {
             </h1>
             <p className="mt-6 max-w-lg text-[16px] leading-[1.75] text-slate-600">
               Tell us what you’re building, or what you’d like to change. We’ll help you get set up
-              with Harness Studio — or point you somewhere more useful. No sales script, just a
+              with Harness Copilot — or point you somewhere more useful. No sales script, just a
               useful conversation.
             </p>
 
@@ -74,7 +74,7 @@ export default function GetStarted() {
             <div className="mt-12 grid gap-3 border-t border-slate-300/70 pt-7 sm:grid-cols-2">
               {[
                 "A real conversation with the team",
-                "A walkthrough of the Harness Studio app",
+                "A walkthrough of Harness Copilot",
                 "Room to ask questions as you go",
                 "A direct line to the people building it",
               ].map((item) => (
@@ -115,8 +115,8 @@ export default function GetStarted() {
 
             <div className="mt-8 rounded-xl border border-slate-200 bg-[#fbfbf9] p-4">
               <p className="text-[11.5px] leading-relaxed text-slate-500">
-                Want to see the conversation first? The demo opens with a quick sign-in and a
-                browser connection.
+                Want to see the conversation first? The demo opens directly in your browser. Accept
+                the terms and privacy policy once, then start chatting.
               </p>
               <Link
                 to="/console"

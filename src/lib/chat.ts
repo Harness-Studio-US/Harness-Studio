@@ -158,7 +158,7 @@ const toolMeta: Record<ToolName, { label: string; args: (prompt: string) => Reco
 };
 
 const greetingResponse = [
-  "Hey — I'm Harness, your AI teammate in **Harness Studio**.",
+  "Hey — I'm Harness Copilot, your AI teammate at **Harness Studio**.",
   "",
   "I can help you change how something looks, fix what isn't working, add a new screen, or explain part of your project. Just tell me what you want in your own words.",
   "",
@@ -179,9 +179,9 @@ const debugResponse = [
 ].join("\n");
 
 const apiResponse = [
-  "You don't need an API or any developer setup to use the Harness Studio AI.",
+  "You don't need an API or any developer setup to use Harness Copilot.",
   "",
-  "Open the chat in your browser, describe what you want, and Harness works inside your app. If you're curious about connecting your own tools later, that's an optional path — not something you need to get started.",
+  "Open the chat in your browser, describe what you want, and Copilot works through it with you. If you're curious about connecting your own tools later, that's an optional path — not something you need to get started.",
   "",
   "Want to try a change instead?",
 ].join("\n");
@@ -265,7 +265,7 @@ const designResponse = [
   "- Let the most important action stand out.",
   "- Add a little breathing room and soften the background.",
   "",
-  "I can try that in Harness Studio and show you the result. Want it subtle or a bigger refresh?",
+  "I can try that in your workspace and show you the result. Want it subtle or a bigger refresh?",
 ].join("\n");
 
 const createResponse = [

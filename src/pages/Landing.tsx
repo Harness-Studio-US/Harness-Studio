@@ -38,7 +38,7 @@ const features = [
   {
     icon: Eye,
     title: "Every change is visible",
-    body: "Harness Studio explains what it did in plain language, so you can try it, keep it, or ask for something different.",
+    body: "Harness Copilot explains what it did in plain language, so you can try it, keep it, or ask for something different.",
   },
   {
     icon: MessageSquare,
@@ -68,7 +68,7 @@ const steps = [
     number: "02",
     icon: Monitor,
     title: "Watch it work in your project",
-    body: "Harness Studio updates the screen, fixes the issue or builds the thing you asked for — right where your project lives.",
+    body: "Harness Copilot updates the screen, fixes the issue or builds the thing you asked for — right where your project lives.",
   },
   {
     number: "03",
@@ -100,7 +100,7 @@ const examples = [
   {
     tag: "Fix something",
     prompt: "The save button doesn’t work on mobile. Can you fix it?",
-    result: "Harness Studio finds the cause and makes the fix — no bug report required.",
+    result: "Harness Copilot finds the cause and makes the fix — no bug report required.",
   },
   {
     tag: "Add a feature",
@@ -120,7 +120,7 @@ const examples = [
 ];
 
 const controlPoints = [
-  "See a clear summary of what Harness Studio wants to change.",
+  "See a clear summary of what Harness Copilot wants to change.",
   "Try the result before you commit to it.",
   "Ask for another version whenever something feels off.",
 ];
@@ -152,8 +152,8 @@ export default function Landing() {
 
               <p className="mt-7 max-w-[35rem] text-[16.5px] leading-[1.7] text-slate-600 sm:text-[17.5px]">
                 Harness Studio is an independent software company. We build tools that make creating
-                software feel more like a conversation — starting with our first product, also called
-                Harness Studio.
+                software feel more like a conversation — starting with our first product, Harness
+                Copilot.
               </p>
 
               <div className="mt-9 flex flex-wrap items-center gap-3">
@@ -174,7 +174,7 @@ export default function Landing() {
               <div className="mt-10 grid max-w-lg grid-cols-3 gap-5 border-t border-slate-300/70 pt-6">
                 {[
                   ["The company", "Independent"],
-                  ["The product", "Harness Studio"],
+                  ["The product", "Harness Copilot"],
                   ["The idea", "Software, made human"],
                 ].map(([title, label]) => (
                   <div key={title}>
@@ -211,7 +211,7 @@ export default function Landing() {
                           Product 01 / AI development app
                         </span>
                         <h2 className="mt-3 text-[34px] font-bold leading-[1.02] tracking-[-0.045em] text-white sm:text-[40px]">
-                          Harness Studio
+                          Harness Copilot
                         </h2>
                         <p className="mt-3 max-w-sm text-[13.5px] leading-[1.75] text-zinc-400">
                           An AI teammate for the work of building software. Talk it through in the
@@ -260,9 +260,9 @@ export default function Landing() {
                 </h2>
               </div>
               <p className="max-w-xl text-[14.5px] leading-[1.8] text-slate-600 lg:pb-1">
-                The first product from Harness Studio is the AI development app that shares its name.
-                It is designed to make the work of building software feel direct, visible and yours
-                to direct.
+                The first product from Harness Studio is Harness Copilot, an AI development app for
+                the browser. It is designed to make the work of building software feel direct,
+                visible and yours to direct.
               </p>
             </div>
 
@@ -281,11 +281,11 @@ export default function Landing() {
                     </div>
 
                     <h3 className="mt-5 text-[40px] font-bold leading-[1.02] tracking-[-0.045em] text-slate-950 sm:text-[48px]">
-                      Harness Studio
+                      Harness Copilot
                     </h3>
                     <p className="mt-4 max-w-md text-[14.5px] leading-[1.8] text-slate-600">
                       A development app with an AI teammate at its center. Describe what you want in
-                      the browser, and Harness Studio works inside your project — then shows you
+                      the browser, and Harness Copilot works inside your project — then shows you
                       exactly what changed.
                     </p>
 
@@ -315,7 +315,7 @@ export default function Landing() {
                       </Link>
                     </div>
                     <p className="mt-4 text-[11.5px] text-slate-500">
-                      A quick demo sign-in. Changes in the demo are simulated.
+                      Opens directly in your browser. Demo replies are simulated.
                     </p>
                   </div>
 
@@ -382,8 +382,8 @@ export default function Landing() {
                   make creating software feel more direct, more legible, and more human.
                 </p>
                 <p className="mt-5 text-[14.5px] leading-[1.8] text-slate-600">
-                  Our first product shares our name. It is an AI development app for people who want
-                  to move at the speed of a conversation — without giving up the ability to see,
+                  Our first product is Harness Copilot, an AI development app for people who want to
+                  move at the speed of a conversation — without giving up the ability to see,
                   question and undo the work. The company is small, the product is focused, and the
                   line between the two is deliberate.
                 </p>
@@ -503,8 +503,8 @@ export default function Landing() {
                 Every change is yours to keep — or undo.
               </h2>
               <p className="mt-5 max-w-lg text-[14.5px] leading-[1.8] text-zinc-400">
-                You’re not handing over the keys. Harness Studio keeps you in the loop, explains its
-                work in plain language and gives you room to change your mind.
+                You’re not handing over the keys. Harness Copilot keeps you in the loop, explains
+                its work in plain language and gives you room to change your mind.
               </p>
 
               <ul className="mt-8 space-y-4">
@@ -679,7 +679,7 @@ export default function Landing() {
                 </a>
               </div>
               <p className="mt-5 text-[11px] text-zinc-500">
-                A quick demo sign-in. The interactive demo runs in your browser.
+                The interactive demo opens directly in your browser. Replies are simulated.
               </p>
             </div>
           </div>

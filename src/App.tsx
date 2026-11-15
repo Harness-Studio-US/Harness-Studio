@@ -6,6 +6,7 @@ import Brand from "./pages/Brand";
 import Console from "./pages/Console";
 import GetStarted from "./pages/GetStarted";
 import { PrivacyPolicy, TermsOfService } from "./pages/Legal";
+import { removeLegacyCredentials } from "./lib/copilotState";
 
 function ScrollManager() {
   const { pathname, hash } = useLocation();
@@ -28,6 +29,10 @@ function ScrollManager() {
 }
 
 export default function App() {
+  useEffect(() => {
+    removeLegacyCredentials();
+  }, []);
+
   return (
     <>
       <ScrollManager />
@@ -37,7 +42,6 @@ export default function App() {
         <Route path="/brand" element={<Brand />} />
         <Route path="/console" element={<Console />} />
         <Route path="/get-started" element={<GetStarted />} />
-        <Route path="/login" element={<Navigate to="/console" replace />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="*" element={<Navigate to="/" replace />} />
