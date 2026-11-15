@@ -38,6 +38,30 @@ function LoadingScreen({ leaving }: { leaving: boolean }) {
   );
 }
 
+function getSecondaryPagePath(anchor: HTMLAnchorElement): string | null {
+  if (anchor.target && anchor.target !== "_self") return null;
+  if (anchor.hasAttribute("download")) return null;
+
+  const href = anchor.getAttribute("href");
+  if (!href || href.startsWith("mailto:") || href.startsWith("tel:")) return null;
+  if (href.startsWith("#") && !href.startsWith("#/")) return null;
+
+  let url: URL;
+  try {
+    url = new URL(anchor.href, window.location.href);
+  } catch {
+    return null;
+  }
+  if (url.origin !== window.location.origin) return null;
+
+  let path = url.hash.startsWith("#/")
+    ? url.hash.slice(1).split("#")[0].split("?")[0]
+    : url.pathname;
+  if (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
+  if (!path || path === "/") return null;
+  return path;
+}
+
 function ActionLoadingScreen() {
   const location = useLocation();
   const pathnameRef = useRef(location.pathname);
@@ -70,14 +94,21 @@ function ActionLoadingScreen() {
       const control = event.target.closest<HTMLElement>(
         ".btn-primary, .btn-ghost, [data-page-loader]"
       );
-      if (!control) return;
-      if (pathnameRef.current === "/console") return;
-      if (control.closest("[data-no-page-loader]")) return;
-      if (control.getAttribute("aria-disabled") === "true") return;
-      if (control instanceof HTMLButtonElement && control.disabled) return;
-      if (control instanceof HTMLAnchorElement) {
-        if (control.target && control.target !== "_self") return;
-        if (control.hasAttribute("download")) return;
+      const anchor = event.target.closest<HTMLAnchorElement>("a[href]");
+      const secondaryPath = anchor ? getSecondaryPagePath(anchor) : null;
+      const isSecondaryPageLink = !!secondaryPath && secondaryPath !== pathnameRef.current;
+
+      if (!control && !isSecondaryPageLink) return;
+      if (control && pathnameRef.current === "/console") return;
+      if ((control ?? anchor)?.closest("[data-no-page-loader]")) return;
+
+      const target = control ?? anchor;
+      if (!target) return;
+      if (target.getAttribute("aria-disabled") === "true") return;
+      if (target instanceof HTMLButtonElement && target.disabled) return;
+      if (target instanceof HTMLAnchorElement) {
+        if (target.target && target.target !== "_self") return;
+        if (target.hasAttribute("download")) return;
       }
 
       show();
