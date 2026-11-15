@@ -6,10 +6,10 @@ import {
   Check,
   CheckCircle2,
   FileText,
+  LockKeyhole,
   MessageSquare,
   ShieldCheck,
   Sparkles,
-  SquarePen,
   X,
 } from "lucide-react";
 import { Logo, LogoMark } from "../Logo";
@@ -28,120 +28,90 @@ export function LegalConsent({
   const [agreed, setAgreed] = useState(false);
 
   return (
-    <div className="ai-screen-in relative flex min-h-screen flex-col overflow-x-hidden bg-[#f8f8f6] text-slate-900">
-      <div className="grid-bg absolute inset-0" />
-      <div className="glow-orb -left-12 top-24 h-80 w-80 bg-violet-300/20" />
-      <div className="glow-orb bottom-0 right-[6%] h-72 w-72 bg-sky-200/25" />
-
-      <header className="relative z-10 mx-auto flex h-20 w-full max-w-6xl items-center justify-between gap-4 px-5 lg:px-8">
+    <div className="ai-screen-in min-h-screen bg-paper text-ink">
+      <header className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between gap-4 px-5 lg:px-10">
         <Link to="/" aria-label="Harness Studio home">
           <Logo markClassName="h-8 w-8" />
         </Link>
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/60 px-3 py-1.5 text-[10.5px] font-medium text-slate-600 backdrop-blur transition hover:bg-white hover:text-slate-900"
+          className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3.5 py-2 text-[11.5px] font-medium text-muted transition hover:border-[#a9a193] hover:text-ink"
         >
           <ArrowLeft className="h-3 w-3" />
           Back to site
         </Link>
       </header>
 
-      <main className="relative z-10 mx-auto grid w-full max-w-6xl flex-1 items-center gap-12 px-5 py-10 lg:grid-cols-[minmax(0,1fr)_460px] lg:px-8">
-        <section className="animate-rise hidden max-w-xl lg:block">
-          <span className="inline-flex items-center gap-2.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-            <span className="ai-live-dot h-1.5 w-1.5 rounded-full bg-violet-500 text-violet-500" />
-            Harness Copilot
-          </span>
-          <h1 className="mt-6 text-[54px] font-bold leading-[1.01] tracking-[-0.055em] text-slate-950">
-            Your workspace,
-            <br />
-            without the setup.
+      <main className="mx-auto grid w-full max-w-6xl flex-1 items-center gap-12 px-5 pb-14 pt-4 lg:grid-cols-[minmax(0,1fr)_470px] lg:px-8 lg:pt-10">
+        <section className="hidden max-w-[550px] lg:block">
+          <span className="eyebrow">Harness Copilot / Before you begin</span>
+          <h1 className="mt-7 text-[62px] font-semibold leading-[0.98] tracking-[-0.06em] text-ink">
+            One last step before you{" "}
+            <span className="display-serif text-accent">build.</span>
           </h1>
-          <p className="mt-6 max-w-md text-[15px] leading-[1.8] text-slate-600">
-            Ask for changes, explore an idea, or work through a problem in your own words. Harness
-            Copilot meets you in the conversation and helps you decide what comes next.
+          <p className="mt-6 max-w-[480px] text-[16px] leading-[1.8] text-muted">
+            Your account is ready. Review the terms, then open the Copilot workspace and start with
+            a sentence.
           </p>
 
-          <div className="mt-8 max-w-md rounded-2xl border border-slate-200/80 bg-white/75 p-4 shadow-[0_24px_60px_-45px_rgba(15,23,42,0.45)] backdrop-blur-sm">
-            <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white">
-                <LogoMark className="h-5 w-5" />
-              </span>
-              <div>
-                <div className="text-[11px] font-semibold text-slate-900">Harness Copilot</div>
-                <div className="text-[9px] text-slate-400">Demo workspace</div>
-              </div>
-              <span className="ml-auto inline-flex items-center gap-1 rounded-full border border-violet-200 bg-violet-50 px-2 py-1 text-[8.5px] font-semibold uppercase tracking-[0.12em] text-violet-700">
-                <span className="h-1 w-1 rounded-full bg-violet-500" />
-                Demo
-              </span>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              <div className="ml-auto max-w-[88%] rounded-2xl rounded-br-sm bg-slate-900 px-3 py-2 text-[11px] leading-relaxed text-white">
-                Make the dashboard easier to scan.
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white">
-                  <Sparkles className="h-3 w-3 text-violet-600" />
-                </span>
-                <div className="min-w-0 flex-1 rounded-2xl rounded-tl-sm border border-slate-200 bg-white px-3 py-2.5">
-                  <div className="text-[10.5px] leading-relaxed text-slate-600">
-                    I’d group the key numbers first, then make the secondary detail quieter. Want me
-                    to show you a cleaner layout?
-                  </div>
-                  <div className="mt-2 flex items-center gap-1 text-[8.5px] font-medium text-emerald-700">
-                    <Check className="h-2.5 w-2.5" />
-                    Ready to review
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 grid max-w-md gap-2 text-[11px] text-slate-500 sm:grid-cols-3">
+          <div className="mt-10 space-y-4 border-t border-line pt-7">
             {[
-              { icon: MessageSquare, label: "Talk it through" },
-              { icon: SquarePen, label: "Shape the result" },
-              { icon: ShieldCheck, label: "Stays in your browser" },
+              "Your conversations stay in this browser.",
+              "Copilot’s replies are simulated in the early preview.",
+              "You can ask for a change, or undo it, at any time.",
             ].map((item) => (
-              <div key={item.label} className="flex items-center gap-1.5">
-                <item.icon className="h-3 w-3 text-violet-600" />
-                {item.label}
+              <div key={item} className="flex gap-3 text-[13.5px] leading-[1.65] text-ink-soft">
+                <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-[#a7d7c5] bg-[#effaf4]">
+                  <Check className="h-2.5 w-2.5 text-[#047857]" />
+                </span>
+                {item}
               </div>
             ))}
           </div>
+
+          <p className="mt-8 text-[11.5px] leading-relaxed text-muted">
+            Early preview. No payment details required.
+          </p>
         </section>
 
-        <section className="ai-card-in mx-auto w-full max-w-[460px] rounded-[28px] border border-slate-200/90 bg-white/95 p-6 shadow-[0_36px_100px_-55px_rgba(15,23,42,0.5)] backdrop-blur sm:p-7">
+        <section className="ai-card-in mx-auto w-full max-w-[470px] rounded-xl border border-line bg-surface p-6 shadow-[0_24px_60px_-45px_rgba(23,21,15,0.45)] sm:p-8">
           <div className="flex items-center justify-between gap-3 lg:hidden">
             <Logo markClassName="h-7 w-7" />
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2 py-1 text-[8.5px] font-semibold uppercase tracking-[0.12em] text-violet-700">
-              <span className="h-1 w-1 rounded-full bg-violet-500" />
-              Demo
+            <span className="rounded-full border border-line bg-paper px-2.5 py-1 text-[9.5px] font-medium uppercase tracking-[0.1em] text-muted">
+              Preview
             </span>
           </div>
 
-          <div className="mt-5 lg:mt-0">
-            <span className="inline-flex items-center gap-1.5 text-[9.5px] font-semibold uppercase tracking-[0.18em] text-violet-600">
-              <FileText className="h-3 w-3" />
+          <div className="mt-6 lg:mt-0">
+            <span className="eyebrow eyebrow--plain">
+              <FileText className="h-3.5 w-3.5" />
               Before you start
             </span>
-            <h2 className="mt-2 text-[28px] font-semibold leading-tight tracking-[-0.04em] text-slate-950">
-              Your Copilot workspace is ready.
+            <h2 className="mt-3 text-[30px] font-semibold leading-[1.1] tracking-[-0.045em] text-ink">
+              Open your workspace.
             </h2>
-            <p className="mt-2.5 text-[12px] leading-[1.75] text-slate-500">
-              You’re signed in. Review and accept the terms and privacy policy to open the demo.
+            <p className="mt-2.5 text-[13px] leading-[1.7] text-muted">
+              You are signed in. Review and accept the terms to continue.
             </p>
           </div>
 
-          <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50/80 p-3">
-            <div className="flex items-start gap-2">
-              <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-600" />
-              <div className="text-[10px] leading-relaxed text-slate-500">
-                <span className="font-medium text-slate-700">A browser demo.</span> Replies are
+          {email && (
+            <div className="mt-5 flex items-center gap-2.5 rounded-lg border border-line bg-paper px-3 py-2.5">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-line bg-surface text-[10px] font-semibold text-ink">
+                {email.charAt(0).toUpperCase()}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-[11.5px] text-ink-soft">{email}</span>
+              <LockKeyhole className="h-3 w-3 shrink-0 text-muted" />
+            </div>
+          )}
+
+          <div className="mt-5 rounded-lg border border-line bg-paper p-3.5">
+            <div className="flex items-start gap-2.5">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#047857]" />
+              <div className="text-[11.5px] leading-[1.7] text-muted">
+                <span className="font-semibold text-ink">An early preview.</span> Replies are
                 simulated, and everything you type stays in this browser. Nothing is sent to a
-                server.
+                Harness Studio server.
               </div>
             </div>
           </div>
@@ -152,23 +122,23 @@ export function LegalConsent({
               type="checkbox"
               checked={agreed}
               onChange={(event) => setAgreed(event.target.checked)}
-              className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-violet-600"
+              className="mt-0.5 h-4 w-4 shrink-0 cursor-pointer accent-[#5b35e8]"
             />
             <label
               htmlFor="copilot-legal-agree"
-              className="cursor-pointer text-[11px] leading-relaxed text-slate-600"
+              className="cursor-pointer text-[12.5px] leading-[1.65] text-ink-soft"
             >
               I am 16 or older and agree to the Terms &amp; Conditions and Privacy Policy.
             </label>
           </div>
 
-          <p className="mt-2 pl-[26px] text-[9.5px] leading-relaxed text-slate-400">
+          <p className="mt-2 pl-[26px] text-[11px] leading-[1.65] text-muted">
             Read the{" "}
             <Link
               to="/terms"
               target="_blank"
               rel="noreferrer"
-              className="font-medium text-violet-700 underline decoration-violet-300 underline-offset-2 hover:text-violet-800"
+              className="font-medium text-accent-strong underline decoration-[#c4b5fd] underline-offset-2 hover:text-ink"
             >
               Terms &amp; Conditions
             </Link>{" "}
@@ -177,7 +147,7 @@ export function LegalConsent({
               to="/privacy"
               target="_blank"
               rel="noreferrer"
-              className="font-medium text-violet-700 underline decoration-violet-300 underline-offset-2 hover:text-violet-800"
+              className="font-medium text-accent-strong underline decoration-[#c4b5fd] underline-offset-2 hover:text-ink"
             >
               Privacy Policy
             </Link>
@@ -188,25 +158,25 @@ export function LegalConsent({
             type="button"
             onClick={onAccept}
             disabled={!agreed}
-            className="btn-primary mt-5 h-11 w-full px-4 text-[12.5px] disabled:cursor-not-allowed disabled:opacity-40"
+            className="btn-primary mt-5 h-12 w-full px-4 text-[13px] disabled:cursor-not-allowed disabled:opacity-40"
           >
             Agree &amp; open Copilot
             <ArrowRight className="h-4 w-4" />
           </button>
 
-          <p className="mt-3 text-center text-[9px] leading-relaxed text-slate-400">
+          <p className="mt-3 text-center text-[10.5px] leading-[1.6] text-muted">
             Effective {legalEffectiveLabel}. You can read both documents again from the workspace
             sidebar.
           </p>
 
           {email && onSignOut && (
-            <div className="mt-3 flex items-center justify-center gap-1.5 text-[9px] text-slate-400">
-              <span className="max-w-[230px] truncate">Signed in as {email}</span>
+            <div className="mt-3 flex items-center justify-center gap-1.5 text-[10.5px] text-muted">
+              <span className="max-w-[240px] truncate">Signed in as {email}</span>
               <span aria-hidden>·</span>
               <button
                 type="button"
                 onClick={onSignOut}
-                className="font-medium text-slate-500 underline decoration-slate-300 underline-offset-2 hover:text-slate-800"
+                className="font-medium text-ink underline decoration-[#b8b1a3] underline-offset-2 hover:decoration-ink"
               >
                 Sign out
               </button>
@@ -226,13 +196,13 @@ export function FirstRunGuide({ open, onClose }: { open: boolean; onClose: () =>
       icon: Sparkles,
       eyebrow: "Quick guide · 1 of 3",
       title: "Meet Harness Copilot.",
-      body: "Your AI workspace for shaping, fixing and understanding the Harness Studio project. Start with a sentence — no commands or setup required.",
+      body: "Your AI workspace for shaping, fixing and understanding the project. Start with a sentence — no commands or setup required.",
     },
     {
       icon: MessageSquare,
       eyebrow: "Quick guide · 2 of 3",
-      title: "Ask like you'd ask a teammate.",
-      body: "Describe the outcome you want, the problem you're seeing, or the part you'd like explained. Copilot works through it with you.",
+      title: "Ask like you would ask a teammate.",
+      body: "Describe the outcome you want, the problem you are seeing, or the part you would like explained. Copilot works through it with you.",
     },
     {
       icon: CheckCircle2,
@@ -268,7 +238,7 @@ export function FirstRunGuide({ open, onClose }: { open: boolean; onClose: () =>
 
   return (
     <div
-      className="fixed inset-0 z-[80] flex items-end justify-center bg-slate-950/25 p-4 backdrop-blur-[2px] sm:items-center"
+      className="fixed inset-0 z-[80] flex items-end justify-center bg-[#0f172a]/40 p-4 backdrop-blur-[2px] sm:items-center"
       onClick={onClose}
       role="presentation"
     >
@@ -277,85 +247,84 @@ export function FirstRunGuide({ open, onClose }: { open: boolean; onClose: () =>
         aria-modal="true"
         aria-labelledby="copilot-guide-title"
         onClick={(event) => event.stopPropagation()}
-        className="ai-guide-in w-full max-w-[430px] rounded-[22px] border border-slate-200 bg-white p-5 text-left shadow-[0_30px_100px_-30px_rgba(15,23,42,0.5)]"
+        className="ai-guide-in w-full max-w-[450px] rounded-xl border border-line bg-surface p-5 text-left shadow-[0_30px_90px_-30px_rgba(23,21,15,0.55)] sm:p-6"
       >
         <div className="flex items-center gap-2.5">
-          <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-violet-200 bg-violet-50">
-            <Sparkles className="h-3.5 w-3.5 text-violet-600" />
+          <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-paper">
+            <Sparkles className="h-3.5 w-3.5 text-accent" />
           </span>
           <div>
-            <div className="text-[11px] font-semibold text-slate-900">Quick guide</div>
-            <div className="text-[9px] text-slate-400">Three things to know</div>
+            <div className="text-[12.5px] font-semibold text-ink">Quick guide</div>
+            <div className="text-[10.5px] text-muted">Three things to know</div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="ml-auto rounded-md p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+            className="ml-auto rounded-md p-1.5 text-muted transition hover:bg-paper hover:text-ink"
             aria-label="Close quick guide"
           >
-            <X className="h-3.5 w-3.5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div key={step} className="ai-step-in mt-5">
+        <div key={step} className="ai-step-in mt-6">
           <div className="flex items-center justify-between gap-3">
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl border border-violet-200 bg-gradient-to-br from-violet-50 to-sky-50">
-              <Icon className="h-5 w-5 text-violet-600" />
+            <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-paper">
+              <Icon className="h-5 w-5 text-accent" />
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2 py-1 text-[9px] font-medium text-violet-700">
-              <Sparkles className="h-2.5 w-2.5" />
-              Demo workspace
+            <span className="rounded-full border border-line bg-paper px-2.5 py-1 text-[10px] font-medium text-muted">
+              Preview workspace
             </span>
           </div>
 
-          <div className="mt-4 text-[9px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+          <div className="mt-5 text-[10px] font-semibold uppercase tracking-[0.13em] text-muted">
             {current.eyebrow}
           </div>
           <h2
             id="copilot-guide-title"
-            className="mt-1.5 text-[22px] font-semibold leading-tight tracking-[-0.035em] text-slate-950"
+            className="mt-2 text-[24px] font-semibold leading-[1.15] tracking-[-0.035em] text-ink"
           >
             {current.title}
           </h2>
-          <p className="mt-2 text-[11.5px] leading-[1.7] text-slate-500">{current.body}</p>
+          <p className="mt-2.5 text-[13px] leading-[1.7] text-muted">{current.body}</p>
 
           {step === 1 && (
-            <div className="mt-3 rounded-xl border border-violet-100 bg-violet-50/70 p-3">
-              <div className="text-[8.5px] font-semibold uppercase tracking-[0.14em] text-violet-500">
+            <div className="mt-4 rounded-lg border border-violet-200 bg-violet-50 p-3.5">
+              <div className="text-[9.5px] font-semibold uppercase tracking-[0.12em] text-accent-strong">
                 Try something like
               </div>
-              <p className="mt-1 text-[11.5px] leading-relaxed text-slate-700">
+              <p className="mt-1.5 text-[12.5px] leading-relaxed text-ink">
                 “Make the dashboard easier to scan.”
               </p>
             </div>
           )}
 
           {step === 2 && (
-            <ul className="mt-3 space-y-1.5 text-[10.5px] leading-relaxed text-slate-500">
+            <ul className="mt-4 space-y-2 text-[12px] leading-relaxed text-muted">
               <li className="flex items-center gap-2">
-                <Check className="h-3 w-3 text-emerald-600" />
+                <Check className="h-3.5 w-3.5 text-[#047857]" />
                 Start from an example or type your own message.
               </li>
               <li className="flex items-center gap-2">
-                <Check className="h-3 w-3 text-emerald-600" />
+                <Check className="h-3.5 w-3.5 text-[#047857]" />
                 Stop a response whenever you want.
               </li>
               <li className="flex items-center gap-2">
-                <Check className="h-3 w-3 text-emerald-600" />
+                <Check className="h-3.5 w-3.5 text-[#047857]" />
                 Everything stays in this browser.
               </li>
             </ul>
           )}
         </div>
 
-        <div className="mt-5 flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
+        <div className="mt-6 flex items-center justify-between gap-3 border-t border-line pt-4">
           <div className="flex items-center gap-1" aria-label={`Step ${step + 1} of ${steps.length}`}>
             {steps.map((_, index) => (
               <span
                 key={index}
                 className={cn(
                   "h-1 rounded-full transition-all duration-300",
-                  index === step ? "w-5 bg-violet-500" : "w-1.5 bg-slate-200"
+                  index === step ? "w-5 bg-accent" : "w-1.5 bg-slate-200"
                 )}
               />
             ))}
@@ -365,7 +334,7 @@ export function FirstRunGuide({ open, onClose }: { open: boolean; onClose: () =>
               <button
                 type="button"
                 onClick={onClose}
-                className="h-8 px-1.5 text-[10.5px] text-slate-400 transition hover:text-slate-700"
+                className="h-9 px-2 text-[11.5px] text-muted transition hover:text-ink"
               >
                 Skip
               </button>
@@ -373,7 +342,7 @@ export function FirstRunGuide({ open, onClose }: { open: boolean; onClose: () =>
               <button
                 type="button"
                 onClick={() => setStep((value) => Math.max(0, value - 1))}
-                className="inline-flex h-8 items-center gap-1 rounded-md px-1.5 text-[10.5px] text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                className="inline-flex h-9 items-center gap-1 rounded-md px-2 text-[11.5px] text-muted transition hover:bg-paper hover:text-ink"
               >
                 <ArrowLeft className="h-3 w-3" />
                 Back
@@ -385,7 +354,7 @@ export function FirstRunGuide({ open, onClose }: { open: boolean; onClose: () =>
                 if (last) onClose();
                 else setStep((value) => value + 1);
               }}
-              className="btn-primary h-8 px-3 text-[10.5px]"
+              className="btn-primary h-9 px-3.5 text-[11.5px]"
             >
               {last ? "Start chatting" : "Next"}
               <ArrowRight className="h-3 w-3" />

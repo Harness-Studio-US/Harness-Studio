@@ -9,15 +9,12 @@ import {
 import {
   ArrowLeft,
   ArrowRight,
-  Check,
   Eye,
   EyeOff,
-  KeyRound,
   Loader2,
   LockKeyhole,
   Mail,
   ShieldCheck,
-  Sparkles,
 } from "lucide-react";
 import { Logo, LogoMark } from "../Logo";
 import { LegalLinks } from "../LegalLinks";
@@ -63,87 +60,60 @@ function authErrorMessage(error: unknown): string {
 
 function LoginShell({ children }: { children: ReactNode }) {
   return (
-    <div className="ai-screen-in relative min-h-screen overflow-x-hidden bg-[#f8f8f6] text-slate-900">
-      <div className="grid-bg absolute inset-0" />
-      <div className="glow-orb -left-12 top-16 h-80 w-80 bg-violet-300/20" />
-      <div className="glow-orb bottom-0 right-[5%] h-72 w-72 bg-sky-200/25" />
-
-      <header className="relative z-10 mx-auto flex h-20 w-full max-w-6xl items-center justify-between gap-4 px-5 lg:px-8">
+    <div className="ai-screen-in min-h-screen bg-paper text-ink">
+      <header className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between gap-4 px-5 lg:px-10">
         <Link to="/" aria-label="Harness Studio home">
           <Logo markClassName="h-8 w-8" />
         </Link>
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white/60 px-3 py-1.5 text-[10.5px] font-medium text-slate-600 backdrop-blur transition hover:bg-white hover:text-slate-900"
+          className="inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3.5 py-2 text-[11.5px] font-medium text-muted transition hover:border-[#94A3B8] hover:text-ink"
         >
           <ArrowLeft className="h-3 w-3" />
           Back to site
         </Link>
       </header>
 
-      <main className="relative z-10 mx-auto grid min-h-[calc(100vh-5rem)] w-full max-w-6xl items-center gap-12 px-5 pb-14 lg:grid-cols-[minmax(0,1fr)_450px] lg:px-8">
-        <section className="animate-rise hidden max-w-xl lg:block">
-          <span className="inline-flex items-center gap-2.5 text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
-            <span className="ai-live-dot h-1.5 w-1.5 rounded-full bg-violet-500 text-violet-500" />
-            Harness Copilot
-          </span>
-          <h1 className="mt-6 text-[54px] font-bold leading-[1.01] tracking-[-0.055em] text-slate-950">
-            Sign in.
-            <br />
-            Pick up the thread.
+      <main className="mx-auto grid min-h-[calc(100vh-5rem)] w-full max-w-6xl items-center gap-12 px-5 pb-14 lg:grid-cols-[minmax(0,1fr)_460px] lg:px-8">
+        <section className="hidden max-w-[550px] lg:block">
+          <span className="eyebrow">Harness Copilot account</span>
+          <h1 className="mt-7 text-[64px] font-semibold leading-[0.98] tracking-[-0.06em] text-ink">
+            A clearer way to{" "}
+            <span className="display-serif text-accent">build.</span>
           </h1>
-          <p className="mt-6 max-w-md text-[15px] leading-[1.8] text-slate-600">
-            Your workspace and next idea in one place. Sign in with your Harness Copilot account
-            and keep building.
+          <p className="mt-6 max-w-[470px] text-[16px] leading-[1.8] text-muted">
+            Sign in to open your workspace, pick up a conversation, and keep the work moving.
           </p>
 
-          <div className="mt-8 max-w-md rounded-2xl border border-slate-200/80 bg-white/75 p-4 shadow-[0_24px_60px_-45px_rgba(15,23,42,0.45)] backdrop-blur-sm">
-            <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-white">
-                <LogoMark className="h-5 w-5" />
-              </span>
-              <div>
-                <div className="text-[11px] font-semibold text-slate-900">Harness Copilot</div>
-                <div className="text-[9px] text-slate-400">Workspace</div>
-              </div>
-              <span className="ml-auto inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-1 text-[8.5px] font-semibold uppercase tracking-[0.12em] text-emerald-700">
-                <span className="h-1 w-1 rounded-full bg-emerald-500" />
-                Secure
-              </span>
-            </div>
-            <div className="mt-4 space-y-3">
-              <div className="ml-auto max-w-[88%] rounded-2xl rounded-br-sm bg-slate-900 px-3 py-2 text-[11px] leading-relaxed text-white">
-                Make the dashboard easier to scan.
-              </div>
-              <div className="flex items-start gap-2">
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-white">
-                  <Sparkles className="h-3 w-3 text-violet-600" />
-                </span>
-                <div className="min-w-0 flex-1 rounded-2xl rounded-tl-sm border border-slate-200 bg-white px-3 py-2.5 text-[10.5px] leading-relaxed text-slate-600">
-                  I’d start with the key numbers, then make the secondary detail quieter. Want me to
-                  show you a cleaner layout?
+          <div className="mt-10 divide-y divide-line border-y border-line">
+            {[
+              ["01", "Describe it plainly", "No commands, syntax, or developer dictionary required."],
+              ["02", "Review the change", "See what happened before you decide to keep it."],
+              ["03", "Keep it private", "Conversations stay in this browser, scoped to your account."],
+            ].map(([number, title, detail]) => (
+              <div key={number} className="grid grid-cols-[34px_1fr] gap-4 py-4">
+                <span className="font-mono text-[10.5px] text-[#475569]">{number}</span>
+                <div>
+                  <div className="text-[13.5px] font-semibold text-ink">{title}</div>
+                  <p className="mt-1 text-[12.5px] leading-[1.65] text-muted">{detail}</p>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-[10.5px] text-slate-500">
+          <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11.5px] text-muted">
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck className="h-3 w-3 text-emerald-600" />
+              <ShieldCheck className="h-3.5 w-3.5 text-[#047857]" />
               Firebase-secured sign-in
             </span>
-            <span className="inline-flex items-center gap-1.5">
-              <KeyRound className="h-3 w-3 text-violet-600" />
-              Password reset by email
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Check className="h-3 w-3 text-violet-600" />
-              Stay signed in
-            </span>
+            <span>Password reset by email</span>
           </div>
+          <p className="mt-5 text-[11.5px] leading-relaxed text-muted">
+            Early preview. Responses are simulated.
+          </p>
         </section>
 
-        <section className="ai-card-in mx-auto w-full max-w-[450px] rounded-[28px] border border-slate-200/90 bg-white/95 p-6 shadow-[0_36px_100px_-55px_rgba(15,23,42,0.5)] backdrop-blur sm:p-7">
+        <section className="ai-card-in mx-auto w-full max-w-[460px] rounded-xl border border-line bg-surface p-6 shadow-[0_24px_60px_-45px_rgba(23,21,15,0.45)] sm:p-8">
           {children}
         </section>
       </main>
@@ -237,38 +207,38 @@ export function CopilotLogin() {
       <LoginShell>
         <div className="flex items-center justify-between gap-3 lg:hidden">
           <Logo markClassName="h-7 w-7" />
-          <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-1 text-[9px] font-medium text-amber-700">
+          <span className="rounded-full border border-[#e8c38f] bg-[#fff7e8] px-2 py-1 text-[10px] font-medium text-[#8a4b08]">
             Setup needed
           </span>
         </div>
 
         <div className="mt-5 lg:mt-0">
-          <span className="inline-flex items-center gap-1.5 text-[9.5px] font-semibold uppercase tracking-[0.18em] text-amber-600">
-            <LockKeyhole className="h-3 w-3" />
+          <span className="eyebrow eyebrow--plain eyebrow--amber">
+            <LockKeyhole className="h-3.5 w-3.5" />
             Firebase sign-in
           </span>
-          <h2 className="mt-2 text-[26px] font-semibold leading-tight tracking-[-0.04em] text-slate-950">
+          <h2 className="mt-3 text-[30px] font-semibold leading-[1.1] tracking-[-0.045em] text-ink">
             Sign-in needs a Firebase project.
           </h2>
-          <p className="mt-2.5 text-[12px] leading-[1.75] text-slate-500">
+          <p className="mt-3 text-[13px] leading-[1.7] text-muted">
             This build has no Firebase web configuration yet. Add the values from your Firebase web
             app, then restart the dev server or rebuild the site.
           </p>
         </div>
 
-        <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50/70 p-3">
-          <div className="text-[9px] font-semibold uppercase tracking-[0.14em] text-amber-700">
+        <div className="mt-6 rounded-lg border border-[#e8c38f] bg-[#fff7e8] p-4">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#8a4b08]">
             Missing environment variables
           </div>
-          <div className="mt-2 space-y-1 font-mono text-[9.5px] text-slate-600">
+          <div className="mt-2 space-y-1 font-mono text-[10.5px] text-ink-soft">
             {missingFirebaseVars.map((name) => (
               <div key={name}>{name}</div>
             ))}
           </div>
         </div>
 
-        <p className="mt-3 text-[9.5px] leading-relaxed text-slate-400">
-          Put them in <code className="rounded bg-slate-100 px-1 py-0.5">.env.local</code> for local
+        <p className="mt-3 text-[11px] leading-[1.7] text-muted">
+          Put them in <code className="rounded bg-paper px-1 py-0.5">.env.local</code> for local
           development, or in your deployment environment. Never commit the values to the repository.
         </p>
 
@@ -276,13 +246,13 @@ export function CopilotLogin() {
           href="https://console.firebase.google.com/"
           target="_blank"
           rel="noreferrer"
-          className="btn-primary mt-5 h-11 w-full px-4 text-[12.5px]"
+          className="btn-primary mt-6 h-12 w-full px-4 text-[13px]"
         >
           Open Firebase Console
           <ArrowRight className="h-4 w-4" />
         </a>
 
-        <LegalLinks className="mt-5 justify-center" showContact={false} />
+        <LegalLinks className="mt-6 justify-center" showContact={false} />
       </LoginShell>
     );
   }
@@ -293,27 +263,24 @@ export function CopilotLogin() {
     <LoginShell>
       <div className="flex items-center justify-between gap-3 lg:hidden">
         <Logo markClassName="h-7 w-7" />
-        <span className="rounded-full border border-violet-200 bg-violet-50 px-2 py-1 text-[8.5px] font-semibold uppercase tracking-[0.12em] text-violet-700">
+        <span className="rounded-full border border-line bg-paper px-2.5 py-1 text-[9.5px] font-medium uppercase tracking-[0.1em] text-muted">
           Secure sign-in
         </span>
       </div>
 
-      <div className="mt-5 lg:mt-0">
-        <span className="inline-flex items-center gap-1.5 text-[9.5px] font-semibold uppercase tracking-[0.18em] text-violet-600">
-          <Sparkles className="h-3 w-3" />
-          Harness Copilot account
-        </span>
-        <h2 className="mt-2 text-[28px] font-semibold leading-tight tracking-[-0.04em] text-slate-950">
+      <div className="mt-6 lg:mt-0">
+        <span className="eyebrow eyebrow--plain">Harness Copilot account</span>
+        <h2 className="mt-3 text-[32px] font-semibold leading-[1.08] tracking-[-0.045em] text-ink">
           {creating ? "Create your account." : "Welcome back."}
         </h2>
-        <p className="mt-2 text-[12px] leading-relaxed text-slate-500">
+        <p className="mt-2.5 text-[13px] leading-[1.7] text-muted">
           {creating
             ? "One account for your Copilot workspace. Chats stay in this browser."
             : "Sign in to continue to your Copilot workspace."}
         </p>
       </div>
 
-      <div className="mt-5 grid grid-cols-2 gap-1 rounded-xl border border-slate-200 bg-slate-50 p-1">
+      <div className="mt-6 grid grid-cols-2 border-b border-line">
         {(
           [
             ["signin", "Sign in"],
@@ -324,25 +291,26 @@ export function CopilotLogin() {
             key={value}
             type="button"
             onClick={() => switchMode(value)}
-            className={`rounded-lg px-3 py-2 text-[10.5px] font-medium transition ${
-              mode === value
-                ? "bg-white text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-800"
+            className={`relative px-1 pb-3 pt-2 text-[12.5px] font-medium transition ${
+              mode === value ? "text-ink" : "text-muted hover:text-ink"
             }`}
             aria-pressed={mode === value}
           >
             {label}
+            {mode === value && (
+              <span className="absolute inset-x-0 bottom-[-1px] h-[2px] bg-accent" />
+            )}
           </button>
         ))}
       </div>
 
-      <form onSubmit={submit} noValidate className="mt-5 space-y-3.5">
+      <form onSubmit={submit} noValidate className="mt-5 space-y-4">
         <div>
-          <label htmlFor="copilot-email" className="mb-1.5 block text-[10.5px] font-medium text-slate-600">
+          <label htmlFor="copilot-email" className="mb-2 block text-[12px] font-medium text-ink">
             Email
           </label>
           <div className="relative">
-            <Mail className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <Mail className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" />
             <input
               id="copilot-email"
               type="email"
@@ -354,14 +322,14 @@ export function CopilotLogin() {
               }}
               placeholder="you@example.com"
               aria-invalid={!!error}
-              className="field h-11 pl-9 text-[12.5px]"
+              className="field h-12 pl-10 text-[13px]"
             />
           </div>
         </div>
 
         <div>
-          <div className="mb-1.5 flex items-center justify-between gap-2">
-            <label htmlFor="copilot-password" className="block text-[10.5px] font-medium text-slate-600">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <label htmlFor="copilot-password" className="block text-[12px] font-medium text-ink">
               Password
             </label>
             {!creating && (
@@ -369,14 +337,14 @@ export function CopilotLogin() {
                 type="button"
                 onClick={() => void resetPassword()}
                 disabled={submitting}
-                className="text-[9.5px] font-medium text-violet-700 hover:text-violet-800 disabled:opacity-50"
+                className="text-[11px] font-medium text-accent-strong hover:underline disabled:opacity-50"
               >
                 Forgot password?
               </button>
             )}
           </div>
           <div className="relative">
-            <LockKeyhole className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+            <LockKeyhole className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" />
             <input
               id="copilot-password"
               type={showPassword ? "text" : "password"}
@@ -388,12 +356,12 @@ export function CopilotLogin() {
               }}
               placeholder={creating ? "At least 6 characters" : "Your password"}
               aria-invalid={!!error}
-              className="field h-11 pl-9 pr-10 text-[12.5px]"
+              className="field h-12 pl-10 pr-11 text-[13px]"
             />
             <button
               type="button"
               onClick={() => setShowPassword((value) => !value)}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1 text-slate-400 transition hover:text-slate-700"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded p-1.5 text-muted transition hover:text-ink"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
@@ -404,7 +372,7 @@ export function CopilotLogin() {
         {error && (
           <p
             role="alert"
-            className="ai-step-in rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-2 text-[10.5px] leading-relaxed text-rose-700"
+            className="rounded-lg border border-[#e7b4af] bg-[#fdf1f0] px-3 py-2.5 text-[11.5px] leading-[1.6] text-[#9f1239]"
           >
             {error}
           </p>
@@ -412,7 +380,7 @@ export function CopilotLogin() {
         {notice && (
           <p
             role="status"
-            className="ai-step-in rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-[10.5px] leading-relaxed text-emerald-700"
+            className="rounded-lg border border-[#A7F3D0] bg-[#ECFDF5] px-3 py-2.5 text-[11.5px] leading-[1.6] text-[#065f46]"
           >
             {notice}
           </p>
@@ -421,7 +389,7 @@ export function CopilotLogin() {
         <button
           type="submit"
           disabled={submitting}
-          className="btn-primary mt-1 h-11 w-full px-4 text-[12.5px] disabled:cursor-not-allowed disabled:opacity-60"
+          className="btn-primary mt-1 h-12 w-full px-4 text-[13px] disabled:cursor-not-allowed disabled:opacity-60"
         >
           {submitting ? (
             <>
@@ -437,35 +405,35 @@ export function CopilotLogin() {
         </button>
       </form>
 
-      <p className="mt-4 text-center text-[10px] leading-relaxed text-slate-400">
+      <p className="mt-4 text-center text-[11.5px] leading-relaxed text-muted">
         {creating ? "Already have an account?" : "New to Harness Copilot?"}{" "}
         <button
           type="button"
           onClick={() => switchMode(creating ? "signin" : "signup")}
-          className="font-medium text-violet-700 hover:text-violet-800"
+          className="font-semibold text-accent-strong hover:underline"
         >
           {creating ? "Sign in" : "Create one"}
         </button>
       </p>
 
-      <div className="mt-4 flex items-start gap-2 rounded-xl border border-slate-200 bg-slate-50/80 p-2.5 text-[9.5px] leading-relaxed text-slate-500">
-        <ShieldCheck className="mt-0.5 h-3 w-3 shrink-0 text-emerald-600" />
+      <div className="mt-5 flex items-start gap-2.5 border-t border-line pt-4 text-[11px] leading-[1.65] text-muted">
+        <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#047857]" />
         <span>Secured by Firebase Authentication. Your password is never stored by this site.</span>
       </div>
 
-      <LegalLinks className="mt-5 justify-center" showContact={false} />
+      <LegalLinks className="mt-4 justify-center" showContact={false} />
     </LoginShell>
   );
 }
 
 export function CopilotAuthLoading() {
   return (
-    <div className="ai-screen-in flex min-h-screen flex-col items-center justify-center gap-4 bg-[#f8f8f6] text-slate-900">
-      <span className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div className="ai-screen-in flex min-h-screen flex-col items-center justify-center gap-4 bg-paper text-ink">
+      <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-line bg-surface">
         <LogoMark className="h-7 w-7" />
       </span>
-      <div className="flex items-center gap-2 text-[11px] text-slate-500">
-        <Loader2 className="h-3.5 w-3.5 animate-spin text-violet-600" />
+      <div className="flex items-center gap-2 text-[12px] text-muted">
+        <Loader2 className="h-3.5 w-3.5 animate-spin text-accent" />
         Opening your workspace…
       </div>
     </div>

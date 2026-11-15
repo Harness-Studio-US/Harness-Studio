@@ -6,31 +6,41 @@ const EMAIL = "message.harness.studio@outlook.com";
 export function LegalLinks({
   className,
   showContact = true,
+  tone = "light",
 }: {
   className?: string;
   showContact?: boolean;
+  tone?: "light" | "dark";
 }) {
+  const onDark = tone === "dark";
   return (
     <nav
       aria-label="Legal"
       className={cn(
-        "flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px] text-slate-400",
+        "flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px]",
+        onDark ? "text-[#b9b2a5]" : "text-muted",
         className
       )}
     >
-      <Link to="/privacy" className="transition hover:text-slate-700">
+      <Link to="/privacy" className={cn("transition", onDark ? "hover:text-white" : "hover:text-ink")}>
         Privacy Policy
       </Link>
-      <span className="hidden h-2.5 w-px bg-slate-200 sm:block" aria-hidden />
-      <Link to="/terms" className="transition hover:text-slate-700">
+      <span
+        className={cn("hidden h-2.5 w-px sm:block", onDark ? "bg-white/20" : "bg-[#c8c1b4]")}
+        aria-hidden
+      />
+      <Link to="/terms" className={cn("transition", onDark ? "hover:text-white" : "hover:text-ink")}>
         Terms &amp; Conditions
       </Link>
       {showContact && (
         <>
-          <span className="hidden h-2.5 w-px bg-slate-200 sm:block" aria-hidden />
+          <span
+            className={cn("hidden h-2.5 w-px sm:block", onDark ? "bg-white/20" : "bg-[#c8c1b4]")}
+            aria-hidden
+          />
           <a
             href={`mailto:${EMAIL}`}
-            className="transition hover:text-slate-700"
+            className={cn("transition", onDark ? "hover:text-white" : "hover:text-ink")}
             title={`Email ${EMAIL}`}
           >
             Contact

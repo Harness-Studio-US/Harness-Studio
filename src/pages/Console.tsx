@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   ArrowLeft,
+  ArrowUpRight,
   BookOpen,
   LogOut,
   Menu,
@@ -399,11 +400,11 @@ export default function Console() {
   }
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#f8f8f6] text-slate-800">
+    <div className="flex h-screen w-full overflow-hidden bg-surface text-ink">
       {/* sidebar backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-30 bg-slate-900/25 lg:hidden"
+          className="fixed inset-0 z-30 bg-[#0F172A]/45 lg:hidden"
           onClick={() => setSidebarOpen(false)}
           aria-hidden
         />
@@ -412,47 +413,47 @@ export default function Console() {
       {/* sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-[264px] shrink-0 flex-col border-r border-slate-200 bg-[#fbfcfe] transition-transform duration-200 lg:static lg:z-0 lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-40 flex w-[272px] shrink-0 flex-col border-r border-slate-200 bg-[#fbfcfe] text-slate-800 transition-transform duration-200 lg:static lg:z-0 lg:translate-x-0",
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
-        <div className="flex h-14 items-center justify-between border-b border-slate-200 px-3.5">
+        <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
           <Link to="/" aria-label="Harness Studio home">
             <Logo markClassName="h-7 w-7" />
           </Link>
           <button
             type="button"
             onClick={() => setSidebarOpen(false)}
-            className="rounded-md p-1 text-slate-500 hover:text-slate-900 lg:hidden"
+            className="rounded-md p-1.5 text-slate-500 hover:bg-slate-100 hover:text-slate-900 lg:hidden"
             aria-label="Close sidebar"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="p-2.5">
+        <div className="p-3">
           <button
             type="button"
             onClick={createConversation}
-            className="flex w-full items-center justify-center gap-2 rounded-lg border border-slate-200 bg-white py-2 text-[11.5px] font-medium text-slate-800 shadow-sm transition hover:bg-slate-50"
+            className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-800 transition hover:bg-slate-50"
           >
             <Plus className="h-3.5 w-3.5" />
             New chat
           </button>
-          <div className="relative mt-2">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-400" />
+          <div className="relative mt-2.5">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-500" />
             <input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search conversations"
-              className="field pl-7 text-[11px]"
+              className="field h-9 pl-8 text-[12px]"
               aria-label="Search conversations"
             />
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-2 pb-2">
-          <div className="px-2 pb-1 pt-1.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+        <div className="flex-1 overflow-y-auto px-2.5 pb-2">
+          <div className="px-2 pb-1.5 pt-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
             Recent
           </div>
           <div className="space-y-0.5">
@@ -470,26 +471,26 @@ export default function Console() {
                     setActiveId(conversation.id);
                     setSidebarOpen(false);
                   }}
-                  className="min-w-0 flex-1 px-1.5 py-2 text-left"
+                  className="min-w-0 flex-1 px-2 py-2.5 text-left"
                 >
                   <div
                     className={cn(
-                      "truncate text-[11.5px]",
-                      conversation.id === activeId ? "text-slate-900" : "text-slate-600"
+                      "truncate text-[12px]",
+                      conversation.id === activeId ? "text-slate-900" : "text-slate-700"
                     )}
                   >
                     {conversation.title}
                   </div>
-                  <div className="mt-0.5 flex items-center gap-1.5 text-[9px] text-slate-400">
+                  <div className="mt-1 flex items-center gap-1.5 text-[10px] text-slate-600">
                     <span>{formatRelative(conversation.updatedAt)}</span>
-                    <span className="h-0.5 w-0.5 rounded-full bg-slate-300" />
+                    <span className="h-0.5 w-0.5 rounded-full bg-slate-400" />
                     <span>{conversation.messages.length} msg</span>
                   </div>
                 </button>
                 <button
                   type="button"
                   onClick={() => deleteConversation(conversation.id)}
-                  className="mr-1 rounded p-1 text-slate-400 opacity-0 transition hover:bg-slate-100 hover:text-rose-600 group-hover:opacity-100"
+                  className="mr-1 rounded p-1 text-slate-500 opacity-0 transition hover:bg-slate-100 hover:text-rose-700 group-hover:opacity-100 focus:opacity-100"
                   aria-label={`Delete ${conversation.title}`}
                 >
                   <Trash2 className="h-3 w-3" />
@@ -497,40 +498,40 @@ export default function Console() {
               </div>
             ))}
             {filteredConversations.length === 0 && (
-              <p className="px-2 py-4 text-[10.5px] text-slate-400">No conversations match.</p>
+              <p className="px-2 py-4 text-[11.5px] text-slate-500">No conversations match.</p>
             )}
           </div>
         </div>
 
-        <div className="space-y-2.5 border-t border-slate-200 p-2.5">
-          <div className="rounded-xl border border-slate-200 bg-white p-3">
+        <div className="space-y-2.5 border-t border-slate-200 p-3">
+          <div className="rounded-lg border border-slate-200 bg-white p-3">
             <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border border-violet-200 bg-violet-50">
-                <Sparkles className="h-3.5 w-3.5 text-violet-600" />
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-violet-200 bg-violet-50">
+                <Sparkles className="h-3.5 w-3.5 text-violet-700" />
               </span>
               <div className="min-w-0">
-                <div className="text-[11px] font-semibold text-slate-800">Harness Copilot</div>
-                <div className="text-[9px] text-slate-400">AI workspace</div>
+                <div className="text-[12px] font-semibold text-slate-800">Harness Copilot</div>
+                <div className="text-[10px] text-slate-500">AI workspace</div>
               </div>
-              <span className="ml-auto rounded-full border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.1em] text-violet-700">
-                Demo
+              <span className="ml-auto rounded-full border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[8.5px] font-semibold uppercase tracking-[0.08em] text-violet-700">
+                Preview
               </span>
             </div>
-            <p className="mt-2 text-[9.5px] leading-relaxed text-slate-400">
-              The full chat experience, with simulated replies. Chats stay in this browser.
+            <p className="mt-2 text-[10.5px] leading-relaxed text-slate-600">
+              An early preview with simulated replies. Chats stay in this browser.
             </p>
 
             <div className="mt-2.5 flex items-center gap-2 border-t border-slate-100 pt-2.5">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-[9px] font-semibold text-slate-600">
                 {userInitial}
               </span>
-              <span className="min-w-0 flex-1 truncate text-[9.5px] text-slate-500">
+              <span className="min-w-0 flex-1 truncate text-[10.5px] text-slate-600">
                 {userEmail}
               </span>
               <button
                 type="button"
                 onClick={signOutUser}
-                className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-800"
+                className="rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
                 aria-label="Sign out"
                 title="Sign out"
               >
@@ -540,10 +541,10 @@ export default function Console() {
           </div>
 
           <div className="flex items-center justify-between gap-2 px-1 py-0.5">
-            <span className="text-[9px] text-slate-400">Private to this browser.</span>
+            <span className="text-[10px] text-slate-600">Private to this browser.</span>
             <Link
               to="/"
-              className="inline-flex items-center gap-1 rounded p-1 text-[9px] text-slate-400 hover:text-slate-700"
+              className="inline-flex items-center gap-1 rounded p-1 text-[10px] text-slate-600 hover:text-slate-900"
             >
               <ArrowLeft className="h-3 w-3" />
               Site
@@ -555,7 +556,7 @@ export default function Console() {
 
       {/* main */}
       <div className="flex min-w-0 flex-1 flex-col bg-white">
-        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-slate-200 bg-white/90 px-3 backdrop-blur">
+        <header className="flex h-16 shrink-0 items-center gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
@@ -565,27 +566,25 @@ export default function Console() {
             <Menu className="h-4 w-4" />
           </button>
 
-          <div className="flex min-w-0 items-center gap-2">
-            <span className="text-[12px] font-semibold text-slate-800">Harness Copilot</span>
-            <span className="rounded-full border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[8px] font-semibold uppercase tracking-[0.12em] text-violet-700">
-              Demo
-            </span>
+          <div className="flex min-w-0 items-center gap-2.5">
+            <span className="text-[13.5px] font-semibold text-slate-900">Harness Copilot</span>
+            <span className="hidden text-[11px] text-slate-500 sm:inline">Workspace</span>
           </div>
 
-          <div className="ml-auto flex items-center gap-1.5">
+          <div className="ml-auto flex items-center gap-2">
             <Link
               to="/docs"
-              className="hidden items-center gap-1.5 rounded-md px-2 py-1.5 text-[10.5px] text-slate-600 hover:bg-slate-100 hover:text-slate-900 sm:flex"
+              className="hidden items-center gap-1.5 rounded-md px-2.5 py-2 text-[12px] font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 sm:flex"
             >
-              <BookOpen className="h-3 w-3" />
+              <BookOpen className="h-3.5 w-3.5" />
               Guide
             </Link>
             <Link
               to="/"
-              className="hidden rounded-lg p-1.5 text-slate-500 hover:text-slate-800 sm:block"
+              className="hidden rounded-md p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 sm:block"
               aria-label="Back to website"
             >
-              <ArrowLeft className="h-3.5 w-3.5" />
+              <ArrowLeft className="h-4 w-4" />
             </Link>
           </div>
         </header>
@@ -595,36 +594,36 @@ export default function Console() {
             {!activeConversation || activeConversation.messages.length === 0 ? (
               <div className="animate-rise my-auto py-10">
                 <div className="mx-auto max-w-xl text-center">
-                  <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm">
-                    <LogoMark className="h-7 w-7" />
+                  <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-xl border border-slate-200 bg-[#fbfcfe]">
+                    <LogoMark className="h-8 w-8" />
                   </div>
-                  <h1 className="text-[30px] font-semibold tracking-[-0.035em] text-slate-900 sm:text-[34px]">
+                  <span className="eyebrow eyebrow--plain">New conversation</span>
+                  <h1 className="mt-4 text-[34px] font-semibold leading-[1.08] tracking-[-0.045em] text-slate-900 sm:text-[42px]">
                     What would you like to build?
                   </h1>
-                  <p className="mx-auto mt-2.5 max-w-md text-[13.5px] leading-relaxed text-slate-500">
+                  <p className="mx-auto mt-3 max-w-md text-[14.5px] leading-[1.7] text-slate-600">
                     Describe a change in your own words. Harness Copilot will talk it through and
                     help you decide what to do next.
                   </p>
-                  <div className="mx-auto mt-3 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-[10px] font-medium text-slate-500">
-                    <Sparkles className="h-2.5 w-2.5 text-violet-600" />
-                    Demo workspace · replies are simulated
-                  </div>
+                  <p className="mt-3 text-[11.5px] text-slate-600">
+                    Early preview · Responses are simulated
+                  </p>
                 </div>
 
-                <div className="mx-auto mt-8 grid max-w-xl gap-2 sm:grid-cols-2">
+                <div className="mx-auto mt-9 grid max-w-xl gap-2.5 sm:grid-cols-2">
                   {suggestions.map((suggestion, index) => (
                     <button
                       key={suggestion}
                       type="button"
                       onClick={() => void send(suggestion)}
                       style={{ animationDelay: `${120 + index * 65}ms` }}
-                      className="stream-in group rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:border-violet-200 hover:bg-violet-50"
+                      className="stream-in group rounded-lg border border-slate-200 bg-white p-4 text-left transition hover:border-violet-300 hover:bg-violet-50/50"
                     >
-                      <div className="flex items-start gap-2">
-                        <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border border-slate-200 bg-slate-50 text-slate-500 transition group-hover:text-violet-700">
-                          <span className="text-[8px]">↗</span>
+                      <div className="flex items-start gap-2.5">
+                        <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md border border-slate-200 bg-slate-50 text-slate-500 transition group-hover:border-violet-200 group-hover:text-violet-700">
+                          <ArrowUpRight className="h-3 w-3" />
                         </span>
-                                                  <span className="text-[12.5px] leading-relaxed text-slate-600 group-hover:text-slate-800">
+                        <span className="text-[13px] leading-[1.6] text-slate-700 transition group-hover:text-slate-900">
                           {suggestion}
                         </span>
                       </div>
@@ -647,9 +646,9 @@ export default function Console() {
           </div>
         </div>
 
-        <div className="shrink-0 border-t border-slate-200 bg-[#f7f8fb]">
-          <div className="mx-auto w-full max-w-3xl px-4 py-3">
-            <div className="rounded-2xl border border-slate-200 bg-white px-3 py-2.5 shadow-[0_-10px_40px_-30px_rgba(15,23,42,0.15)] transition focus-within:border-violet-300 focus-within:shadow-[0_8px_30px_-20px_rgba(15,23,42,0.25)]">
+        <div className="shrink-0 border-t border-slate-200 bg-[#fbfcfe]">
+          <div className="mx-auto w-full max-w-3xl px-4 py-3.5">
+            <div className="rounded-xl border border-slate-300 bg-white px-3.5 py-3 shadow-[0_-8px_30px_-26px_rgba(15,23,42,0.2)] transition focus-within:border-violet-400 focus-within:shadow-[0_8px_30px_-22px_rgba(15,23,42,0.28)]">
               <textarea
                 ref={textareaRef}
                 value={input}
@@ -661,13 +660,13 @@ export default function Console() {
                   }
                 }}
                 rows={1}
-                placeholder="Ask Harness Copilot to change, fix or explain something…"
-                className="max-h-[180px] w-full resize-none bg-transparent px-0.5 py-0.5 text-[13px] leading-relaxed text-slate-800 outline-none placeholder:text-slate-400"
+                placeholder="Ask Copilot to change, fix or explain something…"
+                className="max-h-[180px] w-full resize-none overflow-hidden bg-transparent px-0.5 py-0.5 text-[14px] leading-[1.7] text-slate-800 outline-none placeholder:text-slate-500"
                 aria-label="Message Harness Copilot"
               />
 
-              <div className="mt-2 flex items-center justify-end gap-1">
-                <span className="mr-auto hidden text-[9.5px] text-slate-400 sm:block">
+              <div className="mt-2 flex items-center justify-end gap-2">
+                <span className="mr-auto hidden text-[11px] text-slate-600 sm:block">
                   No special commands needed.
                 </span>
                 {isStreaming ? (
@@ -676,7 +675,7 @@ export default function Console() {
                     onClick={() => {
                       cancelledRef.current = true;
                     }}
-                    className="ml-1 flex h-7 items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-100 px-2 text-[10px] text-slate-700 hover:bg-slate-200"
+                    className="ml-1 flex h-8 items-center gap-1.5 rounded-md border border-slate-300 bg-slate-100 px-2.5 text-[11px] font-medium text-slate-700 hover:bg-slate-200"
                   >
                     <Square className="h-2.5 w-2.5 fill-current" />
                     Stop
@@ -686,18 +685,18 @@ export default function Console() {
                     type="button"
                     onClick={submit}
                     disabled={!input.trim()}
-                    className="ml-1 flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-sky-500 to-violet-600 text-white transition hover:brightness-110 disabled:opacity-30"
+                    className="flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br from-sky-600 to-violet-700 text-white transition hover:brightness-110 disabled:opacity-30"
                     aria-label="Send message"
                   >
-                    <Send className="h-3 w-3" />
+                    <Send className="h-3.5 w-3.5" />
                   </button>
                 )}
               </div>
             </div>
 
-            <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1 px-1 text-[9px] text-slate-400">
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-1.5 px-1 text-[10.5px] text-slate-600">
               <span>Enter to send · Shift+Enter for a new line</span>
-              <span>Harness Copilot demo · replies are simulated</span>
+              <span>Early preview · Responses are simulated</span>
             </div>
           </div>
         </div>

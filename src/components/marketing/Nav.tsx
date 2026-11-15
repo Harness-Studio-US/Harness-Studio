@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { ArrowUpRight, Menu, X } from "lucide-react";
+import { ArrowRight, Menu, X } from "lucide-react";
 import { Logo } from "../Logo";
 import { LegalLinks } from "../LegalLinks";
 import { cn } from "../../lib/cn";
 
 const links = [
-  { label: "Products", to: "/#products" },
+  { label: "Product", to: "/#product" },
   { label: "How it works", to: "/#how-it-works" },
   { label: "Company", to: "/#company" },
   { label: "Guide", to: "/docs" },
@@ -19,7 +19,7 @@ export function Nav() {
   const location = useLocation();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 12);
+    const onScroll = () => setScrolled(window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -32,46 +32,44 @@ export function Nav() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 border-b transition-colors duration-300",
-        scrolled || open
-          ? "border-slate-900/[0.07] bg-[#f8f8f6]/90 backdrop-blur-xl"
-          : "border-transparent bg-transparent"
+        "fixed inset-x-0 top-0 z-50 border-b bg-paper/95 backdrop-blur-xl transition-shadow",
+        scrolled || open ? "border-line shadow-[0_1px_0_rgba(23,21,15,0.02)]" : "border-transparent"
       )}
     >
-      <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-6 px-5 lg:px-8">
+      <div className="container-site flex h-[76px] items-center justify-between gap-6">
         <Link to="/" className="shrink-0" aria-label="Harness Studio home">
           <Logo markClassName="h-8 w-8" />
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex" aria-label="Main navigation">
+        <nav className="hidden items-center gap-1 lg:flex" aria-label="Main navigation">
           {links.map((link) => (
             <Link
               key={link.label}
               to={link.to}
-              className="rounded-full px-3.5 py-2 text-[13.5px] font-medium text-slate-600 transition hover:bg-white hover:text-slate-950"
+              className="rounded-md px-3 py-2 text-[13.5px] font-medium text-muted transition hover:bg-white/70 hover:text-ink"
             >
               {link.label}
             </Link>
           ))}
         </nav>
 
-        <div className="hidden items-center gap-5 md:flex">
+        <div className="hidden items-center gap-5 lg:flex">
           <Link
             to="/get-started"
-            className="text-[13.5px] font-medium text-slate-600 transition hover:text-slate-950"
+            className="text-[13.5px] font-medium text-muted transition hover:text-ink"
           >
-            Get started
+            Contact
           </Link>
           <Link to="/console" className="btn-primary h-10 px-4 text-[13px]">
-            Try the demo
-            <ArrowUpRight className="h-3.5 w-3.5" />
+            Open Copilot
+            <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
 
         <button
           type="button"
-          className="rounded-lg border border-slate-300/80 bg-white/60 p-2.5 text-slate-700 md:hidden"
-          onClick={() => setOpen((v) => !v)}
+          className="rounded-lg border border-line bg-surface p-2.5 text-ink lg:hidden"
+          onClick={() => setOpen((value) => !value)}
           aria-label={open ? "Close menu" : "Open menu"}
           aria-expanded={open}
         >
@@ -80,28 +78,29 @@ export function Nav() {
       </div>
 
       {open && (
-        <div className="border-t border-slate-200 bg-[#f8f8f6]/95 px-5 py-4 backdrop-blur-xl md:hidden">
-          <nav className="flex flex-col gap-1" aria-label="Mobile navigation">
+        <div className="border-t border-line bg-paper px-5 pb-5 pt-3 lg:hidden">
+          <nav className="flex flex-col" aria-label="Mobile navigation">
             {links.map((link) => (
               <Link
                 key={link.label}
                 to={link.to}
-                className="rounded-lg px-3 py-2.5 text-[15px] text-slate-700 hover:bg-white hover:text-slate-950"
+                className="border-b border-line/70 py-3 text-[15px] font-medium text-ink"
               >
                 {link.label}
               </Link>
             ))}
             <Link
               to="/get-started"
-              className="mt-2 rounded-lg px-3 py-2.5 text-[15px] text-slate-700 hover:bg-white hover:text-slate-950"
+              className="border-b border-line/70 py-3 text-[15px] font-medium text-ink"
             >
-              Get started
+              Contact
             </Link>
-            <Link to="/console" className="btn-primary mt-2 h-11 px-4 text-sm">
-              Try the demo
-            </Link>
-            <LegalLinks className="mt-4 px-3" />
           </nav>
+          <Link to="/console" className="btn-primary mt-5 h-11 w-full px-4 text-sm">
+            Open Harness Copilot
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+          <LegalLinks className="mt-4" />
         </div>
       )}
     </header>

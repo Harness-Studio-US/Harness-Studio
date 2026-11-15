@@ -170,7 +170,7 @@ export function DevToolsTab() {
     const latency = Math.round(performance.now() - started);
     const sample = JSON.stringify(
       {
-        id: `chatcmpl_demo_${Math.random().toString(36).slice(2, 8)}`,
+        id: `chatcmpl_preview_${Math.random().toString(36).slice(2, 8)}`,
         object: "chat.completion",
         model: settings.model,
         choices: [
@@ -590,7 +590,7 @@ export function DevToolsTab() {
           <div className="rounded-xl border border-slate-200 bg-white p-3.5">
             <div className="mb-3 flex items-center justify-between">
               <span className="text-[11.5px] font-medium text-slate-800">Token usage</span>
-              <span className="text-[9px] text-slate-400">last 30 days · demo</span>
+              <span className="text-[9px] text-slate-400">last 30 days · preview</span>
             </div>
             <div className="flex h-24 items-end gap-[3px]">
               {series.map((day, index) => (

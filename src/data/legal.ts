@@ -41,7 +41,7 @@ export const privacyPolicy: LegalDocument = {
         },
         {
           type: "p",
-          text: `Your Copilot conversations and workspace preferences are stored in your browser's localStorage, scoped to your account on that browser. They are not uploaded to a Harness Studio server. Demo replies are generated locally and are simulated. Firebase may store a session token in your browser so that you remain signed in.`,
+          text: `Your Copilot conversations and workspace preferences are stored in your browser's localStorage, scoped to your account on that browser. They are not uploaded to a Harness Studio server. Preview replies are generated locally and are simulated. Firebase may store a session token in your browser so that you remain signed in.`,
         },
         {
           type: "p",

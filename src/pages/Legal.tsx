@@ -1,8 +1,8 @@
 import { Fragment, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowUp, ChevronDown, FileText, Mail, ShieldCheck } from "lucide-react";
-import { Footer } from "../components/marketing/Footer";
 import { Nav } from "../components/marketing/Nav";
+import { Footer } from "../components/marketing/Footer";
 import {
   privacyPolicy,
   termsOfService,
@@ -23,7 +23,7 @@ function EmailText({ text }: { text: string }) {
           {index < parts.length - 1 && (
             <a
               href={`mailto:${EMAIL}`}
-              className="text-violet-700 underline decoration-violet-400/30 underline-offset-2 hover:text-violet-700"
+              className="font-medium text-accent-strong underline decoration-[#C4B5FD] underline-offset-2 hover:text-ink"
             >
               {EMAIL}
             </a>
@@ -36,13 +36,11 @@ function EmailText({ text }: { text: string }) {
 
 function Block({ block }: { block: LegalBlock }) {
   if (block.type === "h3") {
-    return (
-      <h3 className="pt-2 text-[13.5px] font-semibold text-slate-900">{block.text}</h3>
-    );
+    return <h3 className="pt-2 text-[15.5px] font-semibold text-ink">{block.text}</h3>;
   }
   if (block.type === "list") {
     return (
-      <ul className="list-disc space-y-1.5 pl-5 text-[12.5px] leading-relaxed text-slate-600 marker:text-violet-600/70">
+      <ul className="list-disc space-y-2 pl-5 text-[15px] leading-[1.8] text-ink-soft marker:text-accent">
         {block.items.map((item) => (
           <li key={item}>
             <EmailText text={item} />
@@ -52,7 +50,7 @@ function Block({ block }: { block: LegalBlock }) {
     );
   }
   return (
-    <p className="text-[12.5px] leading-[1.85] text-slate-600">
+    <p className="text-[15px] leading-[1.85] text-ink-soft">
       <EmailText text={block.text} />
     </p>
   );
@@ -71,9 +69,9 @@ function TocList({ sections }: { sections: LegalSection[] }) {
           key={section.id}
           type="button"
           onClick={() => scrollToSection(section.id)}
-          className="flex w-full items-start gap-2 rounded-md px-2.5 py-2 text-left text-[11px] leading-snug text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+          className="flex w-full items-start gap-2.5 rounded-md px-2.5 py-2 text-left text-[12.5px] leading-snug text-muted transition hover:bg-[#F1F5F9] hover:text-ink"
         >
-          <span className="mt-px font-mono text-[9px] text-slate-400">
+          <span className="mt-0.5 font-mono text-[10px] text-[#475569]">
             {String(index + 1).padStart(2, "0")}
           </span>
           <span>{section.title}</span>
@@ -90,70 +88,70 @@ function LegalPage({ doc, kind }: { doc: LegalDocument; kind: "privacy" | "terms
       : { label: "Privacy Policy", to: "/privacy" };
 
   useEffect(() => {
-    window.document.title = `${doc.title} — Harness Copilot`;
+    window.document.title = `${doc.title} — Harness Studio`;
   }, [doc.title]);
 
   return (
-    <div className="min-h-screen bg-[#f8f8f6] text-slate-800">
+    <div className="min-h-screen bg-paper text-ink">
       <Nav />
-      <main className="relative overflow-hidden pb-24 pt-28">
-        <div className="grid-bg absolute inset-x-0 top-0 h-[420px]" />
-        <div className="glow-orb left-[8%] top-10 h-64 w-64 bg-violet-300/25" />
-        <div className="relative mx-auto max-w-7xl px-5 lg:px-8">
-          <div className="max-w-3xl">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10.5px] text-slate-600">
+
+      <main className="pb-20 pt-28 lg:pt-32">
+        <div className="container-site">
+          <header className="max-w-[900px] border-b border-line pb-9">
+            <span className="eyebrow">
               {kind === "privacy" ? (
-                <ShieldCheck className="h-3 w-3 text-emerald-600" />
+                <ShieldCheck className="h-3.5 w-3.5" />
               ) : (
-                <FileText className="h-3 w-3 text-violet-600" />
+                <FileText className="h-3.5 w-3.5" />
               )}
               {doc.eyebrow}
             </span>
-            <h1 className="mt-4 text-4xl font-extrabold tracking-[-0.035em] text-slate-900 sm:text-5xl">
+            <h1 className="mt-6 text-[46px] font-semibold leading-[1.02] tracking-[-0.05em] text-ink sm:text-[60px]">
               {doc.title}
             </h1>
-            <p className="mt-4 max-w-2xl text-[13.5px] leading-relaxed text-slate-600">
+            <p className="mt-5 max-w-[720px] text-[16.5px] leading-[1.8] text-muted">
               {doc.summary}
             </p>
-            <div className="mt-5 flex flex-wrap items-center gap-3 text-[10.5px] text-slate-500">
-              <span className="rounded-full border border-slate-200 bg-white px-2.5 py-1">
-                Effective {doc.effective}
-              </span>
-              <span className="hidden h-3 w-px bg-slate-200 sm:block" />
-              <Link to={other.to} className="hover:text-slate-800">
-                Also read {other.label} →
+            <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[12.5px] text-muted">
+              <span>Effective {doc.effective}</span>
+              <span className="h-3 w-px bg-[#CBD5E1]" aria-hidden />
+              <Link
+                to={other.to}
+                className="font-medium text-ink underline decoration-[#94A3B8] underline-offset-3 hover:decoration-ink"
+              >
+                Also read {other.label}
               </Link>
             </div>
-          </div>
+          </header>
 
-          <details className="group mt-8 rounded-xl border border-slate-200 bg-white lg:hidden">
-            <summary className="flex cursor-pointer list-none items-center justify-between px-3.5 py-3 text-[11.5px] font-medium text-slate-700 [&::-webkit-details-marker]:hidden">
+          <details className="group mt-6 rounded-lg border border-line bg-surface lg:hidden">
+            <summary className="flex cursor-pointer list-none items-center justify-between px-4 py-3.5 text-[13px] font-semibold text-ink [&::-webkit-details-marker]:hidden">
               On this page
-              <ChevronDown className="h-3.5 w-3.5 text-slate-500 transition group-open:rotate-180" />
+              <ChevronDown className="h-4 w-4 text-muted transition group-open:rotate-180" />
             </summary>
-            <div className="border-t border-slate-200 p-2">
+            <div className="border-t border-line p-2">
               <TocList sections={doc.sections} />
             </div>
           </details>
 
-          <div className="mt-10 grid gap-10 lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-14">
+          <div className="mt-10 grid gap-12 lg:grid-cols-[230px_minmax(0,760px)] lg:gap-16">
             <aside className="hidden lg:block">
-              <div className="sticky top-24">
-                <div className="mb-2 px-2.5 text-[9.5px] font-semibold uppercase tracking-[0.16em] text-slate-400">
+              <div className="sticky top-28">
+                <div className="mb-3 px-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted">
                   On this page
                 </div>
                 <TocList sections={doc.sections} />
-                <div className="mt-6 rounded-xl border border-slate-200 bg-white p-3">
-                  <div className="flex items-center gap-1.5 text-[11px] font-medium text-slate-700">
-                    <Mail className="h-3 w-3 text-violet-600" />
+                <div className="mt-7 rounded-lg border border-line bg-surface p-4">
+                  <div className="flex items-center gap-2 text-[12.5px] font-semibold text-ink">
+                    <Mail className="h-3.5 w-3.5 text-accent" />
                     Questions?
                   </div>
-                  <p className="mt-1 text-[10.5px] leading-relaxed text-slate-400">
-                    Contact the Service Provider about this policy.
+                  <p className="mt-2 text-[12px] leading-[1.65] text-muted">
+                    Contact the studio about this {kind === "privacy" ? "policy" : "agreement"}.
                   </p>
                   <a
                     href={`mailto:${EMAIL}`}
-                    className="mt-2 block break-all text-[10px] text-violet-700 hover:text-violet-700"
+                    className="mt-2.5 block break-all text-[11.5px] font-medium text-accent-strong hover:underline"
                   >
                     {EMAIL}
                   </a>
@@ -161,22 +159,22 @@ function LegalPage({ doc, kind }: { doc: LegalDocument; kind: "privacy" | "terms
               </div>
             </aside>
 
-            <article className="min-w-0 max-w-3xl">
-              <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+            <article className="min-w-0 max-w-[760px]">
+              <div className="space-y-4 rounded-lg border border-line bg-surface p-5 sm:p-6">
                 {doc.intro.map((paragraph) => (
-                  <p key={paragraph} className="text-[12.5px] leading-[1.85] text-slate-600">
+                  <p key={paragraph} className="text-[15px] leading-[1.85] text-ink-soft">
                     <EmailText text={paragraph} />
                   </p>
                 ))}
               </div>
 
-              <div className="mt-2 divide-y divide-slate-200">
+              <div className="mt-2 divide-y divide-line">
                 {doc.sections.map((section) => (
-                  <section key={section.id} id={section.id} className="scroll-mt-24 py-8">
-                    <h2 className="text-[18px] font-semibold tracking-[-0.02em] text-slate-900">
+                  <section key={section.id} id={section.id} className="scroll-mt-28 py-9">
+                    <h2 className="text-[23px] font-semibold tracking-[-0.025em] text-ink">
                       {section.title}
                     </h2>
-                    <div className="mt-3.5 space-y-3.5">
+                    <div className="mt-4 space-y-4">
                       {section.blocks.map((block, index) => (
                         <Block key={`${section.id}-${index}`} block={block} />
                       ))}
@@ -185,22 +183,22 @@ function LegalPage({ doc, kind }: { doc: LegalDocument; kind: "privacy" | "terms
                 ))}
               </div>
 
-              <div className="mt-8 rounded-2xl border border-slate-200 bg-gradient-to-br from-violet-50 to-transparent p-5">
+              <div className="rounded-lg border border-line bg-[#F5F3FF] p-5 sm:p-6">
                 <div className="flex items-start gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-100">
-                    <Mail className="h-4 w-4 text-violet-700" />
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#E9D5FF] bg-surface">
+                    <Mail className="h-4 w-4 text-accent" />
                   </span>
                   <div>
-                    <div className="text-[12.5px] font-medium text-slate-800">
-                      Contact the Service Provider
+                    <div className="text-[14px] font-semibold text-ink">
+                      Contact Harness Studio
                     </div>
-                    <p className="mt-1 text-[11.5px] leading-relaxed text-slate-500">
+                    <p className="mt-1.5 text-[13px] leading-[1.7] text-muted">
                       Questions about {kind === "privacy" ? "privacy" : "these terms"} can be sent
                       directly to the address below.
                     </p>
                     <a
                       href={`mailto:${EMAIL}`}
-                      className="mt-2 inline-flex break-all text-[12px] text-violet-700 hover:text-violet-700"
+                      className="mt-2.5 inline-flex break-all text-[13px] font-medium text-accent-strong hover:underline"
                     >
                       {EMAIL}
                     </a>
@@ -208,14 +206,17 @@ function LegalPage({ doc, kind }: { doc: LegalDocument; kind: "privacy" | "terms
                 </div>
               </div>
 
-              <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-5">
-                <Link to={other.to} className="text-[11.5px] text-slate-500 hover:text-slate-800">
+              <div className="mt-9 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5">
+                <Link
+                  to={other.to}
+                  className="text-[12.5px] font-medium text-muted hover:text-ink"
+                >
                   {other.label} →
                 </Link>
                 <button
                   type="button"
                   onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[10.5px] text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                  className="inline-flex items-center gap-1.5 rounded-md border border-line bg-surface px-3 py-2 text-[12px] text-muted transition hover:text-ink"
                 >
                   <ArrowUp className="h-3 w-3" />
                   Back to top
@@ -225,6 +226,7 @@ function LegalPage({ doc, kind }: { doc: LegalDocument; kind: "privacy" | "terms
           </div>
         </div>
       </main>
+
       <Footer />
     </div>
   );
