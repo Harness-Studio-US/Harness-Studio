@@ -1,4 +1,5 @@
-import { useEffect, useLayoutEffect, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useLocation } from "react-router-dom";
 import { Logo } from "./Logo";
 import { cn } from "../lib/cn";
 
@@ -37,6 +38,30 @@ function LoadingScreen({ leaving }: { leaving: boolean }) {
   );
 }
 
+function RouteLoadingScreen() {
+  const location = useLocation();
+  const previousPath = useRef(location.pathname);
+  const [active, setActive] = useState(false);
+  const [leaving, setLeaving] = useState(false);
+
+  useLayoutEffect(() => {
+    if (previousPath.current === location.pathname) return;
+    previousPath.current = location.pathname;
+    setActive(true);
+    setLeaving(false);
+
+    const fadeTimer = window.setTimeout(() => setLeaving(true), 550);
+    const removeTimer = window.setTimeout(() => setActive(false), 850);
+
+    return () => {
+      window.clearTimeout(fadeTimer);
+      window.clearTimeout(removeTimer);
+    };
+  }, [location.pathname]);
+
+  return active ? <LoadingScreen leaving={leaving} /> : null;
+}
+
 export function LoadingGate({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [leaving, setLeaving] = useState(false);
@@ -55,6 +80,7 @@ export function LoadingGate({ children }: { children: ReactNode }) {
     <>
       {children}
       {loading && <LoadingScreen leaving={leaving} />}
+      {!loading && <RouteLoadingScreen />}
     </>
   );
 }

@@ -8,12 +8,12 @@ import "../src/styles.css";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <LoadingGate>
-      <HashRouter>
-        <SettingsProvider>
+    <HashRouter>
+      <SettingsProvider>
+        <LoadingGate>
           <App />
-        </SettingsProvider>
-      </HashRouter>
-    </LoadingGate>
+        </LoadingGate>
+      </SettingsProvider>
+    </HashRouter>
   </React.StrictMode>
 );
