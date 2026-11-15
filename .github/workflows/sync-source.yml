@@ -1,0 +1,44 @@
+name: Sync source from studio archive
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download and apply source
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 5 --retry-delay 3 \
+            "https://site-d219f67dd7394859a5770eea41cc4020.freebuff.page/source.tar.gz?v=ad6379ab1dccdea7bcc9e64f19fa4e2f9c466fcc0103e5e6f476537b6ca8b122" \
+            -o /tmp/harness-source.tar.gz
+          rm -rf /tmp/harness-source
+          mkdir -p /tmp/harness-source
+          tar -xzf /tmp/harness-source.tar.gz -C /tmp/harness-source
+          rsync -a --delete \
+            --exclude='.git' \
+            --exclude='.github' \
+            /tmp/harness-source/ ./
+
+      - name: Commit the button loading update
+        run: |
+          set -euo pipefail
+          git config user.name "Harness Studio"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm --ignore-unmatch .github/workflows/sync-source.yml
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No source changes"
+            exit 0
+          fi
+          git commit -m "Show the loading screen for CTA buttons"
+          git push origin HEAD:main
