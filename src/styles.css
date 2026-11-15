@@ -50,6 +50,23 @@ body {
   outline-offset: 3px;
 }
 
+.grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(15, 23, 42, 0.055) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(15, 23, 42, 0.055) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 85% 70% at 50% 0%, black 20%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse 85% 70% at 50% 0%, black 20%, transparent 78%);
+}
+
+.glow-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+  pointer-events: none;
+  opacity: 0.7;
+}
+
 /* The composer wrapper shows focus with its own border and shadow. */
 .composer-input:focus-visible {
   outline: none;
@@ -331,6 +348,54 @@ input[type="range"]::-moz-range-thumb {
   .ai-step-in,
   .ai-guide-in {
     animation: none !important;
+  }
+}
+
+.site-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #f8f8f6;
+  opacity: 1;
+  visibility: visible;
+  animation: site-loader-fade-in 180ms ease-out;
+  transition: opacity 350ms ease, visibility 350ms ease;
+}
+
+@keyframes site-loader-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.site-loader--leaving {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.site-loader__progress {
+  animation: site-loader-sweep 1.15s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes site-loader-sweep {
+  0% { transform: translateX(-140%); }
+  100% { transform: translateX(300%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-loader {
+    animation: none;
+    transition: none;
+  }
+
+  .site-loader__progress {
+    width: 100%;
+    animation: none;
+    opacity: 0.55;
   }
 }
 
