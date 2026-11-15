@@ -115,8 +115,8 @@ export default function GetStarted() {
 
             <div className="mt-8 rounded-xl border border-slate-200 bg-[#fbfbf9] p-4">
               <p className="text-[11.5px] leading-relaxed text-slate-500">
-                Want to see the conversation first? The demo is open to everyone and needs no
-                account.
+                Want to see the conversation first? The demo opens with a quick sign-in and a
+                browser connection.
               </p>
               <Link
                 to="/console"

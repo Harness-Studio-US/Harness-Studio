@@ -315,7 +315,7 @@ export default function Landing() {
                       </Link>
                     </div>
                     <p className="mt-4 text-[11.5px] text-slate-500">
-                      No account needed. Changes in the demo are simulated.
+                      A quick demo sign-in. Changes in the demo are simulated.
                     </p>
                   </div>
 
@@ -679,7 +679,7 @@ export default function Landing() {
                 </a>
               </div>
               <p className="mt-5 text-[11px] text-zinc-500">
-                No account required. The interactive demo runs in your browser.
+                A quick demo sign-in. The interactive demo runs in your browser.
               </p>
             </div>
           </div>

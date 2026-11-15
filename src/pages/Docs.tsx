@@ -194,7 +194,7 @@ export default function Docs() {
                 Have the project you want to work on open in Harness Studio.
               </Step>
               <Step number="2" title="Open the chat">
-                Go to the AI in your browser. No account is needed for the demo.
+                Go to the AI in your browser. A quick demo sign-in gets you into the chat.
               </Step>
               <Step number="3" title="Say what you want">
                 Describe the change in a sentence. Harness will take it from there.

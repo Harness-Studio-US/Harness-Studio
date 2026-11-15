@@ -3,19 +3,34 @@ import { Link } from "react-router-dom";
 import {
   ArrowLeft,
   BookOpen,
+  LogOut,
   Menu,
+  PlugZap,
   Plus,
   Search,
   Send,
   Square,
   Trash2,
+  Wifi,
+  WifiOff,
   X,
 } from "lucide-react";
 import { ChatMessageView } from "../components/console/ChatMessageView";
+import { AiLogin, BrowserConnect, FirstRunGuide } from "../components/console/AiOnboarding";
 import { Logo, LogoMark } from "../components/Logo";
 import { LegalLinks } from "../components/LegalLinks";
 import { streamAssistant, titleForConversation, type ChatMessage } from "../lib/chat";
 import { estimateTokens, useSettings } from "../lib/settings";
+import {
+  clearAiSession,
+  hasSeenAiGuide,
+  loadAiSession,
+  markAiGuideSeen,
+  saveAiSession,
+  type AiSession,
+  type AiUser,
+  type BrowserConnection,
+} from "../lib/aiSession";
 import { cn } from "../lib/cn";
 
 type Conversation = {
@@ -73,6 +88,8 @@ function formatRelative(timestamp: number): string {
 
 export default function Console() {
   const { settings, logRequest } = useSettings();
+  const [session, setSession] = useState<AiSession | null>(loadAiSession);
+  const [guideOpen, setGuideOpen] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>(loadConversations);
   const [activeId, setActiveId] = useState<string>("");
   const [input, setInput] = useState("");
@@ -84,8 +101,22 @@ export default function Console() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    document.title = "Harness Studio AI — Interactive demo";
-  }, []);
+    document.title = !session
+      ? "Sign in — Harness Studio AI"
+      : !session.connection
+        ? "Connect this browser — Harness Studio AI"
+        : "Harness Studio AI — Browser chat";
+  }, [session]);
+
+  useEffect(() => {
+    if (!session?.connection) {
+      setGuideOpen(false);
+      return;
+    }
+    if (hasSeenAiGuide()) return;
+    const timer = window.setTimeout(() => setGuideOpen(true), 700);
+    return () => window.clearTimeout(timer);
+  }, [session?.connection]);
 
   const activeConversation =
     conversations.find((conversation) => conversation.id === activeId) ?? conversations[0] ?? null;
@@ -294,10 +325,61 @@ export default function Console() {
     if (activeId === id) setActiveId(remaining[0].id);
   }
 
+  function signIn(user: AiUser) {
+    const nextSession: AiSession = { user, connection: null, signedInAt: Date.now() };
+    saveAiSession(nextSession);
+    setSession(nextSession);
+    setSidebarOpen(false);
+  }
+
+  function finishConnection(connection: BrowserConnection) {
+    if (!session) return;
+    const nextSession: AiSession = { ...session, connection };
+    saveAiSession(nextSession);
+    setSession(nextSession);
+  }
+
+  function connectBrowser() {
+    if (!session) return;
+    const nextSession: AiSession = { ...session, connection: null };
+    saveAiSession(nextSession);
+    setSession(nextSession);
+    setGuideOpen(false);
+  }
+
+  function signOut() {
+    cancelledRef.current = true;
+    clearAiSession();
+    setSession(null);
+    setGuideOpen(false);
+    setSidebarOpen(false);
+  }
+
+  function dismissGuide() {
+    markAiGuideSeen();
+    setGuideOpen(false);
+  }
+
   const filteredConversations = conversations.filter((conversation) =>
     conversation.title.toLowerCase().includes(query.trim().toLowerCase())
   );
   const isStreaming = streaming !== null;
+  const browserConnected = session?.connection === "connected";
+  const userInitial = session?.user.name.trim().charAt(0).toUpperCase() || "H";
+
+  if (!session) {
+    return <AiLogin onLogin={signIn} />;
+  }
+
+  if (!session.connection) {
+    return (
+      <BrowserConnect
+        user={session.user}
+        onDone={(connected) => finishConnection(connected ? "connected" : "skipped")}
+        onChangeAccount={signOut}
+      />
+    );
+  }
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#f8f8f6] text-slate-800">
@@ -404,21 +486,65 @@ export default function Console() {
         </div>
 
         <div className="space-y-2.5 border-t border-slate-200 p-2.5">
-          <div className="rounded-lg border border-slate-200 bg-white p-3">
+          <div className="rounded-xl border border-slate-200 bg-white p-3">
             <div className="flex items-center gap-1.5 text-[10.5px] font-medium text-slate-700">
-              <span className="h-1.5 w-1.5 rounded-full bg-violet-400" />
-              Interactive demo
+              {browserConnected ? (
+                <Wifi className="h-3 w-3 text-emerald-600" />
+              ) : (
+                <WifiOff className="h-3 w-3 text-amber-600" />
+              )}
+              <span>{browserConnected ? "Browser connected" : "Not connected"}</span>
+              <span
+                className={cn(
+                  "ml-auto h-1.5 w-1.5 rounded-full",
+                  browserConnected
+                    ? "ai-live-dot bg-emerald-500 text-emerald-500"
+                    : "bg-amber-400"
+                )}
+              />
             </div>
-            <p className="mt-1 text-[10px] leading-relaxed text-slate-400">
-              A guided look at the conversation. No account needed.
+            <p className="mt-1 text-[9.5px] leading-relaxed text-slate-400">
+              {browserConnected
+                ? "This browser is linked. Your chat can continue here next time."
+                : "You can keep chatting. Connect whenever you want the browser remembered."}
             </p>
+
+            <div className="mt-2.5 flex items-center gap-2 border-t border-slate-100 pt-2.5">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-[9px] font-semibold text-slate-600">
+                {userInitial}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-[9.5px] text-slate-500">
+                {session.user.email}
+              </span>
+            </div>
+
+            <div className="mt-2 flex gap-1.5">
+              {!browserConnected && (
+                <button
+                  type="button"
+                  onClick={connectBrowser}
+                  className="flex h-7 flex-1 items-center justify-center gap-1 rounded-md border border-slate-200 bg-slate-50 text-[9px] font-medium text-slate-600 transition hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
+                >
+                  <PlugZap className="h-2.5 w-2.5" />
+                  Connect
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={signOut}
+                className="flex h-7 flex-1 items-center justify-center gap-1 rounded-md border border-slate-200 text-[9px] font-medium text-slate-500 transition hover:bg-slate-50 hover:text-slate-800"
+              >
+                <LogOut className="h-2.5 w-2.5" />
+                Sign out
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center justify-between gap-2 px-1 py-0.5">
-            <span className="text-[9.5px] text-slate-400">Conversations stay in this browser.</span>
+            <span className="text-[9px] text-slate-400">Chats stay in this browser.</span>
             <Link
               to="/"
-              className="inline-flex items-center gap-1 rounded p-1 text-[9.5px] text-slate-400 hover:text-slate-700"
+              className="inline-flex items-center gap-1 rounded p-1 text-[9px] text-slate-400 hover:text-slate-700"
             >
               <ArrowLeft className="h-3 w-3" />
               Site
@@ -442,8 +568,25 @@ export default function Console() {
 
           <div className="flex min-w-0 items-center gap-2">
             <span className="text-[12px] font-semibold text-slate-800">Harness Studio AI</span>
-            <span className="rounded-full border border-slate-200 bg-slate-50 px-1.5 py-0.5 text-[9px] font-medium text-slate-500">
-              Demo
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full border px-1.5 py-0.5 text-[9px] font-medium",
+                browserConnected
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                  : "border-amber-200 bg-amber-50 text-amber-700"
+              )}
+              aria-label={browserConnected ? "Browser connected" : "Browser not connected"}
+            >
+              <span
+                className={cn(
+                  "h-1 w-1 rounded-full",
+                  browserConnected ? "bg-emerald-500" : "bg-amber-500"
+                )}
+              />
+              <span className="sm:hidden">{browserConnected ? "Connected" : "Offline"}</span>
+              <span className="hidden sm:inline">
+                {browserConnected ? "Browser connected" : "Not connected"}
+              </span>
             </span>
           </div>
 
@@ -468,7 +611,7 @@ export default function Console() {
         <div ref={threadRef} className="flex-1 overflow-y-auto">
           <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col px-4 py-6">
             {!activeConversation || activeConversation.messages.length === 0 ? (
-              <div className="my-auto py-10">
+              <div className="animate-rise my-auto py-10">
                 <div className="mx-auto max-w-xl text-center">
                   <div className="mx-auto mb-5 flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <LogoMark className="h-7 w-7" />
@@ -480,19 +623,34 @@ export default function Console() {
                     Describe a change in your own words. Harness will talk it through and show you
                     what it would do in Harness Studio.
                   </p>
-                  <div className="mx-auto mt-3 inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[10px] text-slate-500">
-                    <span className="h-1 w-1 rounded-full bg-violet-400" />
-                    Interactive demo · no account needed
+                  <div
+                    className={cn(
+                      "mx-auto mt-3 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-medium",
+                      browserConnected
+                        ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                        : "border-amber-200 bg-amber-50 text-amber-700"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "h-1 w-1 rounded-full",
+                        browserConnected ? "bg-emerald-500" : "bg-amber-500"
+                      )}
+                    />
+                    {browserConnected
+                      ? "Browser connected · ready when you are"
+                      : "Chatting without a browser connection"}
                   </div>
                 </div>
 
                 <div className="mx-auto mt-8 grid max-w-xl gap-2 sm:grid-cols-2">
-                  {suggestions.map((suggestion) => (
+                  {suggestions.map((suggestion, index) => (
                     <button
                       key={suggestion}
                       type="button"
                       onClick={() => void send(suggestion)}
-                      className="group rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:border-violet-200 hover:bg-violet-50"
+                      style={{ animationDelay: `${120 + index * 65}ms` }}
+                      className="stream-in group rounded-xl border border-slate-200 bg-white p-3 text-left transition hover:border-violet-200 hover:bg-violet-50"
                     >
                       <div className="flex items-start gap-2">
                         <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded border border-slate-200 bg-slate-50 text-slate-500 transition group-hover:text-violet-700">
@@ -509,11 +667,12 @@ export default function Console() {
             ) : (
               <div className="space-y-6">
                 {activeConversation.messages.map((message) => (
-                  <ChatMessageView
-                    key={message.id}
-                    message={message}
-                    streaming={streaming?.messageId === message.id}
-                  />
+                  <div key={message.id} className="stream-in">
+                    <ChatMessageView
+                      message={message}
+                      streaming={streaming?.messageId === message.id}
+                    />
+                  </div>
                 ))}
               </div>
             )}
@@ -570,12 +729,18 @@ export default function Console() {
 
             <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1 px-1 text-[9px] text-slate-400">
               <span>Enter to send · Shift+Enter for a new line</span>
-              <span>Interactive demo · changes are simulated</span>
+              <span>Browser chat · replies are simulated</span>
             </div>
           </div>
         </div>
       </div>
 
+      <FirstRunGuide
+        open={guideOpen}
+        onClose={dismissGuide}
+        user={session.user}
+        connected={browserConnected}
+      />
     </div>
   );
 }

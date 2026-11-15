@@ -37,7 +37,7 @@ export default function App() {
         <Route path="/brand" element={<Brand />} />
         <Route path="/console" element={<Console />} />
         <Route path="/get-started" element={<GetStarted />} />
-        <Route path="/login" element={<Navigate to="/get-started" replace />} />
+        <Route path="/login" element={<Navigate to="/console" replace />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="*" element={<Navigate to="/" replace />} />
