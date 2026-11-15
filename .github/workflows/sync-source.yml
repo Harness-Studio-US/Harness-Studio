@@ -27,7 +27,7 @@ jobs:
           tar -xzf /tmp/source.tar.gz -C /tmp/source-tree
           rsync -a --delete \
             --exclude='.git/' \
-            --exclude='.github/workflows/sync-source.yml' \
+            --exclude='.github/' \
             /tmp/source-tree/ ./
 
       - name: Commit source
@@ -35,7 +35,6 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git rm -f .github/workflows/sync-source.yml
           git add -A
           git commit -m "Add Firebase Authentication login and update privacy policy"
           git push origin HEAD:main
