@@ -104,7 +104,7 @@ export function Logo({
     <div className={cn("flex items-center gap-2.5", className)}>
       <LogoMark className={cn("h-8 w-8", markClassName)} />
       <div className="flex flex-col leading-none">
-        <span className={cn("text-[18px] font-bold tracking-[-0.03em]", wordmark, textClassName)}>
+        <span className={cn("font-bold tracking-[-0.03em]", wordmark, textClassName || "text-[18px]")}>
           Harness <span className={accent}>Studio</span>
         </span>
         {showTagline && (

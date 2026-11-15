@@ -322,3 +322,44 @@ input[type="range"]::-moz-range-thumb {
   border-radius: 0.3rem;
   color: #6d28d9;
 }
+
+.site-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: #f8f8f6;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 350ms ease, visibility 350ms ease;
+}
+
+.site-loader--leaving {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.site-loader__progress {
+  animation: site-loader-sweep 1.15s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+@keyframes site-loader-sweep {
+  0% { transform: translateX(-140%); }
+  100% { transform: translateX(300%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-loader {
+    transition: none;
+  }
+
+  .site-loader__progress {
+    width: 100%;
+    animation: none;
+    opacity: 0.55;
+  }
+}
