@@ -48,7 +48,7 @@ export default function GetStarted() {
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <a
-                href="mailto:HarnessStudio@Outlook.com?subject=Harness%20Studio%20access"
+                href="mailto:message.harness.studio@outlook.com?subject=Harness%20Studio%20access"
                 className="btn-primary h-12 px-5 text-[14px]"
               >
                 <Mail className="h-4 w-4" />
@@ -63,10 +63,10 @@ export default function GetStarted() {
             <p className="mt-4 text-[12px] text-slate-500">
               Prefer email? Write to{" "}
               <a
-                href="mailto:HarnessStudio@Outlook.com"
+                href="mailto:message.harness.studio@outlook.com"
                 className="font-medium text-slate-700 underline decoration-slate-300 underline-offset-2 hover:text-slate-950"
               >
-                HarnessStudio@Outlook.com
+                message.harness.studio@outlook.com
               </a>
               .
             </p>

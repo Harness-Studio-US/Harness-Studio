@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { cn } from "../lib/cn";
 
-const EMAIL = "HarnessStudio@Outlook.com";
+const EMAIL = "message.harness.studio@outlook.com";
 
 export function LegalLinks({
   className,

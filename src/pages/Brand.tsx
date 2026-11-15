@@ -159,7 +159,7 @@ export default function Brand() {
             <div className="mt-5 rounded-xl border border-slate-200 bg-white p-3.5">
               <div className="text-[11px] font-medium text-slate-700">Need something custom?</div>
               <p className="mt-1 text-[11px] leading-relaxed text-slate-500">
-                For co-marketing, screenshots or a talk, write to HarnessStudio@Outlook.com and tell
+                For co-marketing, screenshots or a talk, write to message.harness.studio@outlook.com and tell
                 us the context.
               </p>
             </div>

@@ -55,7 +55,7 @@ export function Footer() {
                 <ArrowUpRight className="h-3 w-3 text-slate-400" />
               </a>
               <a
-                href="mailto:HarnessStudio@Outlook.com"
+                href="mailto:message.harness.studio@outlook.com"
                 className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 text-[12px] font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-950"
               >
                 <Mail className="h-3.5 w-3.5" />
@@ -83,7 +83,7 @@ export function Footer() {
                 {column.title === "Legal" && (
                   <li>
                     <a
-                      href="mailto:HarnessStudio@Outlook.com"
+                      href="mailto:message.harness.studio@outlook.com"
                       className="text-[13.5px] text-slate-600 transition hover:text-slate-950"
                     >
                       Contact

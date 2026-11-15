@@ -380,7 +380,7 @@ export default function Docs() {
             </p>
             <div className="flex flex-wrap gap-2">
               <a
-                href="mailto:HarnessStudio@Outlook.com?subject=Harness%20Studio%20question"
+                href="mailto:message.harness.studio@outlook.com?subject=Harness%20Studio%20question"
                 className="btn-primary h-9 px-3.5 text-[12px]"
               >
                 Ask us a question

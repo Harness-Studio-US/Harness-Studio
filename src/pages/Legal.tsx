@@ -11,7 +11,7 @@ import {
   type LegalSection,
 } from "../data/legal";
 
-const EMAIL = "HarnessStudio@Outlook.com";
+const EMAIL = "message.harness.studio@outlook.com";
 
 function EmailText({ text }: { text: string }) {
   const parts = text.split(EMAIL);

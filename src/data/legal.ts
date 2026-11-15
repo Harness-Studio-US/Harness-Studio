@@ -73,7 +73,7 @@ export const privacyPolicy: LegalDocument = {
         },
         {
           type: "p",
-          text: `If you contact the Service Provider directly or voluntarily provide information by other means, you may request deletion of that information by contacting HarnessStudio@Outlook.com.`,
+          text: `If you contact the Service Provider directly or voluntarily provide information by other means, you may request deletion of that information by contacting message.harness.studio@outlook.com.`,
         },
       ],
     },
@@ -117,7 +117,7 @@ export const privacyPolicy: LegalDocument = {
         },
         {
           type: "p",
-          text: `Previous versions of this Privacy Policy will be maintained and made available upon request by contacting the Service Provider at HarnessStudio@Outlook.com.`,
+          text: `Previous versions of this Privacy Policy will be maintained and made available upon request by contacting the Service Provider at message.harness.studio@outlook.com.`,
         },
         {
           type: "p",
@@ -141,7 +141,7 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `If you have any questions regarding privacy while using the Application, or have questions about the practices, please contact the Service Provider via email at HarnessStudio@Outlook.com.`,
+          text: `If you have any questions regarding privacy while using the Application, or have questions about the practices, please contact the Service Provider via email at message.harness.studio@outlook.com.`,
         },
       ],
     },
@@ -244,7 +244,7 @@ export const termsOfService: LegalDocument = {
         },
         {
           type: "p",
-          text: `If you believe content violates these Terms, infringes your rights, or is unlawful, you may report it to the Service Provider at HarnessStudio@Outlook.com. The report should include enough information for the Service Provider to identify the content, evaluate the complaint, and contact you if follow-up is required.`,
+          text: `If you believe content violates these Terms, infringes your rights, or is unlawful, you may report it to the Service Provider at message.harness.studio@outlook.com. The report should include enough information for the Service Provider to identify the content, evaluate the complaint, and contact you if follow-up is required.`,
         },
         {
           type: "p",
@@ -252,7 +252,7 @@ export const termsOfService: LegalDocument = {
         },
         {
           type: "p",
-          text: `The Service Provider may review reported content, request additional information where necessary, remove or restrict access to content, and take action against the responsible account where appropriate. Users affected by moderation decisions may contact the Service Provider at HarnessStudio@Outlook.com to request further review. The Service Provider will respond to appeals within a reasonable period and provide the reasons for any upheld moderation decision, subject to applicable law.`,
+          text: `The Service Provider may review reported content, request additional information where necessary, remove or restrict access to content, and take action against the responsible account where appropriate. Users affected by moderation decisions may contact the Service Provider at message.harness.studio@outlook.com to request further review. The Service Provider will respond to appeals within a reasonable period and provide the reasons for any upheld moderation decision, subject to applicable law.`,
         },
         {
           type: "p",
@@ -370,7 +370,7 @@ export const termsOfService: LegalDocument = {
         },
         {
           type: "p",
-          text: `The Service Provider maintains a single point of contact for direct communication with EU authorities and recipients of the service, reachable at HarnessStudio@Outlook.com. Where the Service Provider is established outside the European Union, a legal representative in the EU has been designated in accordance with Article 13 of the DSA.`,
+          text: `The Service Provider maintains a single point of contact for direct communication with EU authorities and recipients of the service, reachable at message.harness.studio@outlook.com. Where the Service Provider is established outside the European Union, a legal representative in the EU has been designated in accordance with Article 13 of the DSA.`,
         },
         {
           type: "h3",
@@ -402,7 +402,7 @@ export const termsOfService: LegalDocument = {
         },
         {
           type: "p",
-          text: `The Service Provider publishes periodic transparency reports covering content moderation activities, including the volume of notices received, actions taken, and automated means used, in accordance with Article 24 of the DSA. Reports are made available upon request at HarnessStudio@Outlook.com.`,
+          text: `The Service Provider publishes periodic transparency reports covering content moderation activities, including the volume of notices received, actions taken, and automated means used, in accordance with Article 24 of the DSA. Reports are made available upon request at message.harness.studio@outlook.com.`,
         },
         {
           type: "p",
@@ -440,7 +440,7 @@ export const termsOfService: LegalDocument = {
         },
         {
           type: "p",
-          text: `Previous versions of these Terms and Conditions will be maintained and made available upon request by contacting the Service Provider at HarnessStudio@Outlook.com.`,
+          text: `Previous versions of these Terms and Conditions will be maintained and made available upon request by contacting the Service Provider at message.harness.studio@outlook.com.`,
         },
         {
           type: "p",
@@ -454,7 +454,7 @@ export const termsOfService: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `If you have any questions or suggestions about the Terms and Conditions, please do not hesitate to contact the Service Provider at HarnessStudio@Outlook.com.`,
+          text: `If you have any questions or suggestions about the Terms and Conditions, please do not hesitate to contact the Service Provider at message.harness.studio@outlook.com.`,
         },
       ],
     },

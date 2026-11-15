@@ -668,7 +668,7 @@ export default function Landing() {
                   <ArrowRight className="h-4 w-4" />
                 </Link>
                 <a
-                  href="mailto:HarnessStudio@Outlook.com?subject=Harness%20Studio"
+                  href="mailto:message.harness.studio@outlook.com?subject=Harness%20Studio"
                   className="inline-flex h-12 items-center justify-center gap-2 rounded-[0.7rem] border border-white/15 bg-white/[0.03] px-5.5 text-[14px] font-medium text-white transition hover:bg-white/[0.08]"
                 >
                   Talk to the team
