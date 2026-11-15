@@ -194,8 +194,8 @@ export default function Docs() {
                 Have the project you want to work on open in your workspace.
               </Step>
               <Step number="2" title="Open Harness Copilot">
-                Open Harness Copilot in your browser. Accept the terms once, and the workspace is
-                ready.
+                Open Harness Copilot and sign in or create an account. Accept the terms once, and
+                the workspace is ready.
               </Step>
               <Step number="3" title="Say what you want">
                 Describe the change in a sentence. Harness Copilot will take it from there.

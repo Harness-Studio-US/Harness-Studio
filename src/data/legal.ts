@@ -9,7 +9,7 @@ export type LegalSection = {
   blocks: LegalBlock[];
 };
 
-export const legalVersion = "2026-11-15";
+export const legalVersion = "2026-11-15-account";
 export const legalEffectiveLabel = "15 November 2026";
 
 export type LegalDocument = {
@@ -37,7 +37,15 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `The Application does not collect, log, or store any personal information when you download and use it. Registration is not required. If the Application is used with an active internet connection, technical protocol data (such as your ephemeral IP address) is transmitted to facilitate network connectivity, but this data is not retained or used for tracking.`,
+          text: `The web version of the Application uses Firebase Authentication, a Google service, to create and sign in to accounts. When you create an account or sign in, Firebase processes your email address, password, and a Firebase user identifier. Harness Studio receives your email address and user identifier but does not receive or store your password. We use this information only to authenticate you, keep you signed in, display your account, and record your acceptance of the Terms & Conditions and this Privacy Policy.`,
+        },
+        {
+          type: "p",
+          text: `Your Copilot conversations and workspace preferences are stored in your browser's localStorage, scoped to your account on that browser. They are not uploaded to a Harness Studio server. Demo replies are generated locally and are simulated. Firebase may store a session token in your browser so that you remain signed in.`,
+        },
+        {
+          type: "p",
+          text: `Firebase and its infrastructure providers may process technical data such as your IP address and browser information to deliver authentication, secure the service, and prevent abuse. We do not use this information for advertising or tracking, and we do not sell personal information.`,
         },
       ],
     },
@@ -58,7 +66,7 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `Since the Application does not collect any information, no data is shared with third parties.`,
+          text: `We do not sell or rent personal information. Authentication is provided by Firebase Authentication, a Google service. Google processes account information on our behalf as a service provider and according to its own terms and privacy policy. We may disclose information if required by law or necessary to protect rights and safety. Conversation content remains in your browser and is not shared by us.`,
         },
       ],
     },
@@ -68,15 +76,11 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `Since the Application does not collect personal information through normal use, uninstalling it simply removes the Application from your device.`,
+          text: `You can sign out at any time. You can delete individual conversations or clear your browser storage to remove local workspace data. Deleting local browser data does not delete your Firebase account.`,
         },
         {
           type: "p",
-          text: `Since the Application does not collect personal information through normal use, ceasing to use the website or closing your browser simply stops the Application from operating.`,
-        },
-        {
-          type: "p",
-          text: `If you contact the Service Provider directly or voluntarily provide information by other means, you may request deletion of that information by contacting message.harness.studio@outlook.com.`,
+          text: `To request deletion of your account and the email address and user identifier associated with it, email message.harness.studio@outlook.com. We will action verified requests within a reasonable period. If you contact the Service Provider directly, you may also request access to or correction of the information you provided.`,
         },
       ],
     },
@@ -86,7 +90,7 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `The Application is not intended for children under 16 years of age, or such higher age as required by applicable law. The Service Provider does not knowingly solicit data from children or market to them. Since the Application does not collect personal information through normal use, children's data is not at risk from use of the Application alone. If you voluntarily provide personal information through other means and are under 16 years of age, your parent or guardian must provide consent on your behalf where permitted by law.`,
+          text: `The Application is not intended for children under 16 years of age, or such higher age as required by applicable law. Do not create an account or use the account features if you are under that age. The Service Provider does not knowingly collect account information from children or market to them. If we learn that an account belongs to a child under the applicable age, we will take reasonable steps to delete the account and associated information. If you believe a child has created an account, contact message.harness.studio@outlook.com.`,
         },
       ],
     },
@@ -96,7 +100,7 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `Because the Application does not collect personal data, the risk of personal data exposure is minimal. However, no security system is completely secure. The Service Provider implements reasonable safeguards to protect systems and any data it holds.`,
+          text: `Account authentication is handled by Firebase Authentication, and account data is transmitted over HTTPS. The Service Provider implements reasonable technical and organisational safeguards to protect the information it holds. No security system is completely secure, so absolute security cannot be guaranteed.`,
         },
       ],
     },
@@ -106,7 +110,7 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `Since the Application does not collect personal data through normal use, the risk of a data breach affecting your personal data is minimal. If a breach occurs involving any data you have voluntarily provided, the Service Provider will notify you as required by applicable law.`,
+          text: `If a data breach occurs that affects your account information, the Service Provider will notify affected users and relevant authorities as required by applicable law.`,
         },
       ],
     },
@@ -124,7 +128,7 @@ export const privacyPolicy: LegalDocument = {
         },
         {
           type: "p",
-          text: `This privacy policy is effective as of ${legalVersion}.`,
+          text: `This privacy policy is effective as of ${legalEffectiveLabel}.`,
         },
       ],
     },
@@ -134,7 +138,7 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `If you voluntarily provide information to the Service Provider and processing is based on consent, you may withdraw that consent at any time without affecting processing carried out before withdrawal.`,
+          text: `Where processing is based on your consent, you may withdraw that consent at any time without affecting processing carried out before withdrawal. Account authentication is necessary to provide the account features; you can stop using those features by signing out and requesting deletion of your account.`,
         },
       ],
     },

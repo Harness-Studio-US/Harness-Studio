@@ -16,11 +16,19 @@ import { Logo, LogoMark } from "../Logo";
 import { cn } from "../../lib/cn";
 import { legalEffectiveLabel } from "../../data/legal";
 
-export function LegalConsent({ onAccept }: { onAccept: () => void }) {
+export function LegalConsent({
+  onAccept,
+  email,
+  onSignOut,
+}: {
+  onAccept: () => void;
+  email?: string | null;
+  onSignOut?: () => void;
+}) {
   const [agreed, setAgreed] = useState(false);
 
   return (
-    <div className="ai-screen-in relative flex min-h-screen flex-col overflow-hidden bg-[#f8f8f6] text-slate-900">
+    <div className="ai-screen-in relative flex min-h-screen flex-col overflow-x-hidden bg-[#f8f8f6] text-slate-900">
       <div className="grid-bg absolute inset-0" />
       <div className="glow-orb -left-12 top-24 h-80 w-80 bg-violet-300/20" />
       <div className="glow-orb bottom-0 right-[6%] h-72 w-72 bg-sky-200/25" />
@@ -123,8 +131,7 @@ export function LegalConsent({ onAccept }: { onAccept: () => void }) {
               Your Copilot workspace is ready.
             </h2>
             <p className="mt-2.5 text-[12px] leading-[1.75] text-slate-500">
-              No account, no setup. Review and accept the terms and privacy policy to open the
-              demo.
+              You’re signed in. Review and accept the terms and privacy policy to open the demo.
             </p>
           </div>
 
@@ -191,6 +198,20 @@ export function LegalConsent({ onAccept }: { onAccept: () => void }) {
             Effective {legalEffectiveLabel}. You can read both documents again from the workspace
             sidebar.
           </p>
+
+          {email && onSignOut && (
+            <div className="mt-3 flex items-center justify-center gap-1.5 text-[9px] text-slate-400">
+              <span className="max-w-[230px] truncate">Signed in as {email}</span>
+              <span aria-hidden>·</span>
+              <button
+                type="button"
+                onClick={onSignOut}
+                className="font-medium text-slate-500 underline decoration-slate-300 underline-offset-2 hover:text-slate-800"
+              >
+                Sign out
+              </button>
+            </div>
+          )}
         </section>
       </main>
     </div>

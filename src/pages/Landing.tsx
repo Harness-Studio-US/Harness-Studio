@@ -315,7 +315,7 @@ export default function Landing() {
                       </Link>
                     </div>
                     <p className="mt-4 text-[11.5px] text-slate-500">
-                      Opens directly in your browser. Demo replies are simulated.
+                      Sign in, then explore in your browser. Demo replies are simulated.
                     </p>
                   </div>
 
@@ -586,8 +586,8 @@ export default function Landing() {
                 Ask for what you want. Review what comes back.
               </h2>
               <p className="mt-4 text-[14.5px] leading-[1.8] text-slate-600">
-                A few examples of the kind of thing you can bring to the product. No setup, no special
-                format — just the goal in your own words.
+                A few examples of the kind of thing you can bring to the product. No special format —
+                just the goal in your own words.
               </p>
             </div>
 
@@ -679,7 +679,7 @@ export default function Landing() {
                 </a>
               </div>
               <p className="mt-5 text-[11px] text-zinc-500">
-                The interactive demo opens directly in your browser. Replies are simulated.
+                Sign in to the interactive demo. Replies are simulated.
               </p>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import {
   ArrowLeft,
   BookOpen,
+  LogOut,
   Menu,
   Plus,
   Search,
@@ -12,8 +13,10 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import { onAuthStateChanged, signOut as firebaseSignOut, type User } from "firebase/auth";
 import { ChatMessageView } from "../components/console/ChatMessageView";
 import { FirstRunGuide, LegalConsent } from "../components/console/CopilotOnboarding";
+import { CopilotAuthLoading, CopilotLogin } from "../components/console/CopilotLogin";
 import { Logo, LogoMark } from "../components/Logo";
 import { LegalLinks } from "../components/LegalLinks";
 import { streamAssistant, titleForConversation, type ChatMessage } from "../lib/chat";
@@ -24,6 +27,7 @@ import {
   hasSeenCopilotGuide,
   markCopilotGuideSeen,
 } from "../lib/copilotState";
+import { auth } from "../lib/firebase";
 import { cn } from "../lib/cn";
 
 type Conversation = {
@@ -33,7 +37,7 @@ type Conversation = {
   updatedAt: number;
 };
 
-const CHATS_KEY = "harness-conversations-v1";
+const chatsKey = (userId: string) => `harness-copilot-conversations-v1:${userId}`;
 
 const suggestions = [
   "Make the dashboard easier to scan",
@@ -54,9 +58,9 @@ function emptyConversation(): Conversation {
   return { id: uid(), title: "New chat", messages: [], updatedAt: Date.now() };
 }
 
-function loadConversations(): Conversation[] {
+function loadConversations(userId: string): Conversation[] {
   try {
-    const raw = localStorage.getItem(CHATS_KEY);
+    const raw = localStorage.getItem(chatsKey(userId));
     if (raw) {
       const parsed = JSON.parse(raw) as Conversation[];
       if (Array.isArray(parsed) && parsed.length > 0 && Array.isArray(parsed[0].messages)) {
@@ -81,9 +85,13 @@ function formatRelative(timestamp: number): string {
 
 export default function Console() {
   const { settings, logRequest } = useSettings();
-  const [acceptedTerms, setAcceptedTerms] = useState(hasAcceptedCopilotTerms);
+  const [authReady, setAuthReady] = useState(!auth);
+  const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [termsReady, setTermsReady] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
-  const [conversations, setConversations] = useState<Conversation[]>(loadConversations);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [chatsReady, setChatsReady] = useState(false);
   const [activeId, setActiveId] = useState<string>("");
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState<{ convId: string; messageId: string } | null>(null);
@@ -94,18 +102,46 @@ export default function Console() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    document.title = "Harness Copilot — AI workspace";
+    document.title = !authReady
+      ? "Harness Copilot"
+      : !firebaseUser
+        ? "Sign in — Harness Copilot"
+        : "Harness Copilot — AI workspace";
+  }, [authReady, firebaseUser]);
+
+  useEffect(() => {
+    if (!auth) return;
+    return onAuthStateChanged(auth, (nextUser) => {
+      setFirebaseUser(nextUser);
+      setAuthReady(true);
+    });
   }, []);
 
   useEffect(() => {
-    if (!acceptedTerms) {
+    if (!firebaseUser) {
+      setConversations([]);
+      setChatsReady(false);
+      setAcceptedTerms(false);
+      setTermsReady(false);
+      setActiveId("");
+      return;
+    }
+    setConversations(loadConversations(firebaseUser.uid));
+    setActiveId("");
+    setChatsReady(true);
+    setAcceptedTerms(hasAcceptedCopilotTerms(firebaseUser.uid));
+    setTermsReady(true);
+  }, [firebaseUser?.uid]);
+
+  useEffect(() => {
+    if (!acceptedTerms || !firebaseUser) {
       setGuideOpen(false);
       return;
     }
     if (hasSeenCopilotGuide()) return;
     const timer = window.setTimeout(() => setGuideOpen(true), 700);
     return () => window.clearTimeout(timer);
-  }, [acceptedTerms]);
+  }, [acceptedTerms, firebaseUser]);
 
   const activeConversation =
     conversations.find((conversation) => conversation.id === activeId) ?? conversations[0] ?? null;
@@ -117,15 +153,16 @@ export default function Console() {
   }, [conversations, activeId]);
 
   useEffect(() => {
+    if (!firebaseUser || !chatsReady) return;
     const timer = window.setTimeout(() => {
       try {
-        localStorage.setItem(CHATS_KEY, JSON.stringify(conversations));
+        localStorage.setItem(chatsKey(firebaseUser.uid), JSON.stringify(conversations));
       } catch {
         /* storage quota — ignore */
       }
     }, 300);
     return () => window.clearTimeout(timer);
-  }, [conversations]);
+  }, [conversations, firebaseUser, chatsReady]);
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -315,7 +352,7 @@ export default function Console() {
   }
 
   function acceptTerms() {
-    acceptCopilotTerms();
+    if (firebaseUser) acceptCopilotTerms(firebaseUser.uid);
     setAcceptedTerms(true);
   }
 
@@ -324,13 +361,41 @@ export default function Console() {
     setGuideOpen(false);
   }
 
+  function signOutUser() {
+    cancelledRef.current = true;
+    setStreaming(null);
+    setSidebarOpen(false);
+    setGuideOpen(false);
+    if (auth) void firebaseSignOut(auth);
+  }
+
   const filteredConversations = conversations.filter((conversation) =>
     conversation.title.toLowerCase().includes(query.trim().toLowerCase())
   );
   const isStreaming = streaming !== null;
+  const userEmail = firebaseUser?.email ?? "Signed in";
+  const userInitial = (firebaseUser?.displayName?.trim().charAt(0) || userEmail.charAt(0)).toUpperCase();
+
+  if (!authReady) {
+    return <CopilotAuthLoading />;
+  }
+
+  if (!firebaseUser) {
+    return <CopilotLogin />;
+  }
+
+  if (!termsReady) {
+    return <CopilotAuthLoading />;
+  }
 
   if (!acceptedTerms) {
-    return <LegalConsent onAccept={acceptTerms} />;
+    return (
+      <LegalConsent onAccept={acceptTerms} email={userEmail} onSignOut={signOutUser} />
+    );
+  }
+
+  if (!chatsReady) {
+    return <CopilotAuthLoading />;
   }
 
   return (
@@ -454,6 +519,24 @@ export default function Console() {
             <p className="mt-2 text-[9.5px] leading-relaxed text-slate-400">
               The full chat experience, with simulated replies. Chats stay in this browser.
             </p>
+
+            <div className="mt-2.5 flex items-center gap-2 border-t border-slate-100 pt-2.5">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-[9px] font-semibold text-slate-600">
+                {userInitial}
+              </span>
+              <span className="min-w-0 flex-1 truncate text-[9.5px] text-slate-500">
+                {userEmail}
+              </span>
+              <button
+                type="button"
+                onClick={signOutUser}
+                className="rounded-md p-1 text-slate-400 transition hover:bg-slate-100 hover:text-slate-800"
+                aria-label="Sign out"
+                title="Sign out"
+              >
+                <LogOut className="h-3 w-3" />
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center justify-between gap-2 px-1 py-0.5">
