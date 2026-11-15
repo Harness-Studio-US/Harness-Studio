@@ -137,11 +137,15 @@ export const plans = [
 export const faqs = [
   {
     q: "What is Harness Studio?",
-    a: "Harness Studio is a development app for building software. It comes with an AI teammate you can talk to in your browser, and the app is where the work actually happens.",
+    a: "Harness Studio is an independent software company. It is also the name of its first product: an AI development app where you describe what you want in your browser and review the changes inside your project.",
+  },
+  {
+    q: "Why do the company and the product share a name?",
+    a: "The company and its AI development app are both called Harness Studio. On this site, “Harness Studio” usually means the company; “the Harness Studio app” or “Harness Studio AI” makes it clear we mean the product.",
   },
   {
     q: "Where do I talk to the AI?",
-    a: "In your browser. Open the chat, describe what you want in your own words, and Harness will work inside Harness Studio to make it happen.",
+    a: "In the Harness Studio app, in your browser. Describe what you want in your own words, and the AI teammate will work inside your project to make it happen.",
   },
   {
     q: "Do I need to know how to code?",
@@ -153,11 +157,11 @@ export const faqs = [
   },
   {
     q: "Is the demo the full app?",
-    a: "No. The demo lets you try the conversation in your browser. The full experience — your project, the changes and the review — happens inside Harness Studio.",
+    a: "No. The demo lets you try the conversation in your browser. The full experience — your project, the changes and the review — happens inside the Harness Studio app.",
   },
   {
     q: "What if I don’t like a change?",
-    a: "Ask Harness to try a different direction, or undo it. You’re always in control of what stays.",
+    a: "Ask for a different direction, or undo it. You’re always in control of what stays.",
   },
 ];
 

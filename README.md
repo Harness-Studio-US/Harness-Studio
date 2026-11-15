@@ -1,7 +1,12 @@
 # Harness Studio — official website
 
-The public website for Harness Studio, the development app where you talk to an AI teammate in the
-browser while the work happens inside your project.
+The public website for Harness Studio, an independent software company. Our first product is the
+Harness Studio AI development app, where you describe what you want in the browser and review the
+work inside your project.
+
+The home page introduces the company, then presents Harness Studio in its Products section. The
+interactive demo sits inside that product section, so the site reads as a company site rather than a
+single-product landing page.
 
 ## Run locally
 
@@ -36,9 +41,9 @@ custom base path.
 
 ## Routes
 
-- `/` — home page: talk to the AI, see the changes in Harness Studio
-- `/docs` — plain-language guide for new users
-- `/brand` — official brand assets, palette and usage rules
+- `/` — company home, with Products introducing the Harness Studio AI app
+- `/docs` — plain-language guide for the product
+- `/brand` — official company brand assets, palette and usage rules
 - `/console` — interactive product demo
 - `/get-started` — contact path for teams and individual builders
 - `/privacy` — Privacy Policy
@@ -46,12 +51,13 @@ custom base path.
 
 ## Notes
 
+- Harness Studio is both the company and its AI development app. The home page and FAQ make that
+  distinction explicit where it matters.
 - The interactive chat is deliberately a local, simulated demo. It needs no account or provider
   setup, and the page says clearly that changes are simulated.
 - Demo conversations are stored in this browser's localStorage.
 - `/login` redirects to `/get-started`; the previous simulated Google/Apple sign-in has been removed.
-- The logo, banner and favicon in `public/brand/` are SVGs based on the supplied artwork. Replace
-  them with the original files if exact raster parity is required.
+- The logo, banner, social card and favicon in `public/brand/` are the official site assets.
 - `dist/` is the BrowserRouter build; a host serving it directly needs an SPA fallback so `/docs`,
   `/brand`, `/console` and `/get-started` resolve.
 - `dist-gh-pages/` is the static GitHub Pages build. It uses HashRouter and relative assets, so no

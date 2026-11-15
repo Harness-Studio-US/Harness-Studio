@@ -6,16 +6,16 @@ import { Footer } from "../components/marketing/Footer";
 
 const nextSteps = [
   {
-    title: "Tell us about the project",
+    title: "Tell us what you’re working on",
     body: "A sentence or two is plenty. We’ll help you find the right place to start.",
   },
   {
-    title: "We’ll get back to you",
-    body: "A real person on the team reads every message and replies directly.",
+    title: "Talk to the team",
+    body: "A real person on the company reads every message and replies directly.",
   },
   {
-    title: "Start with a conversation",
-    body: "We’ll walk you through Harness Studio and your first change.",
+    title: "Try Harness Studio",
+    body: "We’ll walk you through the app and your first change.",
   },
 ];
 
@@ -38,11 +38,12 @@ export default function GetStarted() {
               Get started
             </span>
             <h1 className="mt-6 max-w-xl text-[46px] font-bold leading-[1.02] tracking-[-0.05em] text-slate-950 sm:text-6xl">
-              Bring Harness Studio into your workflow.
+              Let’s find the right place to start.
             </h1>
             <p className="mt-6 max-w-lg text-[16px] leading-[1.75] text-slate-600">
-              Tell us what you’re building and we’ll help you get set up. No sales script, no
-              developer setup — just a useful conversation about your project.
+              Tell us what you’re building, or what you’d like to change. We’ll help you get set up
+              with Harness Studio — or point you somewhere more useful. No sales script, just a
+              useful conversation.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -72,10 +73,10 @@ export default function GetStarted() {
 
             <div className="mt-12 grid gap-3 border-t border-slate-300/70 pt-7 sm:grid-cols-2">
               {[
-                "A workspace set up around your project",
-                "A plain-language walkthrough",
+                "A real conversation with the team",
+                "A walkthrough of the Harness Studio app",
                 "Room to ask questions as you go",
-                "A direct line to the team",
+                "A direct line to the people building it",
               ].map((item) => (
                 <div key={item} className="flex items-start gap-2.5">
                   <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50">

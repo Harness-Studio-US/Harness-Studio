@@ -4,19 +4,19 @@ import { Logo } from "../Logo";
 
 const columns = [
   {
-    title: "Product",
+    title: "Products",
     links: [
+      { label: "Harness Studio AI", to: "/#products" },
       { label: "How it works", to: "/#how-it-works" },
-      { label: "Examples", to: "/#examples" },
       { label: "Interactive demo", to: "/console" },
-      { label: "Guide", to: "/docs" },
+      { label: "Product guide", to: "/docs" },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "About", to: "/#studio" },
-      { label: "Brand assets", to: "/brand" },
+      { label: "About", to: "/#company" },
+      { label: "Brand & press", to: "/brand" },
       { label: "Get started", to: "/get-started" },
       { label: "Questions", to: "/#faq" },
     ],
@@ -40,8 +40,8 @@ export function Footer() {
               <Logo />
             </Link>
             <p className="mt-5 max-w-xs text-[13.5px] leading-relaxed text-slate-500">
-              Harness Studio is a development app with an AI teammate. Talk to it on the web. Build
-              in the app. Keep the good parts.
+              Harness Studio is an independent software company. Our first product is an AI
+              development app that makes building software feel like a conversation.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <a
@@ -97,7 +97,7 @@ export function Footer() {
 
         <div className="mt-14 flex flex-col gap-4 border-t border-slate-300/70 pt-6 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[11.5px] text-slate-500">
-            <span>© {new Date().getFullYear()} Harness Studio, Inc.</span>
+            <span>© {new Date().getFullYear()} Harness Studio</span>
             <span className="hidden h-3 w-px bg-slate-300 sm:block" />
             <span>Official website</span>
           </div>

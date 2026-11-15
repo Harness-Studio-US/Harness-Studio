@@ -169,7 +169,7 @@ export default function Brand() {
 
       <footer className="border-t border-slate-200 py-8">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 text-[11px] text-slate-400 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-          <span>© {new Date().getFullYear()} Harness Studio, Inc.</span>
+          <span>© {new Date().getFullYear()} Harness Studio</span>
           <div className="flex flex-wrap items-center gap-4">
             <LegalLinks />
             <span className="hidden h-3 w-px bg-slate-200 sm:block" />

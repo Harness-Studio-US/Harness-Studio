@@ -6,9 +6,9 @@ import { LegalLinks } from "../LegalLinks";
 import { cn } from "../../lib/cn";
 
 const links = [
-  { label: "Product", to: "/#product" },
+  { label: "Products", to: "/#products" },
   { label: "How it works", to: "/#how-it-works" },
-  { label: "Examples", to: "/#examples" },
+  { label: "Company", to: "/#company" },
   { label: "Guide", to: "/docs" },
   { label: "Brand", to: "/brand" },
 ];

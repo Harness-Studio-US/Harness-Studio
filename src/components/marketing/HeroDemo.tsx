@@ -54,13 +54,13 @@ export function HeroDemo() {
           <span className="h-2.5 w-2.5 rounded-full bg-[#28c840]/70" />
           <div className="ml-3 flex min-w-0 items-center gap-2 rounded-md border border-white/[0.07] bg-black/40 px-2.5 py-1.5">
             <LogoMark className="h-3.5 w-3.5 shrink-0" />
-            <span className="truncate text-[11px] font-medium text-zinc-400">Acme Studio</span>
+            <span className="truncate text-[11px] font-medium text-zinc-400">Project</span>
             <span className="hidden text-[10px] text-zinc-700 sm:inline">/</span>
             <span className="hidden truncate text-[10.5px] text-zinc-500 sm:inline">Dashboard</span>
           </div>
           <div className="ml-auto flex shrink-0 items-center gap-1.5 rounded-full border border-emerald-400/20 bg-emerald-500/10 px-2.5 py-1 text-[9.5px] font-medium text-emerald-300">
             <span className="h-1 w-1 rounded-full bg-emerald-400" />
-            Connected
+            Demo
           </div>
         </div>
 
@@ -81,7 +81,7 @@ export function HeroDemo() {
               </div>
               <div className="min-w-0 flex-1">
                 <div className="mb-2 flex items-center gap-2">
-                  <span className="text-[12px] font-semibold text-zinc-200">Harness</span>
+                  <span className="text-[12px] font-semibold text-zinc-200">Harness Studio</span>
                   <span className="rounded-full border border-violet-400/20 bg-violet-500/10 px-2 py-0.5 text-[9px] text-violet-300">
                     AI teammate
                   </span>
@@ -186,7 +186,7 @@ export function HeroDemo() {
             <div className="mt-2.5 rounded-xl border border-slate-200 bg-white p-2.5">
               <div className="flex items-center gap-2 text-[8.5px] text-slate-500">
                 <MessageSquare className="h-3 w-3 text-violet-500" />
-                Harness updated this view
+                Harness Studio updated this view
                 <Check className="ml-auto h-3 w-3 text-emerald-500" />
               </div>
             </div>

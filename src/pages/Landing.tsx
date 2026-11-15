@@ -3,9 +3,11 @@ import { Link } from "react-router-dom";
 import {
   ArrowRight,
   ArrowUpRight,
+  Building2,
   Check,
   ChevronDown,
   Eye,
+  Layers,
   Lightbulb,
   MessageSquare,
   Monitor,
@@ -18,6 +20,7 @@ import { Nav } from "../components/marketing/Nav";
 import { Footer } from "../components/marketing/Footer";
 import { HeroDemo } from "../components/marketing/HeroDemo";
 import { DocLogo } from "../components/DocLogo";
+import { LogoMark } from "../components/Logo";
 import { faqs } from "../data/site";
 import { assetUrl } from "../lib/assets";
 
@@ -29,13 +32,13 @@ const features = [
   },
   {
     icon: Monitor,
-    title: "It works in your app",
-    body: "The conversation happens on the web. The actual work happens inside Harness Studio, right where your project lives.",
+    title: "It works in your project",
+    body: "The conversation happens on the web. The work happens inside your project, with every change shown for review.",
   },
   {
     icon: Eye,
     title: "Every change is visible",
-    body: "Harness explains what it did in plain language, so you can try it, keep it, or ask for something different.",
+    body: "Harness Studio explains what it did in plain language, so you can try it, keep it, or ask for something different.",
   },
   {
     icon: MessageSquare,
@@ -58,14 +61,14 @@ const steps = [
   {
     number: "01",
     icon: MessageSquare,
-    title: "Tell Harness what you want",
-    body: "Open the AI in your browser and describe the change in your own words. A sentence is enough to start.",
+    title: "Say what you want",
+    body: "Open the product in your browser and describe the change in your own words. A sentence is enough to start.",
   },
   {
     number: "02",
     icon: Monitor,
-    title: "Watch it happen in the app",
-    body: "Harness works inside Harness Studio — updating the screen, fixing the issue or building the thing you asked for.",
+    title: "Watch it work in your project",
+    body: "Harness Studio updates the screen, fixes the issue or builds the thing you asked for — right where your project lives.",
   },
   {
     number: "03",
@@ -75,11 +78,29 @@ const steps = [
   },
 ];
 
+const principles = [
+  {
+    icon: Layers,
+    title: "Clarity over cleverness",
+    body: "The best tools explain themselves. We choose plain language, visible changes and a clear next step.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "People stay in control",
+    body: "Software should expand what you can do, not take the decisions away. The work stays reviewable and reversible.",
+  },
+  {
+    icon: Building2,
+    title: "Independent by design",
+    body: "We’re a small company, which keeps us close to the product — and close to the people using it.",
+  },
+];
+
 const examples = [
   {
     tag: "Fix something",
     prompt: "The save button doesn’t work on mobile. Can you fix it?",
-    result: "Harness finds the cause and makes the fix — no bug report required.",
+    result: "Harness Studio finds the cause and makes the fix — no bug report required.",
   },
   {
     tag: "Add a feature",
@@ -99,14 +120,14 @@ const examples = [
 ];
 
 const controlPoints = [
-  "See a clear summary of what Harness wants to change.",
+  "See a clear summary of what Harness Studio wants to change.",
   "Try the result before you commit to it.",
   "Ask for another version whenever something feels off.",
 ];
 
 export default function Landing() {
   useEffect(() => {
-    document.title = "Harness Studio — Build software by talking";
+    document.title = "Harness Studio — Independent software company";
   }, []);
 
   return (
@@ -122,39 +143,39 @@ export default function Landing() {
             <div className="animate-rise min-w-0">
               <span className="inline-flex items-center gap-2.5 text-[10.5px] font-semibold uppercase tracking-[0.19em] text-slate-500">
                 <span className="h-px w-7 bg-violet-500" />
-                AI development app
+                Independent software company
               </span>
 
               <h1 className="mt-6 max-w-2xl text-[44px] font-bold leading-[0.99] tracking-[-0.052em] text-slate-950 sm:text-6xl lg:text-[74px]">
-                Build software by <span className="gradient-text">talking it through.</span>
+                Software for people who <span className="gradient-text">make things.</span>
               </h1>
 
               <p className="mt-7 max-w-[35rem] text-[16.5px] leading-[1.7] text-slate-600 sm:text-[17.5px]">
-                Harness Studio is the development app with an AI teammate. Describe what you want in
-                your browser, and it does the work inside your project — no commands, no jargon, no
-                guessing where to start.
+                Harness Studio is an independent software company. We build tools that make creating
+                software feel more like a conversation — starting with our first product, also called
+                Harness Studio.
               </p>
 
               <div className="mt-9 flex flex-wrap items-center gap-3">
-                <Link to="/console" className="btn-primary h-12 px-5.5 text-[14px]">
-                  Try the interactive demo
+                <Link to="/#products" className="btn-primary h-12 px-5.5 text-[14px]">
+                  Explore our products
                   <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link to="/#how-it-works" className="btn-ghost h-12 px-5.5 text-[14px]">
-                  See how it works
+                <Link to="/#company" className="btn-ghost h-12 px-5.5 text-[14px]">
+                  About the company
                   <ArrowUpRight className="h-4 w-4" />
                 </Link>
               </div>
 
               <p className="mt-4 text-[12px] text-slate-500">
-                No account needed. Changes in the demo are simulated.
+                Independent. Small team. Built for the web.
               </p>
 
               <div className="mt-10 grid max-w-lg grid-cols-3 gap-5 border-t border-slate-300/70 pt-6">
                 {[
-                  ["Talk naturally", "Your words"],
-                  ["Review it", "Every change"],
-                  ["Stay in control", "Your call"],
+                  ["The company", "Independent"],
+                  ["The product", "Harness Studio"],
+                  ["The idea", "Software, made human"],
                 ].map(([title, label]) => (
                   <div key={title}>
                     <div className="text-[12.5px] font-semibold text-slate-800">{title}</div>
@@ -167,64 +188,277 @@ export default function Landing() {
             </div>
 
             <div className="animate-rise min-w-0 lg:pl-2" style={{ animationDelay: "120ms" }}>
-              <HeroDemo />
+              <div className="relative min-w-0">
+                <div className="glow-orb left-1/4 top-0 h-64 w-64 bg-violet-300/25" />
+                <div className="glow-orb bottom-0 right-0 h-56 w-56 bg-sky-200/35" />
+
+                <div className="relative overflow-hidden rounded-[24px] border border-slate-200 bg-white p-2 shadow-[0_36px_90px_-38px_rgba(15,23,42,0.38)]">
+                  <div className="relative overflow-hidden rounded-[18px] bg-[#0a0c12] p-6 text-white sm:p-8">
+                    <div className="dot-bg absolute inset-0 opacity-[0.12]" />
+                    <div className="relative">
+                      <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-5">
+                        <div className="flex items-center gap-2.5">
+                          <LogoMark className="h-7 w-7" />
+                          <span className="text-[13px] font-semibold">Harness Studio</span>
+                        </div>
+                        <span className="rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-[9.5px] font-medium uppercase tracking-[0.14em] text-zinc-400">
+                          Company
+                        </span>
+                      </div>
+
+                      <div className="pt-12 sm:pt-16">
+                        <span className="text-[10px] font-semibold uppercase tracking-[0.17em] text-violet-300">
+                          Product 01 / AI development app
+                        </span>
+                        <h2 className="mt-3 text-[34px] font-bold leading-[1.02] tracking-[-0.045em] text-white sm:text-[40px]">
+                          Harness Studio
+                        </h2>
+                        <p className="mt-3 max-w-sm text-[13.5px] leading-[1.75] text-zinc-400">
+                          An AI teammate for the work of building software. Talk it through in the
+                          browser; review every change in your project.
+                        </p>
+                        <Link
+                          to="/#products"
+                          className="mt-7 inline-flex items-center gap-2 rounded-lg bg-white px-3.5 py-2.5 text-[11.5px] font-semibold text-slate-950 transition hover:bg-slate-100"
+                        >
+                          See the product
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </Link>
+                      </div>
+
+                      <div className="mt-12 grid grid-cols-3 gap-2 border-t border-white/10 pt-5">
+                        {["Talk it through", "Review the work", "Keep control"].map((item) => (
+                          <div key={item} className="text-[10px] leading-[1.5] text-zinc-400">
+                            <span className="mb-1.5 block h-1 w-1 rounded-full bg-violet-400" />
+                            {item}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-[10.5px] text-slate-500">
+                    <span>Independent software company</span>
+                    <span>One product, built with intent</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section id="product" className="scroll-mt-24 border-t border-slate-300/70 bg-white py-24">
+        <section id="products" className="scroll-mt-24 border-t border-slate-300/70 bg-white py-24">
           <div className="mx-auto max-w-7xl px-5 lg:px-8">
             <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-end">
               <div>
                 <span className="text-[10.5px] font-semibold uppercase tracking-[0.19em] text-violet-600">
-                  The product
+                  Products
                 </span>
                 <h2 className="mt-3 max-w-xl text-[36px] font-bold leading-[1.06] tracking-[-0.04em] text-slate-950 sm:text-[44px]">
-                  A development app that works with you.
+                  One product. Built with intent.
                 </h2>
               </div>
               <p className="max-w-xl text-[14.5px] leading-[1.8] text-slate-600 lg:pb-1">
-                It should feel like working with a patient teammate, not operating a machine. Say
-                what you want, ask questions, change your mind. Harness keeps the project, the
-                conversation and the review in one place.
+                The first product from Harness Studio is the AI development app that shares its name.
+                It is designed to make the work of building software feel direct, visible and yours
+                to direct.
               </p>
             </div>
 
-            <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {features.map((feature) => (
-                <article
-                  key={feature.title}
-                  className="rounded-2xl border border-slate-200 bg-[#fbfbf9] p-6 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_18px_40px_-30px_rgba(15,23,42,0.28)]"
-                >
-                  <div className="mb-5 flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white">
-                    <feature.icon className="h-4 w-4 text-violet-700" />
+            <article className="mt-12 overflow-hidden rounded-[28px] border border-slate-200 bg-[#f8f8f6] p-2 shadow-[0_30px_80px_-60px_rgba(15,23,42,0.4)]">
+              <div className="rounded-[22px] border border-slate-200/80 bg-white p-5 sm:p-8 lg:p-10">
+                <div className="grid gap-10 lg:grid-cols-[0.82fr_1.18fr] lg:items-center lg:gap-12">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-200 bg-violet-50 px-2.5 py-1 text-[9.5px] font-semibold uppercase tracking-[0.14em] text-violet-700">
+                        <span className="h-1 w-1 rounded-full bg-violet-500" />
+                        Product 01
+                      </span>
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[9.5px] font-medium uppercase tracking-[0.12em] text-slate-500">
+                        AI development app
+                      </span>
+                    </div>
+
+                    <h3 className="mt-5 text-[40px] font-bold leading-[1.02] tracking-[-0.045em] text-slate-950 sm:text-[48px]">
+                      Harness Studio
+                    </h3>
+                    <p className="mt-4 max-w-md text-[14.5px] leading-[1.8] text-slate-600">
+                      A development app with an AI teammate at its center. Describe what you want in
+                      the browser, and Harness Studio works inside your project — then shows you
+                      exactly what changed.
+                    </p>
+
+                    <ul className="mt-7 space-y-3">
+                      {[
+                        "Talk naturally, in your own words",
+                        "Review every change before it stays",
+                        "Ask for another direction at any time",
+                      ].map((point) => (
+                        <li key={point} className="flex items-start gap-2.5">
+                          <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50">
+                            <Check className="h-2.5 w-2.5 text-emerald-700" />
+                          </span>
+                          <span className="text-[13px] leading-relaxed text-slate-600">{point}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <div className="mt-8 flex flex-wrap items-center gap-3">
+                      <Link to="/console" className="btn-primary h-11 px-4 text-[13px]">
+                        Try the demo
+                        <ArrowRight className="h-4 w-4" />
+                      </Link>
+                      <Link to="/docs" className="btn-ghost h-11 px-4 text-[13px]">
+                        Read the guide
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                    <p className="mt-4 text-[11.5px] text-slate-500">
+                      No account needed. Changes in the demo are simulated.
+                    </p>
                   </div>
-                  <h3 className="text-[15.5px] font-semibold text-slate-950">{feature.title}</h3>
+
+                  <div className="min-w-0">
+                    <HeroDemo />
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <div className="mt-16 border-t border-slate-200 pt-10">
+              <div className="flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
+                <div>
+                  <span className="text-[10.5px] font-semibold uppercase tracking-[0.19em] text-sky-700">
+                    Inside the product
+                  </span>
+                  <h3 className="mt-3 text-[30px] font-bold leading-[1.08] tracking-[-0.035em] text-slate-950 sm:text-[36px]">
+                    A teammate, not a command line.
+                  </h3>
+                </div>
+                <Link
+                  to="/docs"
+                  className="inline-flex shrink-0 items-center gap-1.5 text-[13px] font-semibold text-slate-700 hover:text-slate-950"
+                >
+                  Read the product guide <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+
+              <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {features.map((feature) => (
+                  <article
+                    key={feature.title}
+                    className="rounded-2xl border border-slate-200 bg-[#fbfbf9] p-6 transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-[0_18px_40px_-30px_rgba(15,23,42,0.28)]"
+                  >
+                    <div className="mb-5 flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white">
+                      <feature.icon className="h-4 w-4 text-violet-700" />
+                    </div>
+                    <h4 className="text-[15.5px] font-semibold text-slate-950">{feature.title}</h4>
+                    <p className="mt-2.5 text-[13.5px] leading-[1.75] text-slate-600">
+                      {feature.body}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="company" className="scroll-mt-24 border-t border-slate-300/70 py-24">
+          <div className="mx-auto max-w-7xl px-5 lg:px-8">
+            <div className="grid gap-10 lg:grid-cols-[0.84fr_1.16fr] lg:gap-20">
+              <div>
+                <span className="text-[10.5px] font-semibold uppercase tracking-[0.19em] text-violet-600">
+                  Company
+                </span>
+                <h2 className="mt-3 max-w-lg text-[36px] font-bold leading-[1.06] tracking-[-0.04em] text-slate-950 sm:text-[44px]">
+                  A small company with a long view.
+                </h2>
+              </div>
+
+              <div className="max-w-2xl">
+                <p className="text-[18px] leading-[1.75] tracking-[-0.01em] text-slate-700">
+                  Harness Studio is an independent software company. We design and build tools that
+                  make creating software feel more direct, more legible, and more human.
+                </p>
+                <p className="mt-5 text-[14.5px] leading-[1.8] text-slate-600">
+                  Our first product shares our name. It is an AI development app for people who want
+                  to move at the speed of a conversation — without giving up the ability to see,
+                  question and undo the work. The company is small, the product is focused, and the
+                  line between the two is deliberate.
+                </p>
+                <Link
+                  to="/get-started"
+                  className="mt-7 inline-flex items-center gap-2 text-[13px] font-semibold text-violet-700 hover:text-violet-800"
+                >
+                  Talk to the team <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            </div>
+
+            <div className="mt-16 grid gap-4 md:grid-cols-3">
+              {principles.map((principle) => (
+                <article
+                  key={principle.title}
+                  className="rounded-2xl border border-slate-200 bg-white p-7"
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-[#fbfbf9]">
+                    <principle.icon className="h-4 w-4 text-violet-700" />
+                  </div>
+                  <h3 className="mt-6 text-[17px] font-semibold tracking-[-0.01em] text-slate-950">
+                    {principle.title}
+                  </h3>
                   <p className="mt-2.5 text-[13.5px] leading-[1.75] text-slate-600">
-                    {feature.body}
+                    {principle.body}
                   </p>
                 </article>
               ))}
+            </div>
+
+            <div className="mt-12 overflow-hidden rounded-2xl border border-slate-300/70 bg-black">
+              <img
+                src={assetUrl("/brand/harness-banner.svg")}
+                alt="Harness Studio — Create, Build, Innovate"
+                className="h-auto w-full"
+              />
+            </div>
+
+            <div className="mt-5 flex flex-col justify-between gap-3 text-[12px] text-slate-600 sm:flex-row sm:items-center">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                <span className="inline-flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-violet-600" />
+                  Independent by design
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <Monitor className="h-3.5 w-3.5 text-sky-700" />
+                  Building for the web
+                </span>
+              </div>
+              <Link
+                to="/brand"
+                className="inline-flex items-center gap-1.5 font-semibold text-slate-800 hover:text-slate-950"
+              >
+                Brand &amp; press kit <ArrowUpRight className="h-3.5 w-3.5" />
+              </Link>
             </div>
           </div>
         </section>
 
         <section
           id="how-it-works"
-          className="relative scroll-mt-24 border-t border-slate-300/70 py-24"
+          className="relative scroll-mt-24 border-t border-slate-300/70 bg-white py-24"
         >
           <div className="mx-auto max-w-7xl px-5 lg:px-8">
             <div className="flex flex-col justify-between gap-6 sm:flex-row sm:items-end">
               <div className="max-w-2xl">
                 <span className="text-[10.5px] font-semibold uppercase tracking-[0.19em] text-sky-700">
-                  How it works
+                  Inside the product
                 </span>
                 <h2 className="mt-3 text-[36px] font-bold leading-[1.06] tracking-[-0.04em] text-slate-950 sm:text-[44px]">
                   Three steps. No manual.
                 </h2>
                 <p className="mt-4 max-w-xl text-[14.5px] leading-[1.8] text-slate-600">
-                  From the first sentence to a finished change, you always know what’s happening and
-                  what comes next.
+                  The product is built around a simple loop: you describe the outcome, it does the
+                  work, you decide what stays.
                 </p>
               </div>
               <Link
@@ -267,8 +501,8 @@ export default function Landing() {
                 Every change is yours to keep — or undo.
               </h2>
               <p className="mt-5 max-w-lg text-[14.5px] leading-[1.8] text-zinc-400">
-                You’re not handing over the keys. Harness keeps you in the loop, explains its
-                thinking in plain language and gives you room to change your mind.
+                You’re not handing over the keys. Harness Studio keeps you in the loop, explains its
+                work in plain language and gives you room to change your mind.
               </p>
 
               <ul className="mt-8 space-y-4">
@@ -347,10 +581,10 @@ export default function Landing() {
                 In practice
               </span>
               <h2 className="mt-3 text-[36px] font-bold leading-[1.06] tracking-[-0.04em] text-slate-950 sm:text-[44px]">
-                Ask for what you want. Harness figures out the rest.
+                Ask for what you want. Review what comes back.
               </h2>
               <p className="mt-4 text-[14.5px] leading-[1.8] text-slate-600">
-                A few examples of the kind of thing you can bring to the chat. No setup, no special
+                A few examples of the kind of thing you can bring to the product. No setup, no special
                 format — just the goal in your own words.
               </p>
             </div>
@@ -377,67 +611,20 @@ export default function Landing() {
           </div>
         </section>
 
-        <section id="studio" className="scroll-mt-24 border-t border-slate-300/70 py-24">
-          <div className="mx-auto max-w-7xl px-5 lg:px-8">
-            <div className="mb-8 flex flex-col justify-between gap-5 sm:flex-row sm:items-end">
-              <div>
-                <span className="text-[10.5px] font-semibold uppercase tracking-[0.19em] text-violet-600">
-                  The studio
-                </span>
-                <h2 className="mt-3 text-[36px] font-bold leading-[1.06] tracking-[-0.04em] text-slate-950 sm:text-[44px]">
-                  Create. Build. Innovate.
-                </h2>
-              </div>
-              <p className="max-w-sm text-[13.5px] leading-[1.75] text-slate-600">
-                Harness Studio is built by a small, independent team that wants software to feel
-                more like a conversation and less like a machine.
-              </p>
-            </div>
-
-            <div className="overflow-hidden rounded-2xl border border-slate-300/70 bg-black">
-              <img
-                src={assetUrl("/brand/harness-banner.svg")}
-                alt="Harness Studio — Create, Build, Innovate"
-                className="h-auto w-full"
-              />
-            </div>
-
-            <div className="mt-5 flex flex-col justify-between gap-3 text-[12px] text-slate-600 sm:flex-row sm:items-center">
-              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-                <span className="inline-flex items-center gap-1.5">
-                  <Sparkles className="h-3.5 w-3.5 text-violet-600" />
-                  A small team building better tools for builders
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <Monitor className="h-3.5 w-3.5 text-sky-700" />
-                  Built for the web and the app
-                </span>
-              </div>
-              <Link
-                to="/brand"
-                className="inline-flex items-center gap-1.5 font-semibold text-slate-800 hover:text-slate-950"
-              >
-                Brand &amp; press kit <ArrowUpRight className="h-3.5 w-3.5" />
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        <section id="faq" className="scroll-mt-24 border-t border-slate-300/70 bg-white py-24">
+        <section id="faq" className="scroll-mt-24 border-t border-slate-300/70 py-24">
           <div className="mx-auto grid max-w-7xl gap-12 px-5 lg:grid-cols-[0.72fr_1.28fr] lg:px-8">
             <div>
               <h2 className="text-[36px] font-bold leading-[1.06] tracking-[-0.04em] text-slate-950 sm:text-[42px]">
                 Questions, answered.
               </h2>
               <p className="mt-4 max-w-sm text-[13.5px] leading-[1.8] text-slate-600">
-                New to Harness Studio? The guide walks you through your first conversation, one
-                plain-English step at a time.
+                About the company, the product and the demo.
               </p>
               <Link
                 to="/docs"
                 className="mt-6 inline-flex items-center gap-1.5 text-[13px] font-semibold text-violet-700 hover:text-violet-800"
               >
-                Read the guide <ArrowRight className="h-3.5 w-3.5" />
+                Read the product guide <ArrowRight className="h-3.5 w-3.5" />
               </Link>
             </div>
             <div className="divide-y divide-slate-200 border-y border-slate-200">
@@ -456,7 +643,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="border-t border-slate-300/70 px-5 py-24 lg:px-8">
+        <section className="border-t border-slate-300/70 bg-white px-5 py-24 lg:px-8">
           <div className="relative mx-auto max-w-7xl overflow-hidden rounded-[28px] border border-slate-800 bg-[#111318] px-6 py-16 text-center shadow-[0_30px_80px_-40px_rgba(15,23,42,0.45)] sm:px-12 sm:py-20">
             <div className="glow-orb left-1/4 top-0 h-64 w-64 bg-violet-500/15" />
             <div className="glow-orb bottom-0 right-1/4 h-56 w-56 bg-sky-500/10" />
@@ -465,11 +652,11 @@ export default function Landing() {
                 <DocLogo className="h-9 w-9" />
               </div>
               <h2 className="text-[38px] font-bold leading-[1.02] tracking-[-0.04em] text-white sm:text-[50px]">
-                Start with a sentence.
+                Start a conversation.
               </h2>
               <p className="mx-auto mt-5 max-w-lg text-[14.5px] leading-[1.8] text-zinc-400">
-                Tell Harness what you want to build. It’ll ask questions, make a change and show you
-                the result. You bring the idea — the conversation does the rest.
+                Whether you want to try the product or talk to the company behind it, start here.
+                Tell us what you’re working on, and we’ll take it from there.
               </p>
               <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
                 <Link
