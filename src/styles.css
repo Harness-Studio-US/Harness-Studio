@@ -334,7 +334,13 @@ input[type="range"]::-moz-range-thumb {
   background: #f8f8f6;
   opacity: 1;
   visibility: visible;
+  animation: site-loader-fade-in 180ms ease-out;
   transition: opacity 350ms ease, visibility 350ms ease;
+}
+
+@keyframes site-loader-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .site-loader--leaving {
@@ -354,6 +360,7 @@ input[type="range"]::-moz-range-thumb {
 
 @media (prefers-reduced-motion: reduce) {
   .site-loader {
+    animation: none;
     transition: none;
   }
 

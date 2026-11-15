@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Logo } from "./Logo";
 import { cn } from "../lib/cn";
 
@@ -38,7 +38,13 @@ function LoadingScreen({ leaving }: { leaving: boolean }) {
   );
 }
 
-function getSecondaryPagePath(anchor: HTMLAnchorElement): string | null {
+const PAGE_TRANSITION_BUFFER_MS = 500;
+const ACTION_FADE_OUT_MS = 900;
+const ACTION_REMOVE_MS = 1200;
+
+type InternalPageTarget = { path: string; to: string };
+
+function getInternalPageTarget(anchor: HTMLAnchorElement): InternalPageTarget | null {
   if (anchor.target && anchor.target !== "_self") return null;
   if (anchor.hasAttribute("download")) return null;
 
@@ -54,34 +60,52 @@ function getSecondaryPagePath(anchor: HTMLAnchorElement): string | null {
   }
   if (url.origin !== window.location.origin) return null;
 
-  let path = url.hash.startsWith("#/")
-    ? url.hash.slice(1).split("#")[0].split("?")[0]
-    : url.pathname;
+  let path: string;
+  let search = "";
+  let hash = "";
+
+  if (url.hash.startsWith("#/")) {
+    const raw = url.hash.slice(1);
+    const hashIndex = raw.indexOf("#");
+    const route = hashIndex === -1 ? raw : raw.slice(0, hashIndex);
+    const queryIndex = route.indexOf("?");
+    path = queryIndex === -1 ? route : route.slice(0, queryIndex);
+    search = queryIndex === -1 ? "" : route.slice(queryIndex);
+    hash = hashIndex === -1 ? "" : raw.slice(hashIndex);
+  } else {
+    path = url.pathname;
+    search = url.search;
+    hash = url.hash;
+  }
+
   if (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
   if (!path || path === "/") return null;
-  return path;
+  return { path, to: `${path}${search}${hash}` };
 }
 
 function ActionLoadingScreen() {
   const location = useLocation();
+  const navigate = useNavigate();
   const pathnameRef = useRef(location.pathname);
   pathnameRef.current = location.pathname;
   const [active, setActive] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const fadeTimer = useRef<number | undefined>(undefined);
   const removeTimer = useRef<number | undefined>(undefined);
+  const navigateTimer = useRef<number | undefined>(undefined);
 
   const clearTimers = () => {
     window.clearTimeout(fadeTimer.current);
     window.clearTimeout(removeTimer.current);
+    window.clearTimeout(navigateTimer.current);
   };
 
   const show = () => {
     clearTimers();
     setActive(true);
     setLeaving(false);
-    fadeTimer.current = window.setTimeout(() => setLeaving(true), 550);
-    removeTimer.current = window.setTimeout(() => setActive(false), 850);
+    fadeTimer.current = window.setTimeout(() => setLeaving(true), ACTION_FADE_OUT_MS);
+    removeTimer.current = window.setTimeout(() => setActive(false), ACTION_REMOVE_MS);
   };
 
   useEffect(() => {
@@ -95,8 +119,8 @@ function ActionLoadingScreen() {
         ".btn-primary, .btn-ghost, [data-page-loader]"
       );
       const anchor = event.target.closest<HTMLAnchorElement>("a[href]");
-      const secondaryPath = anchor ? getSecondaryPagePath(anchor) : null;
-      const isSecondaryPageLink = !!secondaryPath && secondaryPath !== pathnameRef.current;
+      const pageTarget = anchor ? getInternalPageTarget(anchor) : null;
+      const isSecondaryPageLink = !!pageTarget && pageTarget.path !== pathnameRef.current;
 
       if (!control && !isSecondaryPageLink) return;
       if (control && pathnameRef.current === "/console") return;
@@ -109,6 +133,14 @@ function ActionLoadingScreen() {
       if (target instanceof HTMLAnchorElement) {
         if (target.target && target.target !== "_self") return;
         if (target.hasAttribute("download")) return;
+      }
+
+      const shouldBufferNavigation = !!anchor && !!pageTarget && pageTarget.path !== pathnameRef.current;
+      if (shouldBufferNavigation) {
+        event.preventDefault();
+        show();
+        navigateTimer.current = window.setTimeout(() => navigate(pageTarget.to), PAGE_TRANSITION_BUFFER_MS);
+        return;
       }
 
       show();
