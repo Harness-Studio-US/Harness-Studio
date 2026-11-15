@@ -50,6 +50,11 @@ body {
   outline-offset: 3px;
 }
 
+/* The composer wrapper shows focus with its own border and shadow. */
+.composer-input:focus-visible {
+  outline: none;
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }

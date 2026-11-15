@@ -661,7 +661,7 @@ export default function Console() {
                 }}
                 rows={1}
                 placeholder="Ask Copilot to change, fix or explain something…"
-                className="max-h-[180px] w-full resize-none overflow-hidden bg-transparent px-0.5 py-0.5 text-[14px] leading-[1.7] text-slate-800 outline-none placeholder:text-slate-500 focus-visible:outline-none"
+                className="composer-input max-h-[180px] w-full resize-none overflow-hidden bg-transparent px-0.5 py-0.5 text-[14px] leading-[1.7] text-slate-800 outline-none placeholder:text-slate-500"
                 aria-label="Message Harness Copilot"
               />
 
