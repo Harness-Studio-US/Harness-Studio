@@ -38,26 +38,56 @@ function LoadingScreen({ leaving }: { leaving: boolean }) {
   );
 }
 
-function RouteLoadingScreen() {
+function ActionLoadingScreen() {
   const location = useLocation();
-  const previousPath = useRef(location.pathname);
+  const pathnameRef = useRef(location.pathname);
+  pathnameRef.current = location.pathname;
   const [active, setActive] = useState(false);
   const [leaving, setLeaving] = useState(false);
+  const fadeTimer = useRef<number | undefined>(undefined);
+  const removeTimer = useRef<number | undefined>(undefined);
 
-  useLayoutEffect(() => {
-    if (previousPath.current === location.pathname) return;
-    previousPath.current = location.pathname;
+  const clearTimers = () => {
+    window.clearTimeout(fadeTimer.current);
+    window.clearTimeout(removeTimer.current);
+  };
+
+  const show = () => {
+    clearTimers();
     setActive(true);
     setLeaving(false);
+    fadeTimer.current = window.setTimeout(() => setLeaving(true), 550);
+    removeTimer.current = window.setTimeout(() => setActive(false), 850);
+  };
 
-    const fadeTimer = window.setTimeout(() => setLeaving(true), 550);
-    const removeTimer = window.setTimeout(() => setActive(false), 850);
+  useEffect(() => {
+    const onClick = (event: MouseEvent) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+      }
+      if (!(event.target instanceof Element)) return;
 
-    return () => {
-      window.clearTimeout(fadeTimer);
-      window.clearTimeout(removeTimer);
+      const control = event.target.closest<HTMLElement>(
+        ".btn-primary, .btn-ghost, [data-page-loader]"
+      );
+      if (!control) return;
+      if (pathnameRef.current === "/console") return;
+      if (control.closest("[data-no-page-loader]")) return;
+      if (control.getAttribute("aria-disabled") === "true") return;
+      if (control instanceof HTMLButtonElement && control.disabled) return;
+      if (control instanceof HTMLAnchorElement) {
+        if (control.target && control.target !== "_self") return;
+        if (control.hasAttribute("download")) return;
+      }
+
+      show();
     };
-  }, [location.pathname]);
+
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, []);
+
+  useEffect(() => () => clearTimers(), []);
 
   return active ? <LoadingScreen leaving={leaving} /> : null;
 }
@@ -80,7 +110,7 @@ export function LoadingGate({ children }: { children: ReactNode }) {
     <>
       {children}
       {loading && <LoadingScreen leaving={leaving} />}
-      {!loading && <RouteLoadingScreen />}
+      {!loading && <ActionLoadingScreen />}
     </>
   );
 }

@@ -219,6 +219,7 @@ export default function Landing() {
                         </p>
                         <Link
                           to="/#products"
+                          data-page-loader
                           className="mt-7 inline-flex items-center gap-2 rounded-lg bg-white px-3.5 py-2.5 text-[11.5px] font-semibold text-slate-950 transition hover:bg-slate-100"
                         >
                           See the product
@@ -662,6 +663,7 @@ export default function Landing() {
               <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
                 <Link
                   to="/console"
+                  data-page-loader
                   className="inline-flex h-12 items-center justify-center gap-2 rounded-[0.7rem] bg-white px-5.5 text-[14px] font-semibold text-slate-950 transition hover:bg-slate-100"
                 >
                   Try the interactive demo
@@ -669,6 +671,7 @@ export default function Landing() {
                 </Link>
                 <a
                   href="mailto:message.harness.studio@outlook.com?subject=Harness%20Studio"
+                  data-page-loader
                   className="inline-flex h-12 items-center justify-center gap-2 rounded-[0.7rem] border border-white/15 bg-white/[0.03] px-5.5 text-[14px] font-medium text-white transition hover:bg-white/[0.08]"
                 >
                   Talk to the team
