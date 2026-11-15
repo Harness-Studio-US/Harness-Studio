@@ -1,0 +1,44 @@
+name: Sync source from studio archive
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download and apply source
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 5 --retry-delay 3 \
+            "https://site-d219f67dd7394859a5770eea41cc4020.freebuff.page/source.tar.gz?v=4511d8d82e39d65c5cd243b1f7842d01a80f02c0e2b9cbfa81d81b10178c60b3" \
+            -o /tmp/harness-source.tar.gz
+          rm -rf /tmp/harness-source
+          mkdir -p /tmp/harness-source
+          tar -xzf /tmp/harness-source.tar.gz -C /tmp/harness-source
+          rsync -a --delete \
+            --exclude='.git' \
+            --exclude='.github' \
+            /tmp/harness-source/ ./
+
+      - name: Commit the secondary-page loading update
+        run: |
+          set -euo pipefail
+          git config user.name "Harness Studio"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm --ignore-unmatch .github/workflows/sync-source.yml
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No source changes"
+            exit 0
+          fi
+          git commit -m "Show loading screen when opening secondary pages"
+          git push origin HEAD:main
