@@ -57,7 +57,7 @@ custom base path.
   setup, and the page says clearly that changes are simulated.
 - Demo conversations are stored in this browser's localStorage.
 - `/login` redirects to `/get-started`; the previous simulated Google/Apple sign-in has been removed.
-- The logo, banner, social card and favicon in `public/brand/` are the official site assets.
+- The logo, banner and social card in `public/brand/`, plus the favicon in `public/`, are the official site assets.
 - `dist/` is the BrowserRouter build; a host serving it directly needs an SPA fallback so `/docs`,
   `/brand`, `/console` and `/get-started` resolve.
 - `dist-gh-pages/` is the static GitHub Pages build. It uses HashRouter and relative assets, so no

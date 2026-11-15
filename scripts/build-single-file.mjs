@@ -14,8 +14,9 @@ function readAsset(href) {
 }
 
 function dataUri(path) {
-  const svg = readFileSync(resolve(root, "public", path.replace(/^\//, "")), "utf8");
-  return `data:image/svg+xml;base64,${Buffer.from(svg).toString("base64")}`;
+  const file = resolve(root, "public", path.replace(/^\//, ""));
+  const mime = path.endsWith(".png") ? "image/png" : "image/svg+xml";
+  return `data:${mime};base64,${readFileSync(file).toString("base64")}`;
 }
 
 // Inline local stylesheets, but leave the Google Fonts stylesheet external.
@@ -39,9 +40,9 @@ html = html.replace(
 
 // Replace every local brand reference with a self-contained data URI.
 const banners = {
-  "/brand/harness-banner.svg": dataUri("/brand/harness-banner.svg"),
-  "/brand/harness-mark.svg": dataUri("/brand/harness-mark.svg"),
-  "/favicon.svg": dataUri("/favicon.svg"),
+  "/brand/harness-banner.png": dataUri("/brand/harness-banner.png"),
+  "/brand/harness-mark.png": dataUri("/brand/harness-mark.png"),
+  "/favicon.png": dataUri("/favicon.png"),
 };
 
 for (const [path, uri] of Object.entries(banners)) {

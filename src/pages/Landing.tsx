@@ -416,9 +416,10 @@ export default function Landing() {
 
             <div className="mt-12 overflow-hidden rounded-2xl border border-slate-300/70 bg-black">
               <img
-                src={assetUrl("/brand/harness-banner.svg")}
+                src={assetUrl("/brand/harness-banner.png")}
                 alt="Harness Studio — Create, Build, Innovate"
-                className="h-auto w-full"
+                loading="lazy"
+                className="aspect-[3/1] h-auto w-full object-cover object-center"
               />
             </div>
 

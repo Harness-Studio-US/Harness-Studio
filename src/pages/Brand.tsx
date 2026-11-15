@@ -15,9 +15,9 @@ const palette = [
 ];
 
 const assets = [
-  { name: "Primary banner", file: "harness-banner.svg", path: "/brand/harness-banner.svg", meta: "SVG · 1600 × 520" },
-  { name: "Monogram", file: "harness-mark.svg", path: "/brand/harness-mark.svg", meta: "SVG · 256 × 256" },
-  { name: "Favicon", file: "favicon.svg", path: "/favicon.svg", meta: "SVG · rounded tile" },
+  { name: "Primary banner", file: "harness-banner.png", path: "/brand/harness-banner.png", meta: "PNG · 2560 × 1440" },
+  { name: "Monogram", file: "harness-mark.png", path: "/brand/harness-mark.png", meta: "PNG · 512 × 458" },
+  { name: "Favicon", file: "favicon.png", path: "/favicon.png", meta: "PNG · rounded tile" },
 ];
 
 export default function Brand() {
@@ -64,19 +64,19 @@ export default function Brand() {
 
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-black">
           <img
-            src={assetUrl("/brand/harness-banner.svg")}
-            alt="Harness Studio banner with monogram and Create, Build, Innovate tagline"
+            src={assetUrl("/brand/harness-banner.png")}
+            alt="Official Harness Studio banner with the ribbon monogram, wordmark and Create, Build, Innovate tagline"
             className="h-auto w-full"
           />
         </section>
         <div className="mt-2 flex justify-end">
           <a
-            href={assetUrl("/brand/harness-banner.svg")}
-            download="harness-studio-banner.svg"
+            href={assetUrl("/brand/harness-banner.png")}
+            download="harness-studio-banner.png"
             className="inline-flex items-center gap-1.5 text-[11.5px] text-slate-600 hover:text-slate-900"
           >
             <Download className="h-3 w-3" />
-            Download banner SVG
+            Download banner PNG
           </a>
         </div>
 
