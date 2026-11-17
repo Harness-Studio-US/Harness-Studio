@@ -38,6 +38,33 @@ export function authErrorMessage(error: unknown): string {
         return "This link has already been used or is no longer valid. Request a new email.";
       case "auth/user-token-expired":
         return "Your session expired. Sign in again to continue.";
+      case "auth/admin-restricted-operation":
+      case "auth/unsupported-first-factor":
+        return "Two-step verification is not enabled for this Firebase project yet.";
+      case "auth/requires-recent-login":
+        return "For your security, sign out and sign in again, then retry this change.";
+      case "auth/second-factor-already-in-use":
+        return "That second factor is already set up on this account.";
+      case "auth/maximum-second-factor-count-exceeded":
+        return "This account already has the maximum number of second factors. Remove one first.";
+      case "auth/invalid-verification-code":
+        return "That code is not correct. Check the code and try again.";
+      case "auth/missing-verification-code":
+        return "Enter the 6-digit code.";
+      case "auth/code-expired":
+      case "auth/session-expired":
+        return "That code expired. Send a new one and try again.";
+      case "auth/invalid-phone-number":
+        return "Enter a phone number in international format, for example +14155550123.";
+      case "auth/credential-already-in-use":
+      case "auth/provider-already-linked":
+        return "That phone number is already attached to a Harness Copilot account.";
+      case "auth/quota-exceeded":
+        return "The SMS limit for this project was reached. Try again later.";
+      case "auth/captcha-check-failed":
+        return "The reCAPTCHA check did not pass. Reload the page and try again.";
+      case "auth/multi-factor-auth-required":
+        return "Enter your second factor to finish signing in.";
       default:
         return "Something went wrong. Try again.";
     }

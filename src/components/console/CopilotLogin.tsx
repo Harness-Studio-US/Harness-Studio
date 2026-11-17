@@ -1,6 +1,13 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { FirebaseError } from "firebase/app";
+import {
+  createUserWithEmailAndPassword,
+  getMultiFactorResolver,
+  signInWithEmailAndPassword,
+  type MultiFactorError,
+  type MultiFactorResolver,
+} from "firebase/auth";
 import {
   ArrowLeft,
   ArrowRight,
@@ -15,7 +22,8 @@ import { Logo, LogoMark } from "../Logo";
 import { LegalLinks } from "../LegalLinks";
 import { auth, isFirebaseConfigured, missingFirebaseVars } from "../../lib/firebase";
 import { authErrorMessage } from "../../lib/authMessages";
-import { sendPasswordReset, sendVerificationEmail } from "../../lib/authActions";
+import { sendVerificationEmail } from "../../lib/authActions";
+import { MfaChallenge } from "./MfaChallenge";
 
 type Mode = "signin" | "signup";
 
@@ -89,11 +97,10 @@ export function CopilotLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
-  const [notice, setNotice] = useState("");
+  const [resolver, setResolver] = useState<MultiFactorResolver | null>(null);
 
   useEffect(() => {
     setError("");
-    setNotice("");
   }, [mode]);
 
   function switchMode(next: Mode) {
@@ -127,7 +134,6 @@ export function CopilotLogin() {
     }
 
     setError("");
-    setNotice("");
     setSubmitting(true);
     try {
       if (mode === "signup") {
@@ -141,33 +147,22 @@ export function CopilotLogin() {
         await signInWithEmailAndPassword(auth, nextEmail, password);
       }
     } catch (caught) {
+      if (caught instanceof FirebaseError && caught.code === "auth/multi-factor-auth-required") {
+        setResolver(getMultiFactorResolver(auth, caught as MultiFactorError));
+        return;
+      }
       setError(authErrorMessage(caught));
     } finally {
       setSubmitting(false);
     }
   }
 
-  async function resetPassword() {
-    if (!auth) return;
-    const nextEmail = email.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(nextEmail)) {
-      setError("Enter your email address first, then request a reset link.");
-      return;
-    }
-
-    setError("");
-    setNotice("");
-    setSubmitting(true);
-    try {
-      await sendPasswordReset(nextEmail);
-      setNotice(
-        "Password reset email sent. Open the link in this browser to choose a new password."
-      );
-    } catch (caught) {
-      setError(authErrorMessage(caught));
-    } finally {
-      setSubmitting(false);
-    }
+  if (resolver) {
+    return (
+      <LoginShell>
+        <MfaChallenge resolver={resolver} onCancel={() => setResolver(null)} />
+      </LoginShell>
+    );
   }
 
   if (!isFirebaseConfigured) {
@@ -301,14 +296,12 @@ export function CopilotLogin() {
               Password
             </label>
             {!creating && (
-              <button
-                type="button"
-                onClick={() => void resetPassword()}
-                disabled={submitting}
-                className="text-[11px] font-medium text-accent-strong hover:underline disabled:opacity-50"
+              <Link
+                to="/reset-password"
+                className="text-[11px] font-medium text-accent-strong hover:underline"
               >
                 Forgot password?
-              </button>
+              </Link>
             )}
           </div>
           <div className="relative">
@@ -345,15 +338,6 @@ export function CopilotLogin() {
             {error}
           </p>
         )}
-        {notice && (
-          <p
-            role="status"
-            className="rounded-lg border border-[#A7F3D0] bg-[#ECFDF5] px-3 py-2.5 text-[11.5px] leading-[1.6] text-[#065f46]"
-          >
-            {notice}
-          </p>
-        )}
-
         <button
           type="submit"
           disabled={submitting}

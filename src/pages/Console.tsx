@@ -9,6 +9,7 @@ import {
   Plus,
   Search,
   Send,
+  SlidersHorizontal,
   Sparkles,
   Square,
   Trash2,
@@ -18,6 +19,7 @@ import { onAuthStateChanged, signOut as firebaseSignOut, type User } from "fireb
 import { ChatMessageView } from "../components/console/ChatMessageView";
 import { FirstRunGuide, LegalConsent } from "../components/console/CopilotOnboarding";
 import { CopilotAuthLoading, CopilotLogin } from "../components/console/CopilotLogin";
+import { SettingsPanel } from "../components/console/SettingsPanel";
 import { VerifyEmail } from "../components/console/VerifyEmail";
 import { Logo, LogoMark } from "../components/Logo";
 import { LegalLinks } from "../components/LegalLinks";
@@ -99,6 +101,7 @@ export default function Console() {
   const [input, setInput] = useState("");
   const [streaming, setStreaming] = useState<{ convId: string; messageId: string } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [query, setQuery] = useState("");
   const cancelledRef = useRef(false);
   const threadRef = useRef<HTMLDivElement>(null);
@@ -369,6 +372,7 @@ export default function Console() {
     cancelledRef.current = true;
     setStreaming(null);
     setSidebarOpen(false);
+    setSettingsOpen(false);
     setGuideOpen(false);
     if (auth) void firebaseSignOut(auth);
   }
@@ -585,6 +589,14 @@ export default function Console() {
           </div>
 
           <div className="ml-auto flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(true)}
+              className="flex items-center gap-1.5 rounded-md px-2.5 py-2 text-[12px] font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+            >
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              Settings
+            </button>
             <Link
               to="/docs"
               className="hidden items-center gap-1.5 rounded-md px-2.5 py-2 text-[12px] font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900 sm:flex"
@@ -716,6 +728,12 @@ export default function Console() {
       </div>
 
       <FirstRunGuide open={guideOpen} onClose={dismissGuide} />
+      <SettingsPanel
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        user={firebaseUser}
+        onUserChanged={() => setFirebaseUser(auth?.currentUser ?? firebaseUser)}
+      />
     </div>
   );
 }

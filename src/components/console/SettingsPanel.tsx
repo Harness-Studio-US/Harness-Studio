@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import type { User } from "firebase/auth";
 import {
   BookOpen,
   Check,
@@ -28,14 +29,16 @@ import { CopyButton } from "../CodeBlock";
 import { Badge, Segmented, SettingCard, Slider, Toggle } from "../controls";
 import { cn } from "../../lib/cn";
 import { DevToolsTab } from "./DevToolsTab";
+import { SecurityTab } from "./SecurityTab";
 
-type TabId = "model" | "prompt" | "tools" | "keys" | "dev";
+type TabId = "model" | "prompt" | "tools" | "keys" | "security" | "dev";
 
 const tabs: Array<{ id: TabId; label: string; icon: typeof SlidersHorizontal }> = [
   { id: "model", label: "Model", icon: SlidersHorizontal },
   { id: "prompt", label: "Prompt", icon: MessageSquare },
   { id: "tools", label: "Tools", icon: Wrench },
   { id: "keys", label: "API keys", icon: KeyRound },
+  { id: "security", label: "Security", icon: ShieldCheck },
   { id: "dev", label: "Dev tools", icon: Terminal },
 ];
 
@@ -719,7 +722,17 @@ function KeysTab() {
   );
 }
 
-export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
+export function SettingsPanel({
+  open,
+  onClose,
+  user,
+  onUserChanged,
+}: {
+  open: boolean;
+  onClose: () => void;
+  user?: User | null;
+  onUserChanged?: () => void;
+}) {
   const [tab, setTab] = useState<TabId>("model");
   const { reset } = useSettings();
 
@@ -795,6 +808,9 @@ export function SettingsPanel({ open, onClose }: { open: boolean; onClose: () =>
           {tab === "prompt" && <PromptTab />}
           {tab === "tools" && <ToolsTab />}
           {tab === "keys" && <KeysTab />}
+          {tab === "security" && (
+            <SecurityTab user={user ?? null} onUserChanged={onUserChanged ?? (() => {})} />
+          )}
           {tab === "dev" && <DevToolsTab />}
         </div>
 

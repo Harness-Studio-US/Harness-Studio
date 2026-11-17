@@ -5,6 +5,7 @@ import Docs from "./pages/Docs";
 import Brand from "./pages/Brand";
 import Console from "./pages/Console";
 import GetStarted from "./pages/GetStarted";
+import ResetPassword from "./pages/ResetPassword";
 import { PrivacyPolicy, TermsOfService } from "./pages/Legal";
 import { CookieNotice } from "./components/CookieNotice";
 import { AuthAction } from "./components/auth/AuthAction";
@@ -69,6 +70,7 @@ export default function App() {
         <Route path="/console" element={<Console />} />
         <Route path="/login" element={<Navigate to="/console" replace />} />
         <Route path="/get-started" element={<GetStarted />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="*" element={<Navigate to="/" replace />} />

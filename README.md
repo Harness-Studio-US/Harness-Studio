@@ -59,6 +59,30 @@ Both emails return to the site root with `mode` and `oobCode` query parameters, 
 **Authentication → Settings → Authorized domains**. If Firebase rejects that continue URL with
 `auth/unauthorized-continue-uri`, the site falls back to Firebase's default email link.
 
+### Two-step verification, phone numbers and password reset
+
+Console settings include a **Security** tab (`/console` → Settings):
+
+- **Two-step verification** — enroll an authenticator app (TOTP) or a phone number, and remove
+  enrolled factors. The code is requested at sign-in.
+- **Phone number** — verify a number with an SMS code and attach it to the account.
+- **Password** — email yourself a reset link, or use the public page at `/#/reset-password`.
+
+Multi-factor authentication is an Identity Platform feature. Before these controls work:
+
+1. Upgrade the project to **Firebase Authentication with Identity Platform** (Blaze plan). SMS
+   codes are billed per message after the first ten each day.
+2. Keep **Email/Password** enabled and keep email verification on — MFA requires verified email
+   addresses, and accounts without a verified address cannot enroll a second factor.
+3. Open **Authentication → Sign-in method → Advanced → Multi-factor authentication** and enable
+   **TOTP** and **SMS**, then allow the SMS regions you expect to serve.
+4. Keep `harness-studio-us.github.io` and `localhost` in **Authorized domains**; SMS flows render a
+   reCAPTCHA on those hosts.
+
+Until the upgrade is done, enrolling a factor returns a Firebase
+`auth/admin-restricted-operation` error, which the Security tab reports as "Two-step verification is
+not enabled for this Firebase project yet."
+
 ### Custom email wording
 
 The text inside the emails is edited in the Firebase Console, not in this repository:
@@ -130,9 +154,10 @@ custom base path.
 - `/` — company home, with Products introducing Harness Copilot
 - `/docs` — plain-language guide for the product
 - `/brand` — official company brand assets, palette and usage rules
-- `/console` — sign-in, first-use legal agreement and interactive product demo
+- `/console` — sign-in, first-use legal agreement, settings (model, security, keys) and the interactive product demo
 - `/login` — redirects to `/console`, which shows the login screen when signed out
 - `/get-started` — contact path for teams and individual builders
+- `/reset-password` — request a password reset link from the website
 - `/privacy` — Privacy Policy
 - `/terms` — Terms & Conditions
 
