@@ -142,8 +142,7 @@ export function AuthAction({
             This link can’t be used.
           </h2>
           <p className="mt-3 text-[13px] leading-[1.7] text-muted">
-            {error || "The link has expired or has already been used."} Request a new email from the
-            sign-in screen.
+            {error || "The link has expired or has already been used. Request a new email from the sign-in screen."}
           </p>
         </div>
 
