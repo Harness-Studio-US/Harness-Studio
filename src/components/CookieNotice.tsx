@@ -38,10 +38,15 @@ export function CookieNotice() {
 
         <div className="min-w-0 flex-1 text-[12.5px] leading-[1.65] text-muted">
           <p>
-            <span className="font-semibold text-ink">No tracking cookies.</span> We only use the
-            browser storage needed to run the site, keep your Copilot session signed in, and
-            remember this notice. We do not use advertising or tracking cookies, and we do not
-            sell your information.
+            <span className="font-semibold text-ink">No tracking cookies.</span>{" "}
+            <span className="hidden sm:inline">
+              We only use the browser storage needed to run the site, keep your Copilot session
+              signed in, and remember this notice. We do not use advertising or tracking cookies,
+              and we do not sell your information.
+            </span>
+            <span className="sm:hidden">
+              We only use the storage needed to run the site and keep you signed in.
+            </span>
           </p>
           <p className="mt-1">
             By continuing, you agree to our{" "}

@@ -43,7 +43,7 @@ export function LoginShell({ children }: { children: ReactNode }) {
         </Link>
       </header>
 
-      <main className="mx-auto grid min-h-[calc(100vh-5rem)] w-full max-w-6xl items-center gap-12 px-5 pb-44 sm:pb-32 lg:grid-cols-[minmax(0,1fr)_460px] lg:px-8 lg:pb-24">
+      <main className="mx-auto grid min-h-[calc(100vh-5rem)] w-full max-w-6xl items-center gap-12 px-5 pb-52 sm:pb-36 lg:grid-cols-[minmax(0,1fr)_460px] lg:px-8 lg:pb-28">
         <section className="hidden max-w-[550px] lg:block">
           <span className="eyebrow">Harness Copilot account</span>
           <h1 className="mt-7 text-[64px] font-semibold leading-[0.98] tracking-[-0.06em] text-ink">
