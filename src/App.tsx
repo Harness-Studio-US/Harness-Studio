@@ -48,11 +48,14 @@ export default function App() {
 
   if (authAction) {
     return (
-      <AuthAction
-        mode={authAction.mode}
-        oobCode={authAction.oobCode}
-        onDone={() => setAuthAction(null)}
-      />
+      <>
+        <AuthAction
+          mode={authAction.mode}
+          oobCode={authAction.oobCode}
+          onDone={() => setAuthAction(null)}
+        />
+        <CookieNotice />
+      </>
     );
   }
 
