@@ -195,8 +195,7 @@ export default function Landing() {
                 </div>
                 <HeroDemo />
                 <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-[11.5px] text-muted">
-                  <span>An early look at the Copilot workspace.</span>
-                  <span>Responses are simulated.</span>
+                  <span>The Copilot workspace.</span>
                 </div>
               </div>
             </div>
@@ -232,7 +231,7 @@ export default function Landing() {
                   </Link>
                 </div>
                 <p className="mt-4 text-[12.5px] text-muted">
-                  Early preview. Responses are simulated and conversations stay in this browser.
+                  Conversations stay in this browser.
                 </p>
               </div>
             </div>
@@ -481,7 +480,7 @@ export default function Landing() {
                 A clearer view of what this is.
               </h2>
               <p className="mt-5 max-w-[300px] text-[14.5px] leading-[1.75] text-muted">
-                About the company, the product, and the early preview.
+                About the company, the product, and the app.
               </p>
               <Link
                 to="/docs"
@@ -524,7 +523,7 @@ export default function Landing() {
                     want to talk through the work first.
                   </p>
                   <p className="mt-4 text-[11.5px] text-[#aaa396]">
-                    Early preview. Responses are simulated.
+                    Conversations stay in this browser.
                   </p>
                 </div>
 

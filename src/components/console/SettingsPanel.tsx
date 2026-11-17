@@ -646,7 +646,8 @@ function KeysTab() {
           </div>
         ) : (
           <div className="mb-2 rounded-md border border-amber-200 bg-amber-50 px-2 py-1.5 text-[9.5px] text-amber-700/80">
-            No provider connected. Chat replies come from the local simulation engine.
+            No provider connected. Add an OpenAI-compatible endpoint to route replies through your
+            own model.
           </div>
         )}
         <div className="space-y-2">

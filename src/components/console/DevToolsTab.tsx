@@ -339,7 +339,7 @@ export function DevToolsTab() {
                 <span className="font-mono text-slate-800">HTTP {result.status || "ERR"}</span>
                 <span className="font-mono text-slate-500">{result.latency}ms</span>
                 <Badge tone={result.live ? "green" : "amber"}>
-                  {result.live ? "live provider" : "simulated"}
+                  {result.live ? "live provider" : "local"}
                 </Badge>
                 <CopyButton text={result.body} className="ml-auto" />
               </div>
@@ -348,8 +348,9 @@ export function DevToolsTab() {
               </pre>
               {!result.live && (
                 <p className="mt-2 text-[9.5px] text-slate-500">
-                  No provider connected, so this response is simulated and the request was logged
-                  locally. Connect a provider under API keys to send the request for real.
+                  No provider connected, so this test response came from the built-in sample and the
+                  request was logged locally. Connect a provider under API keys to send the request
+                  for real.
                 </p>
               )}
             </div>
@@ -590,7 +591,7 @@ export function DevToolsTab() {
           <div className="rounded-xl border border-slate-200 bg-white p-3.5">
             <div className="mb-3 flex items-center justify-between">
               <span className="text-[11.5px] font-medium text-slate-800">Token usage</span>
-              <span className="text-[9px] text-slate-400">last 30 days · preview</span>
+              <span className="text-[9px] text-slate-400">last 30 days</span>
             </div>
             <div className="flex h-24 items-end gap-[3px]">
               {series.map((day, index) => (

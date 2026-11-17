@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { FirebaseError } from "firebase/app";
 import {
   PhoneAuthProvider,
   PhoneMultiFactorGenerator,
@@ -12,7 +13,16 @@ import {
   type TotpSecret,
   type User,
 } from "firebase/auth";
-import { Check, Loader2, MailCheck, ShieldCheck, Smartphone, Trash2 } from "lucide-react";
+import {
+  Check,
+  ExternalLink,
+  Loader2,
+  MailCheck,
+  RefreshCw,
+  ShieldCheck,
+  Smartphone,
+  Trash2,
+} from "lucide-react";
 import { Badge, SettingCard } from "../controls";
 import { CopyButton } from "../CodeBlock";
 import { auth } from "../../lib/firebase";
@@ -26,6 +36,17 @@ const PHONE_LINK_RECAPTCHA_ID = "harness-phone-link-recaptcha";
 
 function isPhoneFactor(factor: MultiFactorInfo): boolean {
   return factor.factorId === "phone";
+}
+
+/** Firebase answers these codes when the project has not enabled MFA yet. */
+function isMfaUnavailable(error: unknown): boolean {
+  if (!(error instanceof FirebaseError)) return false;
+  return (
+    error.code === "auth/admin-restricted-operation" ||
+    error.code === "auth/operation-not-allowed" ||
+    error.code === "auth/unsupported-first-factor" ||
+    error.code === "auth/unsupported-tenant-operation"
+  );
 }
 
 function factorTitle(factor: MultiFactorInfo): string {
@@ -47,6 +68,7 @@ export function SecurityTab({
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  const [mfaSetup, setMfaSetup] = useState<"checking" | "ready" | "blocked">("checking");
 
   const [totpSecret, setTotpSecret] = useState<TotpSecret | null>(null);
   const [totpUri, setTotpUri] = useState("");
@@ -63,6 +85,24 @@ export function SecurityTab({
   useEffect(() => {
     setFactors(user ? multiFactor(user).enrolledFactors : []);
   }, [user]);
+
+  useEffect(() => {
+    const current = auth?.currentUser;
+    if (!current) return;
+    let active = true;
+    setMfaSetup("checking");
+    void (async () => {
+      try {
+        await multiFactor(current).getSession();
+        if (active) setMfaSetup("ready");
+      } catch {
+        if (active) setMfaSetup("blocked");
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [user?.uid]);
 
   function clearMessages() {
     setError("");
@@ -89,6 +129,7 @@ export function SecurityTab({
       setTotpUri(secret.generateQrCodeUrl(user.email ?? "account", "Harness Studio"));
       setTotpCode("");
     } catch (caught) {
+      if (isMfaUnavailable(caught)) setMfaSetup("blocked");
       setError(authErrorMessage(caught));
     } finally {
       setBusy("");
@@ -141,6 +182,7 @@ export function SecurityTab({
       setFactorVerificationId(verificationId);
       setNotice(`We sent a 6-digit code to ${number}.`);
     } catch (caught) {
+      if (isMfaUnavailable(caught)) setMfaSetup("blocked");
       setError(authErrorMessage(caught));
     } finally {
       verifier.clear();
@@ -259,6 +301,25 @@ export function SecurityTab({
   }
 
   const twoStepOn = factors.length > 0;
+  const projectId = auth?.app.options.projectId ?? "";
+  const authSettingsUrl = projectId
+    ? `https://console.firebase.google.com/project/${projectId}/authentication/settings`
+    : "https://console.firebase.google.com/";
+  const totpCommand = `curl -X PATCH "https://identitytoolkit.googleapis.com/admin/v2/projects/${projectId || "YOUR_PROJECT_ID"}/config?updateMask=mfa" \\\n  -H "Authorization: Bearer $(gcloud auth print-access-token)" \\\n  -H "Content-Type: application/json" \\\n  -H "X-Goog-User-Project: ${projectId || "YOUR_PROJECT_ID"}" \\\n  -d '{"mfa":{"providerConfigs":[{"state":"ENABLED","totpProviderConfig":{"adjacentIntervals":5}}]}}'`;
+
+  async function recheckMfa() {
+    const current = auth?.currentUser;
+    if (!current) return;
+    setMfaSetup("checking");
+    try {
+      await multiFactor(current).getSession();
+      setMfaSetup("ready");
+      setNotice("Firebase now allows second factors on this project.");
+    } catch {
+      setMfaSetup("blocked");
+      setError("Firebase still refuses second factors on this project. Finish the steps below, then check again.");
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -282,6 +343,73 @@ export function SecurityTab({
         </div>
       </SettingCard>
 
+      {mfaSetup === "blocked" && (
+        <SettingCard
+          title="Turn on two-step verification in Firebase"
+          description="Firebase has not enabled multi-factor authentication for this project yet. These are the only steps needed, and they are all in the Firebase console."
+          right={<Badge tone="amber">Setup needed</Badge>}
+        >
+          <ol className="space-y-2.5 text-[10.5px] leading-relaxed text-slate-600">
+            <li>
+              <span className="font-semibold text-slate-800">1. Upgrade to Identity Platform.</span>{" "}
+              Firebase console → Authentication → Settings → Upgrade. Sign-in keeps working, and the
+              no-cost tier covers up to 3,000 daily active users.
+            </li>
+            <li>
+              <span className="font-semibold text-slate-800">2. Enable authenticator codes.</span>{" "}
+              The console has no switch for TOTP yet, so run this once with gcloud signed in:
+              <div className="mt-1.5 flex items-start gap-1.5">
+                <pre className="min-w-0 flex-1 overflow-x-auto rounded border border-slate-200 bg-slate-50 p-2 font-mono text-[9px] leading-relaxed text-slate-700">
+                  {totpCommand}
+                </pre>
+                <CopyButton text={totpCommand} className="shrink-0" />
+              </div>
+            </li>
+            <li>
+              <span className="font-semibold text-slate-800">3. Optional: SMS codes.</span>{" "}
+              Authentication → Sign-in method → Advanced → enable SMS multi-factor, add a test
+              number, and keep the project on the Blaze plan.
+            </li>
+            <li>
+              <span className="font-semibold text-slate-800">4. Keep email verification on.</span>{" "}
+              Accounts must confirm their address before enrolling a factor, which this site already
+              requires.
+            </li>
+            <li>
+              <span className="font-semibold text-slate-800">5. Keep the domain authorized.</span>{" "}
+              Authentication → Settings → Authorized domains needs harness-studio-us.github.io and
+              localhost.
+            </li>
+          </ol>
+
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            <a
+              href={authSettingsUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-[10.5px] font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              <ExternalLink className="h-3 w-3" />
+              Open Authentication settings
+            </a>
+            <button
+              type="button"
+              onClick={() => void recheckMfa()}
+              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-[10.5px] font-medium text-slate-700 transition hover:bg-slate-50"
+            >
+              <RefreshCw className="h-3 w-3" />
+              Check again
+            </button>
+          </div>
+
+          <p className="mt-2 text-[9px] leading-relaxed text-slate-400">
+            The TOTP request replaces the whole MFA configuration, so if SMS is already enabled,
+            include its provider config in the same call. Already finished these steps? Use “Check
+            again”.
+          </p>
+        </SettingCard>
+      )}
+
       {error && (
         <p
           role="alert"
@@ -302,7 +430,11 @@ export function SecurityTab({
       <SettingCard
         title="Two-step verification"
         description="Ask for a second factor whenever this account signs in."
-        right={<Badge tone={twoStepOn ? "green" : "default"}>{twoStepOn ? "On" : "Off"}</Badge>}
+        right={
+          <Badge tone={twoStepOn ? "green" : mfaSetup === "blocked" ? "amber" : "default"}>
+            {twoStepOn ? "On" : mfaSetup === "blocked" ? "Setup" : "Off"}
+          </Badge>
+        }
       >
         {factors.length > 0 && (
           <div className="space-y-1.5">

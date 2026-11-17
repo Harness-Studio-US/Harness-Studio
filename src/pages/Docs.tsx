@@ -362,7 +362,7 @@ export default function Docs() {
                   {[
                     [
                       "Nothing seems to have changed",
-                      "Check that your project is open in your workspace and that you are looking at the right screen. In the early preview, the change is simulated — the full experience lives in the app.",
+                      "Check that your project is open in your workspace and that you are looking at the right screen. If it still looks the same, ask Copilot which screen it changed and point it at the one you meant.",
                     ],
                     [
                       "It changed the wrong thing",

@@ -77,9 +77,6 @@ export function LoginShell({ children }: { children: ReactNode }) {
             </span>
             <span>Password reset by email</span>
           </div>
-          <p className="mt-5 text-[11.5px] leading-relaxed text-muted">
-            Early preview. Responses are simulated.
-          </p>
         </section>
 
         <section className="ai-card-in mx-auto w-full max-w-[460px] rounded-[28px] border border-line bg-surface p-6 shadow-[0_24px_60px_-45px_rgba(23,21,15,0.45)] sm:p-8">

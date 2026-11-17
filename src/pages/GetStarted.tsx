@@ -127,14 +127,14 @@ export default function GetStarted() {
                   Want to look around first?
                 </div>
                 <p className="mt-3 text-[13.5px] leading-[1.7] text-ink-soft">
-                  Open the early preview, accept the terms once, and try the conversation. Responses
-                  are simulated and chats stay in your browser.
+                  Open Harness Copilot, accept the terms once, and try the conversation. Chats stay
+                  in your browser.
                 </p>
                 <Link
                   to="/console"
                   className="mt-4 inline-flex items-center gap-1.5 text-[13px] font-semibold text-accent-strong hover:underline"
                 >
-                  Open the preview
+                  Open Harness Copilot
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>

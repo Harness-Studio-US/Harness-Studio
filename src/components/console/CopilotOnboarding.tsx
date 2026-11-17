@@ -57,7 +57,7 @@ export function LegalConsent({
           <div className="mt-10 space-y-4 border-t border-line pt-7">
             {[
               "Your conversations stay in this browser.",
-              "Copilot’s replies are simulated in the early preview.",
+              "Copilot explains each change before you keep it.",
               "You can ask for a change, or undo it, at any time.",
             ].map((item) => (
               <div key={item} className="flex gap-3 text-[13.5px] leading-[1.65] text-ink-soft">
@@ -70,16 +70,13 @@ export function LegalConsent({
           </div>
 
           <p className="mt-8 text-[11.5px] leading-relaxed text-muted">
-            Early preview. No payment details required.
+            No payment details required.
           </p>
         </section>
 
         <section className="ai-card-in mx-auto w-full max-w-[470px] rounded-[28px] border border-line bg-surface p-6 shadow-[0_24px_60px_-45px_rgba(23,21,15,0.45)] sm:p-8">
           <div className="flex items-center justify-between gap-3 lg:hidden">
             <Logo markClassName="h-7 w-7" />
-            <span className="rounded-full border border-line bg-paper px-2.5 py-1 text-[9.5px] font-medium uppercase tracking-[0.1em] text-muted">
-              Preview
-            </span>
           </div>
 
           <div className="mt-6 lg:mt-0">
@@ -109,9 +106,8 @@ export function LegalConsent({
             <div className="flex items-start gap-2.5">
               <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#047857]" />
               <div className="text-[11.5px] leading-[1.7] text-muted">
-                <span className="font-semibold text-ink">An early preview.</span> Replies are
-                simulated, and everything you type stays in this browser. Nothing is sent to a
-                Harness Studio server.
+                <span className="font-semibold text-ink">Private by default.</span> Everything you
+                type stays in this browser, and nothing is sent to a Harness Studio server.
               </div>
             </div>
           </div>
@@ -271,9 +267,6 @@ export function FirstRunGuide({ open, onClose }: { open: boolean; onClose: () =>
           <div className="flex items-center justify-between gap-3">
             <span className="flex h-11 w-11 items-center justify-center rounded-xl border border-line bg-paper">
               <Icon className="h-5 w-5 text-accent" />
-            </span>
-            <span className="rounded-full border border-line bg-paper px-2.5 py-1 text-[10px] font-medium text-muted">
-              Preview workspace
             </span>
           </div>
 

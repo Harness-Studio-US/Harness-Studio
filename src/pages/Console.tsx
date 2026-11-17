@@ -530,12 +530,9 @@ export default function Console() {
                 <div className="text-[12px] font-semibold text-slate-800">Harness Copilot</div>
                 <div className="text-[10px] text-slate-500">AI workspace</div>
               </div>
-              <span className="ml-auto rounded-full border border-violet-200 bg-violet-50 px-1.5 py-0.5 text-[8.5px] font-semibold uppercase tracking-[0.08em] text-violet-700">
-                Preview
-              </span>
             </div>
             <p className="mt-2 text-[10.5px] leading-relaxed text-slate-600">
-              An early preview with simulated replies. Chats stay in this browser.
+              Chats stay in this browser.
             </p>
 
             <div className="mt-2.5 flex items-center gap-2 border-t border-slate-100 pt-2.5">
@@ -559,13 +556,24 @@ export default function Console() {
 
           <div className="flex items-center justify-between gap-2 px-1 py-0.5">
             <span className="text-[10px] text-slate-600">Private to this browser.</span>
-            <Link
-              to="/"
-              className="inline-flex items-center gap-1 rounded p-1 text-[10px] text-slate-600 hover:text-slate-900"
-            >
-              <ArrowLeft className="h-3 w-3" />
-              Site
-            </Link>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setSettingsOpen(true)}
+                className="inline-flex items-center gap-1 rounded p-1 text-[10px] text-slate-600 hover:text-slate-900"
+              >
+                <SlidersHorizontal className="h-3 w-3" />
+                Settings
+              </button>
+              <span aria-hidden className="h-2.5 w-px bg-slate-200" />
+              <Link
+                to="/"
+                className="inline-flex items-center gap-1 rounded p-1 text-[10px] text-slate-600 hover:text-slate-900"
+              >
+                <ArrowLeft className="h-3 w-3" />
+                Site
+              </Link>
+            </div>
           </div>
           <LegalLinks className="px-1 pt-0.5" showContact={false} />
         </div>
@@ -629,9 +637,6 @@ export default function Console() {
                   <p className="mx-auto mt-3 max-w-md text-[14.5px] leading-[1.7] text-slate-600">
                     Describe a change in your own words. Harness Copilot will talk it through and
                     help you decide what to do next.
-                  </p>
-                  <p className="mt-3 text-[11.5px] text-slate-600">
-                    Early preview · Responses are simulated
                   </p>
                 </div>
 
@@ -721,7 +726,6 @@ export default function Console() {
 
             <div className="mt-2 flex flex-wrap items-center justify-between gap-1.5 px-1 text-[10.5px] text-slate-600">
               <span>Enter to send · Shift+Enter for a new line</span>
-              <span>Early preview · Responses are simulated</span>
             </div>
           </div>
         </div>

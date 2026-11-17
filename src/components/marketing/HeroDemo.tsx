@@ -13,7 +13,7 @@ export function HeroDemo() {
   return (
     <div
       className="relative min-w-0"
-      aria-label="Harness Copilot preview showing a request and the resulting change summary"
+      aria-label="Harness Copilot showing a request and the resulting change summary"
     >
       <div className="overflow-hidden rounded-[20px] border border-[#1E293B] bg-[#080A11] shadow-[0_32px_70px_-40px_rgba(23,21,15,0.55)]">
         <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
@@ -25,7 +25,7 @@ export function HeroDemo() {
           </span>
           <span className="ml-auto inline-flex shrink-0 items-center gap-1.5 rounded-full border border-[#34D399]/25 bg-[#34D399]/10 px-2 py-1 text-[10px] font-medium text-[#a7f3d0]">
             <span className="h-1 w-1 rounded-full bg-[#34D399]" />
-            Preview
+            Ready
           </span>
         </div>
 

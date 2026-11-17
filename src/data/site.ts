@@ -156,8 +156,8 @@ export const faqs = [
     a: "Fix a broken button, add a page, change how something looks, explain part of your project, or help you decide what to build next. If you can describe it, it’s worth asking.",
   },
   {
-    q: "Is the preview the full app?",
-    a: "No. The early preview lets you try the Harness Copilot conversation in your browser with simulated responses. The full experience — your project, the changes and the review — happens inside the app.",
+    q: "Can I try it first?",
+    a: "Yes. Open Harness Copilot, sign in and describe what you want in your own words. The conversation happens in your browser, and the full experience — your project, the changes and the review — lives inside the app.",
   },
   {
     q: "What if I don’t like a change?",

@@ -68,20 +68,37 @@ Console settings include a **Security** tab (`/console` → Settings):
 - **Phone number** — verify a number with an SMS code and attach it to the account.
 - **Password** — email yourself a reset link, or use the public page at `/#/reset-password`.
 
-Multi-factor authentication is an Identity Platform feature. Before these controls work:
+Multi-factor authentication is an Identity Platform feature. The Security tab checks this on open and
+shows a **Turn on two-step verification in Firebase** card with these steps until it is done.
 
-1. Upgrade the project to **Firebase Authentication with Identity Platform** (Blaze plan). SMS
-   codes are billed per message after the first ten each day.
-2. Keep **Email/Password** enabled and keep email verification on — MFA requires verified email
-   addresses, and accounts without a verified address cannot enroll a second factor.
-3. Open **Authentication → Sign-in method → Advanced → Multi-factor authentication** and enable
-   **TOTP** and **SMS**, then allow the SMS regions you expect to serve.
-4. Keep `harness-studio-us.github.io` and `localhost` in **Authorized domains**; SMS flows render a
-   reCAPTCHA on those hosts.
+1. **Upgrade the project.** Firebase console → **Authentication** → **Settings** → **Upgrade** (to
+   Firebase Authentication with Identity Platform). Sign-in keeps working; the no-cost allowance
+   covers 3,000 daily active users. No billing account is needed for TOTP alone.
+2. **Enable authenticator codes (TOTP).** There is no console switch for this yet, so run the REST
+   call once with `gcloud` signed in to the project:
 
-Until the upgrade is done, enrolling a factor returns a Firebase
-`auth/admin-restricted-operation` error, which the Security tab reports as "Two-step verification is
-not enabled for this Firebase project yet."
+```bash
+PROJECT_ID=your-project-id
+curl -X PATCH "https://identitytoolkit.googleapis.com/admin/v2/projects/$PROJECT_ID/config?updateMask=mfa" \
+  -H "Authorization: Bearer $(gcloud auth print-access-token)" \
+  -H "Content-Type: application/json" \
+  -H "X-Goog-User-Project: $PROJECT_ID" \
+  -d '{"mfa":{"providerConfigs":[{"state":"ENABLED","totpProviderConfig":{"adjacentIntervals":5}}]}}'
+```
+
+   The `updateMask=mfa` request replaces the whole MFA configuration. If SMS is already enabled,
+   include its provider config in the same `providerConfigs` array.
+3. **Optional: SMS codes.** Firebase console → **Authentication** → **Sign-in method** →
+   **Advanced** → enable **SMS multi-factor authentication**, add the numbers you will test with, and
+   keep the project on the **Blaze** plan. SMS codes are billed per message after the first ten each
+   day.
+4. **Keep email verification on.** MFA requires verified email addresses; this site already blocks
+   the workspace until the address is confirmed.
+5. **Keep the domain authorized.** **Authentication → Settings → Authorized domains** needs
+   `harness-studio-us.github.io` and `localhost`; SMS flows render a reCAPTCHA there.
+
+Until step 1–2 are done, enrolling a factor returns `auth/admin-restricted-operation`, which the
+Security tab reports on its setup card. Use **Check again** after finishing the console work.
 
 ### Custom email wording
 
