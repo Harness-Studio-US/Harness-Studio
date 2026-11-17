@@ -47,6 +47,58 @@ environment variables still keeps each environment's configuration separate. Pro
 with Firebase Authentication provider settings and, if you later use Firestore or Storage, security
 rules.
 
+### Email verification and password reset
+
+New accounts must confirm their email address before the workspace opens. Creating an account sends
+a verification email; signing in with an unverified address shows a verification screen where the
+message can be resent or the check repeated. Password reset emails open this site's own "Choose a
+new password" screen rather than Firebase's default page.
+
+Both emails return to the site root with `mode` and `oobCode` query parameters, so
+`harness-studio-us.github.io` (and `localhost` for development) must stay listed under
+**Authentication → Settings → Authorized domains**. If Firebase rejects that continue URL with
+`auth/unauthorized-continue-uri`, the site falls back to Firebase's default email link.
+
+### Custom email wording
+
+The text inside the emails is edited in the Firebase Console, not in this repository:
+**Authentication → Templates → Password reset** and **Email address verification**. Suggested copy:
+
+Password reset
+
+- Subject: `Reset your Harness Copilot password`
+- Message:
+
+```text
+Hello,
+
+We received a request to reset the password for your %APP_NAME% account (%EMAIL%).
+
+Choose a new password here: %LINK%
+
+If you did not ask for this, you can ignore this email and your password will stay the same.
+
+— Harness Studio
+```
+
+Email address verification
+
+- Subject: `Verify your email for Harness Copilot`
+- Message:
+
+```text
+Welcome to %APP_NAME%.
+
+Confirm your email address to finish setting up your workspace: %LINK%
+
+If you did not create this account, you can ignore this email.
+
+— Harness Studio
+```
+
+Set the template's sender name to `Harness Studio` and reply-to to `message.harness.studio@outlook.com`
+so both messages match the rest of the site.
+
 The Privacy Policy now discloses the Firebase account email and user identifier, Firebase/Google's
 role as the authentication provider, local browser storage for chats, and the account-deletion
 contact. Review the wording against your actual retention and deletion practices before publishing.

@@ -15,7 +15,7 @@ export function HeroDemo() {
       className="relative min-w-0"
       aria-label="Harness Copilot preview showing a request and the resulting change summary"
     >
-      <div className="overflow-hidden rounded-[18px] border border-[#1E293B] bg-[#080A11] shadow-[0_32px_70px_-40px_rgba(23,21,15,0.55)]">
+      <div className="overflow-hidden rounded-[20px] border border-[#1E293B] bg-[#080A11] shadow-[0_32px_70px_-40px_rgba(23,21,15,0.55)]">
         <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3">
           <LogoMark className="h-4 w-4 shrink-0" />
           <span className="text-[12px] font-semibold text-[#F8FAFC]">Harness Copilot</span>

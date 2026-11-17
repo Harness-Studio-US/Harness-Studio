@@ -1,11 +1,6 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { FirebaseError } from "firebase/app";
-import {
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import {
   ArrowLeft,
   ArrowRight,
@@ -19,46 +14,12 @@ import {
 import { Logo, LogoMark } from "../Logo";
 import { LegalLinks } from "../LegalLinks";
 import { auth, isFirebaseConfigured, missingFirebaseVars } from "../../lib/firebase";
+import { authErrorMessage } from "../../lib/authMessages";
+import { sendPasswordReset, sendVerificationEmail } from "../../lib/authActions";
 
 type Mode = "signin" | "signup";
 
-function authErrorMessage(error: unknown): string {
-  if (error instanceof FirebaseError) {
-    switch (error.code) {
-      case "auth/invalid-email":
-        return "Enter a valid email address.";
-      case "auth/missing-password":
-        return "Enter your password.";
-      case "auth/weak-password":
-        return "Use a password with at least 6 characters.";
-      case "auth/email-already-in-use":
-        return "An account with this email already exists. Sign in instead.";
-      case "auth/invalid-credential":
-      case "auth/wrong-password":
-      case "auth/user-not-found":
-        return "Email or password is incorrect.";
-      case "auth/too-many-requests":
-        return "Too many attempts. Wait a moment, then try again.";
-      case "auth/network-request-failed":
-        return "Network error. Check your connection and try again.";
-      case "auth/operation-not-allowed":
-      case "auth/configuration-not-found":
-        return "Email/password sign-in is not enabled in Firebase Authentication.";
-      case "auth/unauthorized-domain":
-        return "This domain is not authorized in Firebase Authentication.";
-      case "auth/invalid-api-key":
-      case "auth/api-key-not-valid":
-        return "The Firebase API key is invalid. Check the Firebase web app configuration.";
-      case "auth/user-disabled":
-        return "This account has been disabled.";
-      default:
-        return "Could not sign in. Try again.";
-    }
-  }
-  return "Could not sign in. Try again.";
-}
-
-function LoginShell({ children }: { children: ReactNode }) {
+export function LoginShell({ children }: { children: ReactNode }) {
   return (
     <div className="ai-screen-in min-h-screen bg-paper text-ink">
       <header className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between gap-4 px-5 lg:px-10">
@@ -113,7 +74,7 @@ function LoginShell({ children }: { children: ReactNode }) {
           </p>
         </section>
 
-        <section className="ai-card-in mx-auto w-full max-w-[460px] rounded-xl border border-line bg-surface p-6 shadow-[0_24px_60px_-45px_rgba(23,21,15,0.45)] sm:p-8">
+        <section className="ai-card-in mx-auto w-full max-w-[460px] rounded-[28px] border border-line bg-surface p-6 shadow-[0_24px_60px_-45px_rgba(23,21,15,0.45)] sm:p-8">
           {children}
         </section>
       </main>
@@ -170,7 +131,12 @@ export function CopilotLogin() {
     setSubmitting(true);
     try {
       if (mode === "signup") {
-        await createUserWithEmailAndPassword(auth, nextEmail, password);
+        const credential = await createUserWithEmailAndPassword(auth, nextEmail, password);
+        try {
+          await sendVerificationEmail(credential.user);
+        } catch {
+          // The verification screen can resend the link if this attempt fails.
+        }
       } else {
         await signInWithEmailAndPassword(auth, nextEmail, password);
       }
@@ -193,8 +159,10 @@ export function CopilotLogin() {
     setNotice("");
     setSubmitting(true);
     try {
-      await sendPasswordResetEmail(auth, nextEmail);
-      setNotice("Password reset email sent. Check your inbox.");
+      await sendPasswordReset(nextEmail);
+      setNotice(
+        "Password reset email sent. Open the link in this browser to choose a new password."
+      );
     } catch (caught) {
       setError(authErrorMessage(caught));
     } finally {

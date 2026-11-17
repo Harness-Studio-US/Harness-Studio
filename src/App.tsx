@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Landing from "./pages/Landing";
 import Docs from "./pages/Docs";
@@ -6,7 +6,18 @@ import Brand from "./pages/Brand";
 import Console from "./pages/Console";
 import GetStarted from "./pages/GetStarted";
 import { PrivacyPolicy, TermsOfService } from "./pages/Legal";
+import { CookieNotice } from "./components/CookieNotice";
+import { AuthAction } from "./components/auth/AuthAction";
 import { removeLegacyCredentials } from "./lib/copilotState";
+
+/** Firebase email links land on the site root with `mode` and `oobCode` in the query. */
+function readAuthAction(): { mode: string; oobCode: string } | null {
+  const params = new URLSearchParams(window.location.search);
+  const mode = params.get("mode");
+  const oobCode = params.get("oobCode");
+  if (!mode || !oobCode) return null;
+  return { mode, oobCode };
+}
 
 function ScrollManager() {
   const { pathname, hash } = useLocation();
@@ -29,9 +40,21 @@ function ScrollManager() {
 }
 
 export default function App() {
+  const [authAction, setAuthAction] = useState(readAuthAction);
+
   useEffect(() => {
     removeLegacyCredentials();
   }, []);
+
+  if (authAction) {
+    return (
+      <AuthAction
+        mode={authAction.mode}
+        oobCode={authAction.oobCode}
+        onDone={() => setAuthAction(null)}
+      />
+    );
+  }
 
   return (
     <>
@@ -47,6 +70,7 @@ export default function App() {
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <CookieNotice />
     </>
   );
 }

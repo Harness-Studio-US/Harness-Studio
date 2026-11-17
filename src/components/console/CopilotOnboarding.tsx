@@ -74,7 +74,7 @@ export function LegalConsent({
           </p>
         </section>
 
-        <section className="ai-card-in mx-auto w-full max-w-[470px] rounded-xl border border-line bg-surface p-6 shadow-[0_24px_60px_-45px_rgba(23,21,15,0.45)] sm:p-8">
+        <section className="ai-card-in mx-auto w-full max-w-[470px] rounded-[28px] border border-line bg-surface p-6 shadow-[0_24px_60px_-45px_rgba(23,21,15,0.45)] sm:p-8">
           <div className="flex items-center justify-between gap-3 lg:hidden">
             <Logo markClassName="h-7 w-7" />
             <span className="rounded-full border border-line bg-paper px-2.5 py-1 text-[9.5px] font-medium uppercase tracking-[0.1em] text-muted">
@@ -247,7 +247,7 @@ export function FirstRunGuide({ open, onClose }: { open: boolean; onClose: () =>
         aria-modal="true"
         aria-labelledby="copilot-guide-title"
         onClick={(event) => event.stopPropagation()}
-        className="ai-guide-in w-full max-w-[450px] rounded-xl border border-line bg-surface p-5 text-left shadow-[0_30px_90px_-30px_rgba(23,21,15,0.55)] sm:p-6"
+        className="ai-guide-in w-full max-w-[450px] rounded-[22px] border border-line bg-surface p-5 text-left shadow-[0_30px_90px_-30px_rgba(23,21,15,0.55)] sm:p-6"
       >
         <div className="flex items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-line bg-paper">

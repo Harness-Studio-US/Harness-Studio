@@ -18,6 +18,7 @@ import { onAuthStateChanged, signOut as firebaseSignOut, type User } from "fireb
 import { ChatMessageView } from "../components/console/ChatMessageView";
 import { FirstRunGuide, LegalConsent } from "../components/console/CopilotOnboarding";
 import { CopilotAuthLoading, CopilotLogin } from "../components/console/CopilotLogin";
+import { VerifyEmail } from "../components/console/VerifyEmail";
 import { Logo, LogoMark } from "../components/Logo";
 import { LegalLinks } from "../components/LegalLinks";
 import { streamAssistant, titleForConversation, type ChatMessage } from "../lib/chat";
@@ -88,6 +89,7 @@ export default function Console() {
   const { settings, logRequest } = useSettings();
   const [authReady, setAuthReady] = useState(!auth);
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
+  const [verifiedNow, setVerifiedNow] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [termsReady, setTermsReady] = useState(false);
   const [guideOpen, setGuideOpen] = useState(false);
@@ -122,6 +124,7 @@ export default function Console() {
     if (!firebaseUser) {
       setConversations([]);
       setChatsReady(false);
+      setVerifiedNow(false);
       setAcceptedTerms(false);
       setTermsReady(false);
       setActiveId("");
@@ -383,6 +386,16 @@ export default function Console() {
 
   if (!firebaseUser) {
     return <CopilotLogin />;
+  }
+
+  if (!firebaseUser.emailVerified && !verifiedNow) {
+    return (
+      <VerifyEmail
+        user={firebaseUser}
+        onVerified={() => setVerifiedNow(true)}
+        onSignOut={signOutUser}
+      />
+    );
   }
 
   if (!termsReady) {
