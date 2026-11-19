@@ -78,7 +78,7 @@ export function Nav() {
       </div>
 
       {open && (
-        <div className="border-t border-line bg-paper px-5 pb-5 pt-3 lg:hidden">
+        <div className="anim-slide-down border-t border-line bg-paper px-5 pb-5 pt-3 lg:hidden">
           <nav className="flex flex-col" aria-label="Mobile navigation">
             {links.map((link) => (
               <Link

@@ -394,7 +394,7 @@ export default function Console() {
       {/* sidebar backdrop */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 z-30 bg-[#0F172A]/45 lg:hidden"
+          className="anim-fade-in fixed inset-0 z-30 bg-[#0F172A]/45 lg:hidden"
           onClick={() => setSidebarOpen(false)}
           aria-hidden
         />
@@ -425,7 +425,7 @@ export default function Console() {
           <button
             type="button"
             onClick={createConversation}
-            className="flex h-9 w-full items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-800 transition hover:bg-slate-50"
+            className="press flex h-9 w-full items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-3 text-[12px] font-semibold text-slate-800 transition hover:bg-slate-50"
           >
             <Plus className="h-3.5 w-3.5" />
             New chat
@@ -504,7 +504,7 @@ export default function Console() {
               aria-expanded={accountOpen}
               aria-haspopup="menu"
               title="Account, terms and settings"
-              className="relative z-20 flex w-full items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-2 text-left transition hover:border-slate-300 hover:bg-slate-50"
+                              className="press relative z-20 flex w-full items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-2 text-left transition hover:border-slate-300 hover:bg-slate-50"
             >
               <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-violet-200 bg-violet-50 text-[10px] font-semibold text-violet-700">
                 {userInitial}
@@ -529,7 +529,7 @@ export default function Console() {
               <div
                 role="menu"
                 aria-label="Account"
-                className="absolute bottom-full left-0 right-0 z-30 mb-1.5 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-[0_20px_45px_-24px_rgba(15,23,42,0.4)]"
+                className="anim-pop absolute bottom-full left-0 right-0 z-30 mb-1.5 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-[0_20px_45px_-24px_rgba(15,23,42,0.4)]"
               >
                 <button
                   type="button"
@@ -591,7 +591,7 @@ export default function Console() {
 
       {/* main */}
       <div className="flex min-w-0 flex-1 flex-col bg-white">
-        <header className="flex h-16 shrink-0 items-center gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6">
+        <header className="anim-fade-in flex h-16 shrink-0 items-center gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6">
           <button
             type="button"
             onClick={() => setSidebarOpen(true)}
@@ -610,7 +610,7 @@ export default function Console() {
             <button
               type="button"
               onClick={() => setSettingsOpen(true)}
-              className="flex items-center gap-1.5 rounded-md px-2.5 py-2 text-[12px] font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              className="press flex items-center gap-1.5 rounded-md px-2.5 py-2 text-[12px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
             >
               <SlidersHorizontal className="h-3.5 w-3.5" />
               Settings

@@ -41,6 +41,7 @@ function ScrollManager() {
 }
 
 export default function App() {
+  const { pathname } = useLocation();
   const [authAction, setAuthAction] = useState(readAuthAction);
 
   useEffect(() => {
@@ -63,18 +64,20 @@ export default function App() {
   return (
     <>
       <ScrollManager />
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/docs" element={<Docs />} />
-        <Route path="/brand" element={<Brand />} />
-        <Route path="/console" element={<Console />} />
-        <Route path="/login" element={<Navigate to="/console" replace />} />
-        <Route path="/get-started" element={<GetStarted />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/privacy" element={<PrivacyPolicy />} />
-        <Route path="/terms" element={<TermsOfService />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <div key={pathname} className="page-enter">
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/docs" element={<Docs />} />
+          <Route path="/brand" element={<Brand />} />
+          <Route path="/console" element={<Console />} />
+          <Route path="/login" element={<Navigate to="/console" replace />} />
+          <Route path="/get-started" element={<GetStarted />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </div>
       <CookieNotice />
     </>
   );

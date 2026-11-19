@@ -1,7 +1,8 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { User } from "firebase/auth";
 import { ShieldCheck, X } from "lucide-react";
 import { SecurityTab } from "./SecurityTab";
+import { cn } from "../../lib/cn";
 
 export function SettingsPanel({
   open,
@@ -14,8 +15,26 @@ export function SettingsPanel({
   user?: User | null;
   onUserChanged?: () => void;
 }) {
+  const [rendered, setRendered] = useState(open);
+  const [closing, setClosing] = useState(false);
+
   useEffect(() => {
-    if (!open) return;
+    if (open) {
+      setRendered(true);
+      setClosing(false);
+      return;
+    }
+    if (!rendered) return;
+    setClosing(true);
+    const timer = window.setTimeout(() => {
+      setRendered(false);
+      setClosing(false);
+    }, 190);
+    return () => window.clearTimeout(timer);
+  }, [open, rendered]);
+
+  useEffect(() => {
+    if (!rendered) return;
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
@@ -26,18 +45,21 @@ export function SettingsPanel({
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = previous;
     };
-  }, [open, onClose]);
+  }, [rendered, onClose]);
 
-  if (!open) return null;
+  if (!rendered) return null;
 
   return (
     <div
-      className="fixed inset-0 z-50 flex h-full w-full flex-col bg-[#fbfcfe]"
+      className={cn(
+        "fixed inset-0 z-50 flex h-full w-full flex-col bg-[#fbfcfe]",
+        closing ? "anim-sheet--closing" : "anim-sheet"
+      )}
       role="dialog"
       aria-modal="true"
       aria-label="Settings"
     >
-      <header className="flex h-16 shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-4 sm:px-6">
+      <header className="anim-fade-in flex h-16 shrink-0 items-center gap-3 border-b border-slate-200 bg-white px-4 sm:px-6">
         <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-violet-200 bg-violet-50">
           <ShieldCheck className="h-4 w-4 text-violet-700" />
         </span>
@@ -50,7 +72,7 @@ export function SettingsPanel({
         <button
           type="button"
           onClick={onClose}
-          className="ml-auto inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 text-[12.5px] font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+          className="press ml-auto inline-flex h-9 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3.5 text-[12.5px] font-medium text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
         >
           <X className="h-3.5 w-3.5" />
           Close

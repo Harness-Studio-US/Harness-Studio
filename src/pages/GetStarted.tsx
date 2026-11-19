@@ -10,7 +10,7 @@ const nextSteps = [
     body: "A sentence or two is plenty. We will help you find the right place to start.",
   },
   {
-    title: "Talk to the studio",
+    title: "Talk to the company",
     body: "A real person on the team reads every message and replies directly.",
   },
   {
@@ -39,7 +39,7 @@ export default function GetStarted() {
         <div className="container-site">
           <div className="grid items-start gap-14 lg:grid-cols-[1.02fr_0.98fr] lg:gap-20">
             <div>
-              <span className="eyebrow">Contact the studio</span>
+              <span className="eyebrow">Contact the company</span>
               <h1 className="mt-6 max-w-[640px] text-[46px] font-semibold leading-[1.02] tracking-[-0.055em] text-ink sm:text-[68px]">
                 Let’s find the{" "}
                 <span className="display-serif text-accent">right place to start.</span>
@@ -56,7 +56,7 @@ export default function GetStarted() {
                   className="btn-primary h-12 px-5 text-[14px]"
                 >
                   <Mail className="h-4 w-4" />
-                  Email the studio
+                  Email the company
                 </a>
                 <Link to="/console" className="btn-ghost h-12 px-5 text-[14px]">
                   Open Harness Copilot

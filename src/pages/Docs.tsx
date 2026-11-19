@@ -255,7 +255,7 @@ export default function Docs() {
                     ["You review it", "Try the result, ask for a tweak or undo it."],
                     ["You keep it", "Only the changes you are happy with stay."],
                   ].map(([title, body]) => (
-                    <div key={title} className="rounded-lg border border-line bg-surface p-4">
+                    <div key={title} className="hover-lift rounded-lg border border-line bg-surface p-4">
                       <div className="flex items-center gap-2 text-[13.5px] font-semibold text-ink">
                         <Check className="h-3.5 w-3.5 text-[#047857]" />
                         {title}
@@ -295,7 +295,7 @@ export default function Docs() {
                   ].map((item) => (
                     <div
                       key={item.title}
-                      className="flex gap-3 rounded-lg border border-line bg-surface p-4"
+                      className="hover-lift flex gap-3 rounded-lg border border-line bg-surface p-4"
                     >
                       <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-line bg-paper">
                         <item.icon className="h-3.5 w-3.5 text-accent" />
@@ -377,7 +377,7 @@ export default function Docs() {
                       "Open a new chat. Your old conversation stays in the sidebar if you need to come back to it.",
                     ],
                   ].map(([title, body]) => (
-                    <div key={title} className="rounded-lg border border-line bg-surface p-4">
+                    <div key={title} className="hover-lift rounded-lg border border-line bg-surface p-4">
                       <div className="text-[13.5px] font-semibold text-ink">{title}</div>
                       <p className="mt-1.5 text-[13px] leading-[1.7] text-muted">{body}</p>
                     </div>

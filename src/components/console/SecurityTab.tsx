@@ -328,7 +328,7 @@ export function SecurityTab({
   }
 
   return (
-    <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+    <div className="anim-stagger grid gap-4 lg:grid-cols-2 lg:items-start">
       <SettingCard
         size="lg"
         title="Account"

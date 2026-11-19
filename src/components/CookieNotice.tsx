@@ -29,9 +29,9 @@ export function CookieNotice() {
   return (
     <aside
       aria-label="Cookie notice"
-      className="pointer-events-none fixed inset-x-0 bottom-0 z-[90] p-3 sm:p-4"
+      className="anim-fade-in pointer-events-none fixed inset-x-0 bottom-0 z-[90] p-3 sm:p-4"
     >
-      <div className="pointer-events-auto mx-auto flex max-w-3xl flex-col gap-3 rounded-2xl border border-line bg-white/95 p-4 shadow-[0_20px_60px_-24px_rgba(15,23,42,0.35)] backdrop-blur sm:flex-row sm:items-center sm:gap-4">
+      <div className="anim-pop pointer-events-auto mx-auto flex max-w-3xl flex-col gap-3 rounded-2xl border border-line bg-white/95 p-4 shadow-[0_20px_60px_-24px_rgba(15,23,42,0.35)] backdrop-blur sm:flex-row sm:items-center sm:gap-4">
         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-violet-200 bg-violet-50 text-accent-strong">
           <Cookie className="h-4 w-4" aria-hidden />
         </span>

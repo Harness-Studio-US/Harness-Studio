@@ -173,7 +173,7 @@ export default function Landing() {
 
               <dl className="mt-12 grid max-w-[560px] grid-cols-3 gap-5 border-t border-line pt-6">
                 {[
-                  ["Independent", "Studio"],
+                  ["Independent", "Company"],
                   ["One focused", "Product"],
                   ["Built for", "The web"],
                 ].map(([label, value]) => (
@@ -405,7 +405,7 @@ export default function Landing() {
                   to="/get-started"
                   className="mt-7 inline-flex items-center gap-2 text-[13.5px] font-semibold text-ink underline decoration-[#b8b1a3] underline-offset-4 hover:decoration-ink"
                 >
-                  Talk to the studio <ArrowRight className="h-3.5 w-3.5" />
+                  Talk to the company <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             </div>
@@ -519,7 +519,7 @@ export default function Landing() {
                     <span className="display-serif text-[#c4b5fd]"> We’ll meet you there.</span>
                   </h2>
                   <p className="mt-5 max-w-[500px] text-[15px] leading-[1.8] text-[#c9c3b7]">
-                    Open Harness Copilot to try the conversation, or write to the studio if you
+                    Open Harness Copilot to try the conversation, or write to the company if you
                     want to talk through the work first.
                   </p>
                   <p className="mt-4 text-[11.5px] text-[#aaa396]">
@@ -539,7 +539,7 @@ export default function Landing() {
                     href="mailto:message.harness.studio@outlook.com?subject=Harness%20Studio"
                     className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-white/25 px-5 text-[13.5px] font-medium text-[#f6f2e9] transition hover:bg-white/[0.08]"
                   >
-                    Email the studio
+                    Email the company
                     <ArrowUpRight className="h-4 w-4" />
                   </a>
                 </div>
