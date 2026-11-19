@@ -381,7 +381,7 @@ export default function Landing() {
           <div className="container-site">
             <div className="grid gap-10 lg:grid-cols-12 lg:gap-12">
               <div className="lg:col-span-4">
-                <span className="eyebrow">The company</span>
+                <span className="eyebrow">Who we are</span>
                 <p className="mt-5 max-w-[260px] text-[13px] leading-[1.7] text-muted">
                   Harness Studio builds software for people who make things.
                 </p>
@@ -398,14 +398,14 @@ export default function Landing() {
                 <p className="mt-5 max-w-[680px] text-[15px] leading-[1.8] text-muted">
                   Our first product is Harness Copilot, an AI development app for people who want
                   to move at the speed of a conversation without giving up the ability to see,
-                  question, and undo the work. The company is small, the product is focused, and
-                  the line between the two is deliberate.
+                  question, and undo the work. We are small, the product is focused, and the line
+                  between the two is deliberate.
                 </p>
                 <Link
                   to="/get-started"
                   className="mt-7 inline-flex items-center gap-2 text-[13.5px] font-semibold text-ink underline decoration-[#b8b1a3] underline-offset-4 hover:decoration-ink"
                 >
-                  Talk to the company <ArrowRight className="h-3.5 w-3.5" />
+                  Talk to us <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             </div>
@@ -480,7 +480,7 @@ export default function Landing() {
                 A clearer view of what this is.
               </h2>
               <p className="mt-5 max-w-[300px] text-[14.5px] leading-[1.75] text-muted">
-                About the company, the product, and the app.
+                About Harness Studio, the product, and the app.
               </p>
               <Link
                 to="/docs"
@@ -519,8 +519,8 @@ export default function Landing() {
                     <span className="display-serif text-[#c4b5fd]"> We’ll meet you there.</span>
                   </h2>
                   <p className="mt-5 max-w-[500px] text-[15px] leading-[1.8] text-[#c9c3b7]">
-                    Open Harness Copilot to try the conversation, or write to the company if you
-                    want to talk through the work first.
+                    Open Harness Copilot to try the conversation, or write to us if you want to
+                    talk through the work first.
                   </p>
                   <p className="mt-4 text-[11.5px] text-[#aaa396]">
                     Conversations stay in this browser.
@@ -539,7 +539,7 @@ export default function Landing() {
                     href="mailto:message.harness.studio@outlook.com?subject=Harness%20Studio"
                     className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-white/25 px-5 text-[13.5px] font-medium text-[#f6f2e9] transition hover:bg-white/[0.08]"
                   >
-                    Email the company
+                    Email us
                     <ArrowUpRight className="h-4 w-4" />
                   </a>
                 </div>

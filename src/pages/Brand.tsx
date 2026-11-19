@@ -249,7 +249,7 @@ export default function Brand() {
                     className="btn-primary h-10 shrink-0 px-4 text-[12.5px]"
                   >
                     <Mail className="h-3.5 w-3.5" />
-                    Contact the company
+                    Contact us
                   </a>
                 </div>
               </div>
@@ -259,7 +259,7 @@ export default function Brand() {
           <div className="mt-14 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6 text-[12px] text-muted">
             <span>Harness Studio brand resources</span>
             <Link to="/" className="inline-flex items-center gap-1.5 hover:text-ink">
-              Back to the company
+              Back to Harness Studio
               <ArrowUpRight className="h-3 w-3" />
             </Link>
           </div>

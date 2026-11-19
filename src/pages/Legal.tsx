@@ -147,7 +147,7 @@ function LegalPage({ doc, kind }: { doc: LegalDocument; kind: "privacy" | "terms
                     Questions?
                   </div>
                   <p className="mt-2 text-[12px] leading-[1.65] text-muted">
-                    Contact the company about this {kind === "privacy" ? "policy" : "agreement"}.
+                    Contact Harness Studio about this {kind === "privacy" ? "policy" : "agreement"}.
                   </p>
                   <a
                     href={`mailto:${EMAIL}`}

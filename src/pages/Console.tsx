@@ -5,6 +5,7 @@ import {
   ArrowUpRight,
   BookOpen,
   ChevronUp,
+  Code,
   FileText,
   LogOut,
   Menu,
@@ -13,12 +14,14 @@ import {
   Send,
   ShieldCheck,
   SlidersHorizontal,
+  Sparkles,
   Square,
   Trash2,
   X,
 } from "lucide-react";
 import { onAuthStateChanged, signOut as firebaseSignOut, type User } from "firebase/auth";
 import { ChatMessageView } from "../components/console/ChatMessageView";
+import { CodeWorkspace } from "../components/console/CodeWorkspace";
 import { FirstRunGuide, LegalConsent } from "../components/console/CopilotOnboarding";
 import { CopilotAuthLoading, CopilotLogin } from "../components/console/CopilotLogin";
 import { SettingsPanel } from "../components/console/SettingsPanel";
@@ -102,6 +105,7 @@ export default function Console() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [view, setView] = useState<"copilot" | "code">("copilot");
   const [query, setQuery] = useState("");
   const cancelledRef = useRef(false);
   const threadRef = useRef<HTMLDivElement>(null);
@@ -316,6 +320,12 @@ export default function Console() {
     setActiveId(conversation.id);
     setSidebarOpen(false);
     setQuery("");
+    setView("copilot");
+    window.setTimeout(() => textareaRef.current?.focus(), 50);
+  }
+
+  function openCopilot() {
+    setView("copilot");
     window.setTimeout(() => textareaRef.current?.focus(), 50);
   }
 
@@ -459,6 +469,7 @@ export default function Console() {
                   type="button"
                   onClick={() => {
                     setActiveId(conversation.id);
+                    setView("copilot");
                     setSidebarOpen(false);
                   }}
                   className="min-w-0 flex-1 px-2 py-2.5 text-left"
@@ -602,8 +613,37 @@ export default function Console() {
           </button>
 
           <div className="flex min-w-0 items-center gap-2.5">
-            <span className="text-[13.5px] font-semibold text-slate-900">Harness Copilot</span>
-            <span className="hidden text-[11px] text-slate-500 sm:inline">Workspace</span>
+            <span className="truncate text-[13.5px] font-semibold text-slate-900">Harness Copilot</span>
+          </div>
+
+          <div
+            role="tablist"
+            aria-label="Workspace view"
+            className="flex shrink-0 items-center gap-0.5 rounded-lg border border-slate-200 bg-slate-100/80 p-0.5"
+          >
+            {([
+              { value: "copilot" as const, label: "Copilot", icon: Sparkles },
+              { value: "code" as const, label: "Code", icon: Code },
+            ]).map(({ value, label, icon: Icon }) => (
+              <button
+                key={value}
+                type="button"
+                role="tab"
+                aria-selected={view === value}
+                aria-label={`${label} view`}
+                title={`${label} view`}
+                onClick={() => setView(value)}
+                className={cn(
+                  "press flex h-7 items-center gap-1.5 rounded-md px-2 text-[11.5px] font-medium transition",
+                  view === value
+                    ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200/80"
+                    : "text-slate-500 hover:text-slate-800"
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">{label}</span>
+              </button>
+            ))}
           </div>
 
           <div className="ml-auto flex items-center gap-2">
@@ -632,7 +672,18 @@ export default function Console() {
           </div>
         </header>
 
-        <div ref={threadRef} className="flex-1 overflow-y-auto">
+        {view === "code" && (
+          <CodeWorkspace
+            key={activeConversation?.id ?? "empty"}
+            messages={activeConversation?.messages ?? []}
+            onAskCopilot={openCopilot}
+          />
+        )}
+
+        <div
+          ref={threadRef}
+          className={cn("flex-1 overflow-y-auto", view === "code" && "hidden")}
+        >
           <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col px-4 py-6">
             {!activeConversation || activeConversation.messages.length === 0 ? (
               <div className="animate-rise my-auto py-10">
@@ -686,7 +737,12 @@ export default function Console() {
           </div>
         </div>
 
-        <div className="shrink-0 border-t border-slate-200 bg-[#fbfcfe]">
+        <div
+          className={cn(
+            "shrink-0 border-t border-slate-200 bg-[#fbfcfe]",
+            view === "code" && "hidden"
+          )}
+        >
           <div className="mx-auto w-full max-w-3xl px-4 py-3.5">
             <div className="rounded-xl border border-slate-300 bg-white px-3.5 py-3 shadow-[0_-8px_30px_-26px_rgba(15,23,42,0.2)] transition focus-within:border-violet-400 focus-within:shadow-[0_8px_30px_-22px_rgba(15,23,42,0.28)]">
               <textarea

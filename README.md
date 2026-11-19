@@ -4,7 +4,7 @@ The public website for Harness Studio, an independent software company. Our firs
 Harness Copilot, an AI development app where you describe what you want in the browser and review
 the work inside your project.
 
-The home page introduces the company, then presents Harness Copilot in its Products section. The
+The home page introduces Harness Studio, then presents Harness Copilot in its Products section. The
 interactive demo sits inside that product section, so the site reads as a company site rather than a
 single-product landing page.
 
@@ -184,7 +184,7 @@ custom base path.
 
 ## Notes
 
-- Harness Studio is the company; Harness Copilot is its AI development app. The home page and FAQ
+- Harness Studio is the business; Harness Copilot is its AI development app. The home page and FAQ
   make that distinction explicit where it matters.
 - Firebase Authentication handles sign-in; this site never receives or stores the user's password.
 - After sign-in, first-time users must accept the Terms & Conditions and Privacy Policy. Acceptance
