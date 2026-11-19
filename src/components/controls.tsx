@@ -143,20 +143,46 @@ export function SettingCard({
   right,
   children,
   className,
+  size = "sm",
 }: {
   title?: string;
   description?: string;
   right?: ReactNode;
   children: ReactNode;
   className?: string;
+  size?: "sm" | "lg";
 }) {
   return (
-    <section className={cn("rounded-xl border border-slate-200 bg-white p-3.5", className)}>
+    <section
+      className={cn(
+        "rounded-xl border border-slate-200 bg-white",
+        size === "lg" ? "p-5 sm:p-6" : "p-3.5",
+        className
+      )}
+    >
       {(title || right) && (
-        <div className="mb-3 flex items-start justify-between gap-3">
+        <div className={cn("flex items-start justify-between gap-3", size === "lg" ? "mb-4" : "mb-3")}>
           <div>
-            {title && <h3 className="text-[13px] font-semibold text-slate-900">{title}</h3>}
-            {description && <p className="mt-0.5 text-[11px] leading-relaxed text-slate-500">{description}</p>}
+            {title && (
+              <h3
+                className={cn(
+                  "font-semibold text-slate-900",
+                  size === "lg" ? "text-[15.5px]" : "text-[13px]"
+                )}
+              >
+                {title}
+              </h3>
+            )}
+            {description && (
+              <p
+                className={cn(
+                  "leading-relaxed text-slate-500",
+                  size === "lg" ? "mt-1 text-[12.5px]" : "mt-0.5 text-[11px]"
+                )}
+              >
+                {description}
+              </p>
+            )}
           </div>
           {right}
         </div>

@@ -155,6 +155,12 @@ function LegalPage({ doc, kind }: { doc: LegalDocument; kind: "privacy" | "terms
                   >
                     {EMAIL}
                   </a>
+                  <a
+                    href="tel:+18203861976"
+                    className="mt-1.5 block text-[11.5px] font-medium text-accent-strong hover:underline"
+                  >
+                    +1 (820) 386-1976
+                  </a>
                 </div>
               </div>
             </aside>
@@ -201,6 +207,12 @@ function LegalPage({ doc, kind }: { doc: LegalDocument; kind: "privacy" | "terms
                       className="mt-2.5 inline-flex break-all text-[13px] font-medium text-accent-strong hover:underline"
                     >
                       {EMAIL}
+                    </a>
+                    <a
+                      href="tel:+18203861976"
+                      className="mt-1.5 block text-[13px] font-medium text-accent-strong hover:underline"
+                    >
+                      +1 (820) 386-1976
                     </a>
                   </div>
                 </div>

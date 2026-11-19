@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowUpRight, Github, Mail } from "lucide-react";
+import { ArrowUpRight, Github, Mail, Phone } from "lucide-react";
 import { Logo } from "../Logo";
 
 const columns = [
@@ -60,6 +60,13 @@ export function Footer() {
               >
                 <Mail className="h-3.5 w-3.5" />
                 Email
+              </a>
+              <a
+                href="tel:+18203861976"
+                className="inline-flex h-9 items-center gap-2 rounded-lg border border-line bg-surface px-3 text-[12.5px] font-medium text-ink transition hover:border-[#a9a193]"
+              >
+                <Phone className="h-3.5 w-3.5" />
+                +1 (820) 386-1976
               </a>
             </div>
           </div>

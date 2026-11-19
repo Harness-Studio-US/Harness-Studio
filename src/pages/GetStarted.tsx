@@ -65,12 +65,19 @@ export default function GetStarted() {
               </div>
 
               <p className="mt-4 text-[12.5px] text-muted">
-                Prefer email? Write to{" "}
+                Prefer email or a call? Write to{" "}
                 <a
                   href="mailto:message.harness.studio@outlook.com"
                   className="font-medium text-ink underline decoration-[#b8b1a3] underline-offset-3 hover:decoration-ink"
                 >
                   message.harness.studio@outlook.com
+                </a>{" "}
+                or call{" "}
+                <a
+                  href="tel:+18203861976"
+                  className="font-medium text-ink underline decoration-[#b8b1a3] underline-offset-3 hover:decoration-ink"
+                >
+                  +1 (820) 386-1976
                 </a>
                 .
               </p>

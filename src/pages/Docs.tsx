@@ -402,6 +402,16 @@ export default function Docs() {
                     Open Harness Copilot
                   </Link>
                 </div>
+                <p className="mt-4 text-[13px] text-muted">
+                  Prefer to talk it through? Call{" "}
+                  <a
+                    href="tel:+18203861976"
+                    className="font-medium text-ink underline decoration-[#b8b1a3] underline-offset-3 hover:decoration-ink"
+                  >
+                    +1 (820) 386-1976
+                  </a>
+                  .
+                </p>
               </Section>
 
               <div className="mt-10 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-6 text-[12px] text-muted">

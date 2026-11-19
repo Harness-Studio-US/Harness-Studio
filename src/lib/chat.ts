@@ -1,5 +1,3 @@
-import type { Settings, ToolFlags } from "./settings";
-
 export type ToolName =
   | "web_search"
   | "code_execution"
@@ -22,7 +20,6 @@ export type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
-  model?: string;
   thinking?: string[];
   toolCalls?: ToolCall[];
   usage?: ChatUsage;
@@ -45,7 +42,6 @@ export type StreamEvent =
 
 type StreamOptions = {
   prompt: string;
-  settings: Settings;
   history: ChatMessage[];
   isCancelled: () => boolean;
 };
@@ -64,14 +60,7 @@ function newId(): string {
   }
 }
 
-function activeTools(tools: ToolFlags): ToolName[] {
-  const out: ToolName[] = [];
-  if (tools.web) out.push("web_search");
-  if (tools.code) out.push("code_execution");
-  if (tools.files) out.push("file_search");
-  if (tools.browser) out.push("browser");
-  return out;
-}
+const activeTools: ToolName[] = ["web_search", "code_execution"];
 
 type Intent =
   | "greeting"
@@ -293,11 +282,11 @@ const responses: Record<Intent, string> = {
 };
 
 async function* streamSimulated(opts: StreamOptions): AsyncGenerator<StreamEvent> {
-  const { prompt, settings, isCancelled } = opts;
+  const { prompt, isCancelled } = opts;
   const started = Date.now();
   const intent = detectIntent(prompt);
-  const plan = toolPlan(intent, activeTools(settings.tools));
-  const thinking = thinkingFor(intent, activeTools(settings.tools));
+  const plan = toolPlan(intent, activeTools);
+  const thinking = thinkingFor(intent, activeTools);
 
   await sleep(260);
 
@@ -308,43 +297,26 @@ async function* streamSimulated(opts: StreamOptions): AsyncGenerator<StreamEvent
   }
 
   const tools: ToolCall[] = [];
-  if (settings.toolChoice !== "none") {
-    for (const name of plan) {
-      if (isCancelled()) return;
-      const meta = toolMeta[name];
-      const call: ToolCall = {
-        id: newId(),
-        name,
-        label: meta.label,
-        args: meta.args(prompt),
-        status: "running",
-      };
-      tools.push(call);
-      yield { type: "tool", call };
-      await sleep(520 + Math.random() * 500);
-      if (isCancelled()) return;
-      const durationMs = Math.round(520 + Math.random() * 700);
-      yield { type: "tool_result", id: call.id, result: meta.result, durationMs };
-      call.status = "done";
-    }
+  for (const name of plan) {
+    if (isCancelled()) return;
+    const meta = toolMeta[name];
+    const call: ToolCall = {
+      id: newId(),
+      name,
+      label: meta.label,
+      args: meta.args(prompt),
+      status: "running",
+    };
+    tools.push(call);
+    yield { type: "tool", call };
+    await sleep(520 + Math.random() * 500);
+    if (isCancelled()) return;
+    const durationMs = Math.round(520 + Math.random() * 700);
+    yield { type: "tool_result", id: call.id, result: meta.result, durationMs };
+    call.status = "done";
   }
 
-  const body =
-    settings.responseFormat === "json_object" && intent !== "greeting"
-      ? [
-          "{",
-          '  "summary": "Minimal, reversible implementation with tests",',
-          '  "steps": [',
-          '    "Add the feature behind a flag",',
-          '    "Unit test the edge cases",',
-          '    "Graduate the flag after verification"',
-          "  ],",
-          '  "confidence": 0.86',
-          "}",
-          "",
-          "This conversation is set to a structured format. Send a normal message and I will reply in plain language.",
-        ].join("\n")
-      : responses[intent];
+  const body = responses[intent];
 
   await sleep(180);
   let ttft = 0;
@@ -367,123 +339,6 @@ async function* streamSimulated(opts: StreamOptions): AsyncGenerator<StreamEvent
     usage: { in: estimateTokens(opts.history.map((m) => m.content).join(" ") + prompt), out: estimateTokens(body) },
     latencyMs: Date.now() - started,
     ttftMs: ttft || 320,
-  };
-}
-
-async function* streamProvider(opts: StreamOptions): AsyncGenerator<StreamEvent> {
-  const { prompt, settings, history, isCancelled } = opts;
-  const provider = settings.provider;
-  if (!provider) {
-    yield* streamSimulated(opts);
-    return;
-  }
-
-  const started = Date.now();
-  const tools = activeTools(settings.tools);
-  const url = `${provider.baseUrl.replace(/\/+$/, "")}/chat/completions`;
-  const body = {
-    model: provider.model || settings.model,
-    messages: [
-      ...(settings.systemPrompt.trim() ? [{ role: "system", content: settings.systemPrompt }] : []),
-      ...history
-        .filter((m) => m.role === "user" || m.content)
-        .slice(-8)
-        .map((m) => ({ role: m.role, content: m.content })),
-      { role: "user", content: prompt },
-    ],
-    temperature: settings.temperature,
-    top_p: settings.topP,
-    max_tokens: settings.maxTokens,
-    presence_penalty: settings.presencePenalty,
-    frequency_penalty: settings.frequencyPenalty,
-    ...(settings.seed !== null ? { seed: settings.seed } : {}),
-    ...(settings.stop.trim() ? { stop: settings.stop.split("\n").map((s) => s.trim()).filter(Boolean) } : {}),
-    stream: settings.stream,
-    ...(settings.responseFormat === "json_object" ? { response_format: { type: "json_object" } } : {}),
-    ...(tools.length ? { tools: tools.map((t) => ({ type: t })) } : {}),
-    ...(settings.toolChoice !== "auto" ? { tool_choice: settings.toolChoice } : {}),
-  };
-
-  yield { type: "thinking", text: `Sending request to ${provider.baseUrl} …` };
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${provider.apiKey}`,
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`Provider responded ${res.status}${text ? `: ${text.slice(0, 240)}` : ""}`);
-  }
-
-  let full = "";
-  let ttft = 0;
-
-  if (!settings.stream || !res.body) {
-    const json = (await res.json()) as {
-      choices?: Array<{ message?: { content?: string } }>;
-      usage?: { prompt_tokens?: number; completion_tokens?: number };
-    };
-    full = json.choices?.[0]?.message?.content ?? "";
-    if (isCancelled()) return;
-    ttft = Date.now() - started;
-    yield { type: "token", text: full };
-    yield {
-      type: "done",
-      usage: {
-        in: json.usage?.prompt_tokens ?? estimateTokens(prompt),
-        out: json.usage?.completion_tokens ?? estimateTokens(full),
-      },
-      latencyMs: Date.now() - started,
-      ttftMs: ttft,
-    };
-    return;
-  }
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    if (isCancelled()) {
-      await reader.cancel().catch(() => undefined);
-      return;
-    }
-    buffer += decoder.decode(value, { stream: true });
-    const lines = buffer.split("\n");
-    buffer = lines.pop() ?? "";
-    for (const line of lines) {
-      const trimmed = line.trim();
-      if (!trimmed.startsWith("data:")) continue;
-      const payload = trimmed.slice(5).trim();
-      if (!payload || payload === "[DONE]") continue;
-      try {
-        const json = JSON.parse(payload) as {
-          choices?: Array<{ delta?: { content?: string } }>;
-        };
-        const token = json.choices?.[0]?.delta?.content;
-        if (token) {
-          if (!ttft) ttft = Date.now() - started;
-          full += token;
-          yield { type: "token", text: token };
-        }
-      } catch {
-        /* partial frame — ignored */
-      }
-    }
-  }
-
-  yield {
-    type: "done",
-    usage: { in: estimateTokens(prompt), out: estimateTokens(full) },
-    latencyMs: Date.now() - started,
-    ttftMs: ttft || Date.now() - started,
   };
 }
 

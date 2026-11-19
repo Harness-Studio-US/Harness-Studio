@@ -61,15 +61,17 @@ Both emails return to the site root with `mode` and `oobCode` query parameters, 
 
 ### Two-step verification, phone numbers and password reset
 
-Console settings include a **Security** tab (`/console` → Settings):
+Settings (`/console` → **Settings**, or the account menu at the bottom of the sidebar) opens full
+screen and covers account security only:
 
 - **Two-step verification** — enroll an authenticator app (TOTP) or a phone number, and remove
   enrolled factors. The code is requested at sign-in.
 - **Phone number** — verify a number with an SMS code and attach it to the account.
 - **Password** — email yourself a reset link, or use the public page at `/#/reset-password`.
 
-Multi-factor authentication is an Identity Platform feature. The Security tab checks this on open and
-shows a **Turn on two-step verification in Firebase** card with these steps until it is done.
+Multi-factor authentication is an Identity Platform feature. The Security tab always shows a
+**Turn on two-step verification in Firebase** card with these steps, whether or not the client probe
+thinks MFA is on, so the setup is never hidden behind a check that can pass while MFA is disabled.
 
 1. **Upgrade the project.** Firebase console → **Authentication** → **Settings** → **Upgrade** (to
    Firebase Authentication with Identity Platform). Sign-in keeps working; the no-cost allowance
@@ -97,8 +99,10 @@ curl -X PATCH "https://identitytoolkit.googleapis.com/admin/v2/projects/$PROJECT
 5. **Keep the domain authorized.** **Authentication → Settings → Authorized domains** needs
    `harness-studio-us.github.io` and `localhost`; SMS flows render a reCAPTCHA there.
 
-Until step 1–2 are done, enrolling a factor returns `auth/admin-restricted-operation`, which the
-Security tab reports on its setup card. Use **Check again** after finishing the console work.
+Until steps 1–2 are done, enrolling a factor returns `auth/admin-restricted-operation`, which the
+Security tab reports on its setup card. Use **Check again** after finishing the console work; it only
+re-runs the probe, so a success there means the request was answered, not that enrollment is
+guaranteed.
 
 ### Custom email wording
 
@@ -171,7 +175,7 @@ custom base path.
 - `/` — company home, with Products introducing Harness Copilot
 - `/docs` — plain-language guide for the product
 - `/brand` — official company brand assets, palette and usage rules
-- `/console` — sign-in, first-use legal agreement, settings (model, security, keys) and the interactive product demo
+- `/console` — sign-in, first-use legal agreement, full-screen security settings and the interactive product demo
 - `/login` — redirects to `/console`, which shows the login screen when signed out
 - `/get-started` — contact path for teams and individual builders
 - `/reset-password` — request a password reset link from the website

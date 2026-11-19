@@ -41,7 +41,7 @@ export const privacyPolicy: LegalDocument = {
         },
         {
           type: "p",
-          text: `Your Copilot conversations and workspace preferences are stored in your browser's localStorage, scoped to your account on that browser. They are not uploaded to a Harness Studio server. Preview replies are generated locally and are simulated. Firebase may store a session token in your browser so that you remain signed in.`,
+          text: `Your Copilot conversations and workspace preferences are stored in your browser's localStorage, scoped to your account on that browser. They are not uploaded to a Harness Studio server. Copilot replies are produced in your browser by a built-in offline engine rather than a hosted AI model, and they are not written by Harness Studio staff. Firebase may store a session token in your browser so that you remain signed in.`,
         },
         {
           type: "p",
@@ -148,7 +148,7 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `If you have any questions regarding privacy while using the Application, or have questions about the practices, please contact the Service Provider via email at message.harness.studio@outlook.com.`,
+          text: `If you have any questions regarding privacy while using the Application, or have questions about the practices, please contact the Service Provider via email at message.harness.studio@outlook.com or by phone at +1 (820) 386-1976.`,
         },
       ],
     },
@@ -461,7 +461,7 @@ export const termsOfService: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `If you have any questions or suggestions about the Terms and Conditions, please do not hesitate to contact the Service Provider at message.harness.studio@outlook.com.`,
+          text: `If you have any questions or suggestions about the Terms and Conditions, please do not hesitate to contact the Service Provider at message.harness.studio@outlook.com or by phone at +1 (820) 386-1976.`,
         },
       ],
     },

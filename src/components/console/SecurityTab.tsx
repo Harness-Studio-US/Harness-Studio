@@ -27,6 +27,7 @@ import { Badge, SettingCard } from "../controls";
 import { CopyButton } from "../CodeBlock";
 import { auth } from "../../lib/firebase";
 import { authErrorMessage } from "../../lib/authMessages";
+import { cn } from "../../lib/cn";
 import { sendPasswordReset } from "../../lib/authActions";
 
 const PHONE_PATTERN = /^\+[1-9]\d{7,14}$/;
@@ -69,6 +70,7 @@ export function SecurityTab({
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
   const [mfaSetup, setMfaSetup] = useState<"checking" | "ready" | "blocked">("checking");
+  const [guideOpen, setGuideOpen] = useState(true);
 
   const [totpSecret, setTotpSecret] = useState<TotpSecret | null>(null);
   const [totpUri, setTotpUri] = useState("");
@@ -292,8 +294,8 @@ export function SecurityTab({
 
   if (!user) {
     return (
-      <SettingCard title="Security" description="Sign in to manage two-step verification.">
-        <p className="text-[11.5px] leading-relaxed text-slate-500">
+      <SettingCard size="lg" title="Security" description="Sign in to manage two-step verification.">
+        <p className="text-[13px] leading-relaxed text-slate-500">
           Account security settings are available once you are signed in to Harness Copilot.
         </p>
       </SettingCard>
@@ -314,28 +316,36 @@ export function SecurityTab({
     try {
       await multiFactor(current).getSession();
       setMfaSetup("ready");
-      setNotice("Firebase now allows second factors on this project.");
+      setNotice(
+        "Firebase answered the second-factor check. If enrollment still fails, one of the steps above is incomplete."
+      );
     } catch {
       setMfaSetup("blocked");
-      setError("Firebase still refuses second factors on this project. Finish the steps below, then check again.");
+      setError(
+        "Firebase still refuses second factors on this project. Finish the steps above, then check again."
+      );
     }
   }
 
   return (
-    <div className="space-y-4">
-      <SettingCard title="Account" description="The identity this workspace signs in with.">
+    <div className="grid gap-4 lg:grid-cols-2 lg:items-start">
+      <SettingCard
+        size="lg"
+        title="Account"
+        description="The identity this workspace signs in with."
+      >
         <div className="space-y-2">
-          <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-2">
-            <span className="min-w-0 flex-1 truncate font-mono text-[10.5px] text-slate-700">
+          <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5">
+            <span className="min-w-0 flex-1 truncate font-mono text-[13px] text-slate-700">
               {user.email ?? "No email on this account"}
             </span>
             <Badge tone={user.emailVerified ? "green" : "amber"}>
               {user.emailVerified ? "Verified" : "Unverified"}
             </Badge>
           </div>
-          <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-2">
-            <Smartphone className="h-3.5 w-3.5 text-slate-400" />
-            <span className="min-w-0 flex-1 truncate font-mono text-[10.5px] text-slate-700">
+          <div className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5">
+            <Smartphone className="h-4 w-4 text-slate-400" />
+            <span className="min-w-0 flex-1 truncate font-mono text-[13px] text-slate-700">
               {user.phoneNumber ?? "No phone number yet"}
             </span>
             {user.phoneNumber && <Badge tone="green">Verified</Badge>}
@@ -343,77 +353,103 @@ export function SecurityTab({
         </div>
       </SettingCard>
 
-      {mfaSetup === "blocked" && (
-        <SettingCard
-          title="Turn on two-step verification in Firebase"
-          description="Firebase has not enabled multi-factor authentication for this project yet. These are the only steps needed, and they are all in the Firebase console."
-          right={<Badge tone="amber">Setup needed</Badge>}
-        >
-          <ol className="space-y-2.5 text-[10.5px] leading-relaxed text-slate-600">
-            <li>
-              <span className="font-semibold text-slate-800">1. Upgrade to Identity Platform.</span>{" "}
-              Firebase console → Authentication → Settings → Upgrade. Sign-in keeps working, and the
-              no-cost tier covers up to 3,000 daily active users.
-            </li>
-            <li>
-              <span className="font-semibold text-slate-800">2. Enable authenticator codes.</span>{" "}
-              The console has no switch for TOTP yet, so run this once with gcloud signed in:
-              <div className="mt-1.5 flex items-start gap-1.5">
-                <pre className="min-w-0 flex-1 overflow-x-auto rounded border border-slate-200 bg-slate-50 p-2 font-mono text-[9px] leading-relaxed text-slate-700">
-                  {totpCommand}
-                </pre>
-                <CopyButton text={totpCommand} className="shrink-0" />
-              </div>
-            </li>
-            <li>
-              <span className="font-semibold text-slate-800">3. Optional: SMS codes.</span>{" "}
-              Authentication → Sign-in method → Advanced → enable SMS multi-factor, add a test
-              number, and keep the project on the Blaze plan.
-            </li>
-            <li>
-              <span className="font-semibold text-slate-800">4. Keep email verification on.</span>{" "}
-              Accounts must confirm their address before enrolling a factor, which this site already
-              requires.
-            </li>
-            <li>
-              <span className="font-semibold text-slate-800">5. Keep the domain authorized.</span>{" "}
-              Authentication → Settings → Authorized domains needs harness-studio-us.github.io and
-              localhost.
-            </li>
-          </ol>
+      <SettingCard
+        size="lg"
+        className="lg:col-span-2"
+        title="Turn on two-step verification in Firebase"
+        description="Second factors are issued by Firebase Authentication. These project-level steps are needed once before enrollment works — the console still has no switch for authenticator codes."
+        right={
+          <Badge tone={mfaSetup === "blocked" ? "amber" : "default"}>
+            {mfaSetup === "blocked" ? "Setup needed" : "Firebase setup"}
+          </Badge>
+        }
+      >
+        <p className="text-[12.5px] leading-relaxed text-slate-500">
+          {mfaSetup === "blocked"
+            ? "Firebase is refusing second factors for this project right now. Work through the steps, then use “Check again” below."
+            : "These steps are always listed here, so the setup is never hidden. Use “Check again” after finishing one to confirm it took effect."}
+        </p>
 
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            <a
-              href={authSettingsUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-[10.5px] font-medium text-slate-700 transition hover:bg-slate-50"
-            >
-              <ExternalLink className="h-3 w-3" />
-              Open Authentication settings
-            </a>
-            <button
-              type="button"
-              onClick={() => void recheckMfa()}
-              className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-[10.5px] font-medium text-slate-700 transition hover:bg-slate-50"
-            >
-              <RefreshCw className="h-3 w-3" />
-              Check again
-            </button>
-          </div>
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          <a
+            href={authSettingsUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-[13px] font-medium text-slate-700 transition hover:bg-slate-50"
+          >
+            <ExternalLink className="h-4 w-4" />
+            Open Firebase settings
+          </a>
+          <button
+            type="button"
+            onClick={() => void recheckMfa()}
+            className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 text-[13px] font-medium text-slate-700 transition hover:bg-slate-50"
+          >
+            <RefreshCw className={cn("h-4 w-4", mfaSetup === "checking" && "animate-spin")} />
+            Check again
+          </button>
+          <button
+            type="button"
+            onClick={() => setGuideOpen((value) => !value)}
+            className="inline-flex h-10 items-center rounded-lg px-2 text-[13px] font-medium text-slate-500 transition hover:text-slate-800"
+            aria-expanded={guideOpen}
+          >
+            {guideOpen ? "Hide steps" : "Show steps"}
+          </button>
+        </div>
 
-          <p className="mt-2 text-[9px] leading-relaxed text-slate-400">
-            The TOTP request replaces the whole MFA configuration, so if SMS is already enabled,
-            include its provider config in the same call. Already finished these steps? Use “Check
-            again”.
-          </p>
-        </SettingCard>
-      )}
+        {guideOpen && (
+          <>
+            <ol className="mt-3 space-y-3 text-[13px] leading-relaxed text-slate-600">
+              <li>
+                <span className="font-semibold text-slate-800">1. Upgrade to Identity Platform.</span>{" "}
+                Firebase console → Authentication → Settings → Upgrade. Sign-in keeps working, and
+                the no-cost tier covers up to 3,000 daily active users.
+              </li>
+              <li>
+                <span className="font-semibold text-slate-800">2. Enable authenticator codes.</span>{" "}
+                The console has no TOTP switch yet, so run this once from Cloud Shell or any terminal
+                signed in to gcloud with access to this project:
+                <div className="mt-2 overflow-hidden rounded-lg border border-slate-200">
+                  <div className="flex items-center justify-between gap-2 border-b border-slate-200 bg-slate-50 px-2 py-1">
+                    <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-slate-500">
+                      Cloud Shell · run once
+                    </span>
+                    <CopyButton text={totpCommand} className="shrink-0 px-1.5 py-0.5 text-[11.5px]" />
+                  </div>
+                  <pre className="overflow-x-auto whitespace-pre bg-white p-3.5 font-mono text-[11.5px] leading-[1.7] text-slate-700">
+                    {totpCommand}
+                  </pre>
+                </div>
+                <p className="mt-1.5 text-[11px] leading-relaxed text-slate-400">
+                  This replaces the whole MFA configuration. If SMS is already enabled, include its
+                  provider config in the same request.
+                </p>
+              </li>
+              <li>
+                <span className="font-semibold text-slate-800">3. Optional: SMS codes.</span>{" "}
+                Authentication → Sign-in method → Advanced → enable SMS multi-factor, add a test
+                number, and keep the project on the Blaze plan.
+              </li>
+              <li>
+                <span className="font-semibold text-slate-800">4. Keep email verification on.</span>{" "}
+                Accounts must confirm their address before enrolling a factor, which this site already
+                requires.
+              </li>
+              <li>
+                <span className="font-semibold text-slate-800">5. Keep the domain authorized.</span>{" "}
+                Authentication → Settings → Authorized domains needs harness-studio-us.github.io and
+                localhost.
+              </li>
+            </ol>
+          </>
+        )}
+      </SettingCard>
 
       {error && (
         <p
           role="alert"
-          className="rounded-lg border border-rose-200 bg-rose-50 px-2.5 py-2 text-[10.5px] leading-relaxed text-rose-700"
+          className="lg:col-span-2 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2.5 text-[13px] leading-relaxed text-rose-700"
         >
           {error}
         </p>
@@ -421,13 +457,14 @@ export function SecurityTab({
       {notice && (
         <p
           role="status"
-          className="rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-2 text-[10.5px] leading-relaxed text-emerald-700"
+          className="lg:col-span-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-[13px] leading-relaxed text-emerald-700"
         >
           {notice}
         </p>
       )}
 
       <SettingCard
+        size="lg"
         title="Two-step verification"
         description="Ask for a second factor whenever this account signs in."
         right={
@@ -441,14 +478,14 @@ export function SecurityTab({
             {factors.map((factor) => (
               <div
                 key={factor.uid}
-                className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-2.5 py-2"
+                className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2.5"
               >
-                <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
+                <ShieldCheck className="h-4 w-4 shrink-0 text-emerald-600" />
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-[11px] font-medium text-slate-800">
+                  <div className="truncate text-[13px] font-medium text-slate-800">
                     {factorTitle(factor)}
                   </div>
-                  <div className="text-[9px] text-slate-400">
+                  <div className="text-[11px] text-slate-400">
                     {factorType(factor)} · added{" "}
                     {new Date(factor.enrollmentTime).toLocaleDateString(undefined, {
                       month: "short",
@@ -465,9 +502,9 @@ export function SecurityTab({
                   aria-label={`Remove ${factorTitle(factor)}`}
                 >
                   {busy === `remove-${factor.uid}` ? (
-                    <Loader2 className="h-2.5 w-2.5 animate-spin" />
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
                   ) : (
-                    <Trash2 className="h-2.5 w-2.5" />
+                    <Trash2 className="h-3.5 w-3.5" />
                   )}
                 </button>
               </div>
@@ -476,17 +513,17 @@ export function SecurityTab({
         )}
 
         {!totpSecret && (
-          <div className="mt-2.5 grid gap-1.5 sm:grid-cols-2">
+          <div className="mt-3 grid gap-2 sm:grid-cols-2">
             <button
               type="button"
               onClick={() => void startTotp()}
               disabled={busy === "totp-start"}
-              className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 text-[10.5px] font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
+              className="flex h-10 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 text-[13px] font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
             >
               {busy === "totp-start" ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <ShieldCheck className="h-3 w-3 text-violet-700" />
+                <ShieldCheck className="h-4 w-4 text-violet-700" />
               )}
               Authenticator app
             </button>
@@ -502,44 +539,44 @@ export function SecurityTab({
                 const field = document.getElementById("factor-phone");
                 field?.focus();
               }}
-              className="flex h-8 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 text-[10.5px] font-medium text-slate-700 transition hover:bg-slate-50"
+              className="flex h-10 items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 text-[13px] font-medium text-slate-700 transition hover:bg-slate-50"
             >
-              <Smartphone className="h-3 w-3 text-violet-700" />
+              <Smartphone className="h-4 w-4 text-violet-700" />
               Phone number
             </button>
           </div>
         )}
 
         {totpSecret && (
-          <div className="mt-3 rounded-lg border border-violet-200 bg-violet-50 p-3">
-            <div className="text-[10.5px] font-semibold text-slate-800">
+          <div className="mt-3 rounded-lg border border-violet-200 bg-violet-50 p-4 sm:p-5">
+            <div className="text-[13px] font-semibold text-slate-800">
               Add Harness Studio to your authenticator app
             </div>
-            <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
+            <p className="mt-1 text-[12.5px] leading-relaxed text-slate-600">
               Open the app, add an account with the setup key below, then enter the 6-digit code it
               shows.
             </p>
 
             <div className="mt-2 flex items-center gap-1.5">
-              <code className="min-w-0 flex-1 break-all rounded border border-slate-200 bg-white px-2 py-1.5 font-mono text-[10px] tracking-[0.12em] text-slate-800">
+              <code className="min-w-0 flex-1 break-all rounded border border-slate-200 bg-white px-2 py-1.5 font-mono text-[12.5px] tracking-[0.12em] text-slate-800">
                 {totpSecret.secretKey}
               </code>
               <CopyButton text={totpSecret.secretKey} className="shrink-0" />
             </div>
 
             <details className="mt-2">
-              <summary className="cursor-pointer list-none text-[9.5px] text-slate-500 hover:text-slate-700 [&::-webkit-details-marker]:hidden">
+              <summary className="cursor-pointer list-none text-[11.5px] text-slate-500 hover:text-slate-700 [&::-webkit-details-marker]:hidden">
                 Setup link for this device
               </summary>
               <div className="mt-1.5 flex items-start gap-1.5">
-                <code className="min-w-0 flex-1 break-all rounded border border-slate-200 bg-white px-2 py-1.5 font-mono text-[9px] text-slate-600">
+                <code className="min-w-0 flex-1 break-all rounded border border-slate-200 bg-white px-2 py-1.5 font-mono text-[11px] text-slate-600">
                   {totpUri}
                 </code>
                 <CopyButton text={totpUri} className="shrink-0" />
               </div>
               <a
                 href={totpUri}
-                className="mt-1.5 inline-block text-[9.5px] font-medium text-violet-700 hover:underline"
+                className="mt-1.5 inline-block text-[11.5px] font-medium text-violet-700 hover:underline"
               >
                 Open in an authenticator app on this device
               </a>
@@ -553,18 +590,18 @@ export function SecurityTab({
                 autoComplete="one-time-code"
                 placeholder="123456"
                 aria-label="Authenticator code"
-                className="field h-8 flex-1 font-mono text-[11px] tracking-[0.2em]"
+                className="field h-10 flex-1 font-mono text-[13px] tracking-[0.2em]"
               />
               <button
                 type="button"
                 onClick={() => void confirmTotp()}
                 disabled={busy === "totp-confirm"}
-                className="btn-primary h-8 shrink-0 px-3 text-[10.5px] disabled:opacity-40"
+                className="btn-primary h-10 shrink-0 px-3 text-[13px] disabled:opacity-40"
               >
                 {busy === "totp-confirm" ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Check className="h-3 w-3" />
+                  <Check className="h-4 w-4" />
                 )}
                 Turn on
               </button>
@@ -576,7 +613,7 @@ export function SecurityTab({
                   setTotpCode("");
                   clearMessages();
                 }}
-                className="shrink-0 rounded-lg border border-slate-200 px-2 text-[10px] text-slate-500 hover:text-slate-800"
+                className="shrink-0 rounded-lg border border-slate-200 px-2 text-[12.5px] text-slate-500 hover:text-slate-800"
               >
                 Cancel
               </button>
@@ -585,7 +622,7 @@ export function SecurityTab({
         )}
 
         <div className="mt-3 border-t border-slate-100 pt-2.5">
-          <div className="text-[10px] font-medium text-slate-600">Add a phone as a second factor</div>
+          <div className="text-[12.5px] font-medium text-slate-600">Add a phone as a second factor</div>
           <div className="mt-1.5 flex gap-1.5">
             <input
               id="factor-phone"
@@ -593,16 +630,16 @@ export function SecurityTab({
               onChange={(event) => setFactorPhone(event.target.value)}
               placeholder="+14155550123"
               aria-label="Phone number for two-step verification"
-              className="field h-8 flex-1 font-mono text-[10.5px]"
+              className="field h-10 flex-1 font-mono text-[13px]"
             />
             <button
               type="button"
               onClick={() => void sendFactorPhoneCode()}
               disabled={busy === "factor-send"}
-              className="btn-primary h-8 shrink-0 px-2.5 text-[10.5px] disabled:opacity-40"
+              className="btn-primary h-10 shrink-0 px-2.5 text-[13px] disabled:opacity-40"
             >
               {busy === "factor-send" ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
               ) : factorVerificationId ? (
                 "Resend"
               ) : (
@@ -619,16 +656,16 @@ export function SecurityTab({
                 autoComplete="one-time-code"
                 placeholder="123456"
                 aria-label="SMS code for two-step verification"
-                className="field h-8 flex-1 font-mono text-[11px] tracking-[0.2em]"
+                className="field h-10 flex-1 font-mono text-[13px] tracking-[0.2em]"
               />
               <button
                 type="button"
                 onClick={() => void confirmFactorPhone()}
                 disabled={busy === "factor-confirm"}
-                className="btn-primary h-8 shrink-0 px-2.5 text-[10.5px] disabled:opacity-40"
+                className="btn-primary h-10 shrink-0 px-2.5 text-[13px] disabled:opacity-40"
               >
                 {busy === "factor-confirm" ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   "Verify"
                 )}
@@ -641,16 +678,17 @@ export function SecurityTab({
       </SettingCard>
 
       <SettingCard
+        size="lg"
         title="Phone number"
         description="Verify a number so the account has a recovery contact."
       >
         {user.phoneNumber ? (
-          <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-2.5 py-2">
-            <Check className="h-3.5 w-3.5 text-emerald-600" />
-            <span className="min-w-0 flex-1 truncate font-mono text-[10.5px] text-emerald-800">
+          <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5">
+            <Check className="h-4 w-4 text-emerald-600" />
+            <span className="min-w-0 flex-1 truncate font-mono text-[13px] text-emerald-800">
               {user.phoneNumber}
             </span>
-            <span className="text-[9px] font-medium uppercase tracking-[0.1em] text-emerald-700">
+            <span className="text-[11px] font-medium uppercase tracking-[0.1em] text-emerald-700">
               Verified
             </span>
           </div>
@@ -662,16 +700,16 @@ export function SecurityTab({
                 onChange={(event) => setLinkPhone(event.target.value)}
                 placeholder="+14155550123"
                 aria-label="Phone number"
-                className="field h-8 flex-1 font-mono text-[10.5px]"
+                className="field h-10 flex-1 font-mono text-[13px]"
               />
               <button
                 type="button"
                 onClick={() => void sendLinkPhoneCode()}
                 disabled={busy === "link-send"}
-                className="btn-primary h-8 shrink-0 px-2.5 text-[10.5px] disabled:opacity-40"
+                className="btn-primary h-10 shrink-0 px-2.5 text-[13px] disabled:opacity-40"
               >
                 {busy === "link-send" ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 ) : linkConfirmation ? (
                   "Resend"
                 ) : (
@@ -688,23 +726,23 @@ export function SecurityTab({
                   autoComplete="one-time-code"
                   placeholder="123456"
                   aria-label="SMS verification code"
-                  className="field h-8 flex-1 font-mono text-[11px] tracking-[0.2em]"
+                  className="field h-10 flex-1 font-mono text-[13px] tracking-[0.2em]"
                 />
                 <button
                   type="button"
                   onClick={() => void confirmLinkPhone()}
                   disabled={busy === "link-confirm"}
-                  className="btn-primary h-8 shrink-0 px-2.5 text-[10.5px] disabled:opacity-40"
+                  className="btn-primary h-10 shrink-0 px-2.5 text-[13px] disabled:opacity-40"
                 >
                   {busy === "link-confirm" ? (
-                    <Loader2 className="h-3 w-3 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     "Verify"
                   )}
                 </button>
               </div>
             )}
-            <p className="mt-1.5 text-[9px] leading-relaxed text-slate-400">
+            <p className="mt-1.5 text-[11px] leading-relaxed text-slate-400">
               Use international format. Standard message rates apply.
             </p>
           </>
@@ -712,21 +750,25 @@ export function SecurityTab({
         <div id={PHONE_LINK_RECAPTCHA_ID} />
       </SettingCard>
 
-      <SettingCard title="Password" description="Change it from a link we email you.">
+      <SettingCard
+        size="lg"
+        title="Password"
+        description="Change it from a link we email you."
+      >
         <button
           type="button"
           onClick={() => void emailResetLink()}
           disabled={!user.email || busy === "reset-email"}
-          className="flex h-8 w-full items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 text-[10.5px] font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
+          className="flex h-10 w-full items-center justify-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2 text-[13px] font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-40"
         >
           {busy === "reset-email" ? (
-            <Loader2 className="h-3 w-3 animate-spin" />
+            <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
-            <MailCheck className="h-3 w-3 text-violet-700" />
+            <MailCheck className="h-4 w-4 text-violet-700" />
           )}
           Email me a reset link
         </button>
-        <p className="mt-1.5 text-[9px] leading-relaxed text-slate-400">
+        <p className="mt-1.5 text-[11px] leading-relaxed text-slate-400">
           The link opens this site&apos;s own reset screen. You can also start from the{" "}
           <Link to="/reset-password" className="font-medium text-violet-700 hover:underline">
             password reset page
@@ -735,12 +777,12 @@ export function SecurityTab({
         </p>
       </SettingCard>
 
-      <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-        <div className="flex items-center gap-1.5 text-[10.5px] font-medium text-slate-700">
-          <ShieldCheck className="h-3 w-3 text-emerald-600" />
+      <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 lg:col-span-2">
+        <div className="flex items-center gap-1.5 text-[13px] font-medium text-slate-700">
+          <ShieldCheck className="h-4 w-4 text-emerald-600" />
           How this is protected
         </div>
-        <ul className="mt-1.5 space-y-1 text-[9.5px] leading-relaxed text-slate-500">
+        <ul className="mt-1.5 space-y-1 text-[11.5px] leading-relaxed text-slate-500">
           <li>
             • Two-step verification is enforced by Firebase Authentication. Changing factors needs a
             recent sign-in.

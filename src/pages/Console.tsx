@@ -4,13 +4,15 @@ import {
   ArrowLeft,
   ArrowUpRight,
   BookOpen,
+  ChevronUp,
+  FileText,
   LogOut,
   Menu,
   Plus,
   Search,
   Send,
+  ShieldCheck,
   SlidersHorizontal,
-  Sparkles,
   Square,
   Trash2,
   X,
@@ -22,9 +24,7 @@ import { CopilotAuthLoading, CopilotLogin } from "../components/console/CopilotL
 import { SettingsPanel } from "../components/console/SettingsPanel";
 import { VerifyEmail } from "../components/console/VerifyEmail";
 import { Logo, LogoMark } from "../components/Logo";
-import { LegalLinks } from "../components/LegalLinks";
 import { streamAssistant, titleForConversation, type ChatMessage } from "../lib/chat";
-import { estimateTokens, useSettings } from "../lib/settings";
 import {
   acceptCopilotTerms,
   hasAcceptedCopilotTerms,
@@ -88,7 +88,6 @@ function formatRelative(timestamp: number): string {
 }
 
 export default function Console() {
-  const { settings, logRequest } = useSettings();
   const [authReady, setAuthReady] = useState(!auth);
   const [firebaseUser, setFirebaseUser] = useState<User | null>(null);
   const [verifiedNow, setVerifiedNow] = useState(false);
@@ -102,6 +101,7 @@ export default function Console() {
   const [streaming, setStreaming] = useState<{ convId: string; messageId: string } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
   const [query, setQuery] = useState("");
   const cancelledRef = useRef(false);
   const threadRef = useRef<HTMLDivElement>(null);
@@ -226,7 +226,6 @@ export default function Console() {
       id: assistantId,
       role: "assistant",
       content: "",
-      model: settings.model,
       thinking: [],
       toolCalls: [],
     };
@@ -249,12 +248,10 @@ export default function Console() {
 
     setStreaming({ convId: conv.id, messageId: assistantId });
     cancelledRef.current = false;
-    const snapshot = settings;
 
     try {
       for await (const event of streamAssistant({
         prompt: text,
-        settings: snapshot,
         history,
         isCancelled: () => cancelledRef.current,
       })) {
@@ -288,18 +285,6 @@ export default function Console() {
             usage: event.usage,
             latencyMs: event.latencyMs,
           }));
-          if (snapshot.logRequests) {
-            logRequest({
-              endpoint: "/v1/chat/completions",
-              model: snapshot.model,
-              status: 200,
-              latency: event.latencyMs,
-              ttft: event.ttftMs,
-              tokensIn: event.usage.in,
-              tokensOut: event.usage.out,
-              stream: snapshot.stream,
-            });
-          }
         }
       }
     } catch (error) {
@@ -309,18 +294,6 @@ export default function Console() {
         error: true,
         content: `${current.content}\n\n**Request failed.** \`${message}\``,
       }));
-      if (snapshot.logRequests) {
-        logRequest({
-          endpoint: "/v1/chat/completions",
-          model: snapshot.model,
-          status: 500,
-          latency: 0,
-          ttft: 0,
-          tokensIn: estimateTokens(text),
-          tokensOut: 0,
-          stream: snapshot.stream,
-        });
-      }
     } finally {
       if (cancelledRef.current) {
         patchMessage(conv.id, assistantId, (current) => ({ ...current, stopped: true }));
@@ -520,62 +493,99 @@ export default function Console() {
           </div>
         </div>
 
-        <div className="space-y-2.5 border-t border-slate-200 p-3">
-          <div className="rounded-lg border border-slate-200 bg-white p-3">
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-violet-200 bg-violet-50">
-                <Sparkles className="h-3.5 w-3.5 text-violet-700" />
-              </span>
-              <div className="min-w-0">
-                <div className="text-[12px] font-semibold text-slate-800">Harness Copilot</div>
-                <div className="text-[10px] text-slate-500">AI workspace</div>
-              </div>
-            </div>
-            <p className="mt-2 text-[10.5px] leading-relaxed text-slate-600">
-              Chats stay in this browser.
-            </p>
-
-            <div className="mt-2.5 flex items-center gap-2 border-t border-slate-100 pt-2.5">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-[9px] font-semibold text-slate-600">
+        <div className="border-t border-slate-200 p-2.5">
+          {accountOpen && (
+            <div className="fixed inset-0 z-10" onClick={() => setAccountOpen(false)} aria-hidden />
+          )}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setAccountOpen((value) => !value)}
+              aria-expanded={accountOpen}
+              aria-haspopup="menu"
+              title="Account, terms and settings"
+              className="relative z-20 flex w-full items-center gap-2 rounded-xl border border-slate-200 bg-white px-2 py-2 text-left transition hover:border-slate-300 hover:bg-slate-50"
+            >
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-violet-200 bg-violet-50 text-[10px] font-semibold text-violet-700">
                 {userInitial}
               </span>
-              <span className="min-w-0 flex-1 truncate text-[10.5px] text-slate-600">
-                {userEmail}
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-[11.5px] font-medium text-slate-800">
+                  {userEmail}
+                </span>
+                <span className="block text-[9.5px] text-slate-500">
+                  Account · terms · settings
+                </span>
               </span>
-              <button
-                type="button"
-                onClick={signOutUser}
-                className="rounded-md p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
-                aria-label="Sign out"
-                title="Sign out"
-              >
-                <LogOut className="h-3 w-3" />
-              </button>
-            </div>
-          </div>
+              <ChevronUp
+                className={cn(
+                  "h-3.5 w-3.5 shrink-0 text-slate-400 transition",
+                  accountOpen && "rotate-180 text-slate-700"
+                )}
+              />
+            </button>
 
-          <div className="flex items-center justify-between gap-2 px-1 py-0.5">
-            <span className="text-[10px] text-slate-600">Private to this browser.</span>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setSettingsOpen(true)}
-                className="inline-flex items-center gap-1 rounded p-1 text-[10px] text-slate-600 hover:text-slate-900"
+            {accountOpen && (
+              <div
+                role="menu"
+                aria-label="Account"
+                className="absolute bottom-full left-0 right-0 z-30 mb-1.5 overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-[0_20px_45px_-24px_rgba(15,23,42,0.4)]"
               >
-                <SlidersHorizontal className="h-3 w-3" />
-                Settings
-              </button>
-              <span aria-hidden className="h-2.5 w-px bg-slate-200" />
-              <Link
-                to="/"
-                className="inline-flex items-center gap-1 rounded p-1 text-[10px] text-slate-600 hover:text-slate-900"
-              >
-                <ArrowLeft className="h-3 w-3" />
-                Site
-              </Link>
-            </div>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setAccountOpen(false);
+                    setSettingsOpen(true);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[11.5px] text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+                >
+                  <SlidersHorizontal className="h-3.5 w-3.5 text-slate-400" />
+                  Settings
+                </button>
+                <Link
+                  role="menuitem"
+                  to="/terms"
+                  onClick={() => setAccountOpen(false)}
+                  className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-[11.5px] text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+                >
+                  <FileText className="h-3.5 w-3.5 text-slate-400" />
+                  Terms &amp; Conditions
+                </Link>
+                <Link
+                  role="menuitem"
+                  to="/privacy"
+                  onClick={() => setAccountOpen(false)}
+                  className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-[11.5px] text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
+                  Privacy Policy
+                </Link>
+                <Link
+                  role="menuitem"
+                  to="/"
+                  onClick={() => setAccountOpen(false)}
+                  className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-[11.5px] text-slate-700 transition hover:bg-slate-100 hover:text-slate-900"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5 text-slate-400" />
+                  Back to website
+                </Link>
+                <div className="my-1 h-px bg-slate-100" aria-hidden />
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => {
+                    setAccountOpen(false);
+                    void signOutUser();
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[11.5px] text-slate-700 transition hover:bg-rose-50 hover:text-rose-700"
+                >
+                  <LogOut className="h-3.5 w-3.5" />
+                  Sign out
+                </button>
+              </div>
+            )}
           </div>
-          <LegalLinks className="px-1 pt-0.5" showContact={false} />
         </div>
       </aside>
 
