@@ -26,9 +26,9 @@ export const privacyPolicy: LegalDocument = {
   title: "Privacy Policy",
   effective: legalEffectiveLabel,
   summary:
-    "How Harness Studio handles information for the Harness Copilot app for Windows devices and web browsers.",
+    "How Harness Studio handles information for the Harness Copilot web app.",
   intro: [
-    `This privacy policy applies to the Harness Copilot app for Windows devices and web browsers, together with any related services operated by Harness Studio (collectively, the "Application"). Harness Studio is hereby referred to as the "Service Provider".`,
+    `This privacy policy applies to the Harness Copilot web app, which runs in your browser, together with any related services operated by Harness Studio (collectively, the "Application"). Harness Studio is hereby referred to as the "Service Provider".`,
   ],
   sections: [
     {
@@ -37,7 +37,7 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `The web version of the Application uses Firebase Authentication, a Google service, to create and sign in to accounts. When you create an account or sign in, Firebase processes your email address, password, and a Firebase user identifier. Harness Studio receives your email address and user identifier but does not receive or store your password. We use this information only to authenticate you, keep you signed in, display your account, and record your acceptance of the Terms & Conditions and this Privacy Policy.`,
+          text: `The Application uses Firebase Authentication, a Google service, to create and sign in to accounts. When you create an account or sign in, Firebase processes your email address, password, and a Firebase user identifier. Harness Studio receives your email address and user identifier but does not receive or store your password. We use this information only to authenticate you, keep you signed in, display your account, and record your acceptance of the Terms & Conditions and this Privacy Policy.`,
         },
         {
           type: "p",
@@ -55,7 +55,7 @@ export const privacyPolicy: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `This Application does not collect precise information about the location of your Windows device or computer.`,
+          text: `This Application does not collect precise information about the location of your device.`,
         },
       ],
     },
@@ -160,10 +160,10 @@ export const termsOfService: LegalDocument = {
   title: "Terms & Conditions",
   effective: legalEffectiveLabel,
   summary:
-    "The terms that govern use of the Harness Copilot app for Windows devices and web browsers.",
+    "The terms that govern use of the Harness Copilot web app.",
   intro: [
-    `These terms and conditions apply to the Harness Copilot app for Windows devices and web browsers, together with any related services operated by Harness Studio (collectively, the "Application"). Harness Studio is hereby referred to as the "Service Provider".`,
-    `By downloading or using the Application, you agree to these Terms and Conditions. You should read them carefully before using the Application.`,
+    `These terms and conditions apply to the Harness Copilot web app, which runs in your browser, together with any related services operated by Harness Studio (collectively, the "Application"). Harness Studio is hereby referred to as the "Service Provider".`,
+    `By accessing or using the Application, you agree to these Terms and Conditions. You should read them carefully before using the Application.`,
   ],
   sections: [
     {
@@ -172,7 +172,7 @@ export const termsOfService: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `Subject to your compliance with these Terms, the Service Provider grants you a limited, non-exclusive, non-transferable, revocable license to install and use the Application on a Windows device or computer for personal or internal business purposes. You may not reproduce, distribute, modify, create derivative works from, reverse engineer, decompile, or disassemble the Application, except as and only to the extent that such activity is expressly permitted by applicable law.`,
+          text: `Subject to your compliance with these Terms, the Service Provider grants you a limited, non-exclusive, non-transferable, revocable license to access and use the Application through a web browser for personal or internal business purposes. You may not reproduce, distribute, modify, create derivative works from, reverse engineer, decompile, or disassemble the Application, except as and only to the extent that such activity is expressly permitted by applicable law.`,
         },
       ],
     },
@@ -275,7 +275,7 @@ export const termsOfService: LegalDocument = {
         },
         {
           type: "p",
-          text: `The Application stores and processes personal data that you have provided to the Service Provider in order to provide the Service. It is your responsibility to maintain the security of your Windows device or computer and access to the Application.`,
+          text: `The Application stores and processes personal data that you have provided to the Service Provider in order to provide the Service. It is your responsibility to maintain the security of your device and your access to the Application.`,
         },
         {
           type: "p",
@@ -345,7 +345,7 @@ export const termsOfService: LegalDocument = {
       blocks: [
         {
           type: "p",
-          text: `The Service Provider may wish to update the application at some point. The application is currently available as per the requirements for the operating system (and for any additional systems they decide to extend the availability of the application to) may change, and you will need to download the updates if you want to continue using the application. The Service Provider does not guarantee that it will always update the application so that it is relevant to you and/or compatible with the particular operating system version installed on your device. You should accept updates when offered; if you choose not to, the Service Provider may cease to support earlier versions and the Application may not function properly. The Service Provider may also wish to cease providing the application and may terminate its use at any time without providing termination notice to you. Unless they inform you otherwise, upon any termination, (a) the rights and licenses granted to you in these terms will end; (b) you must cease using the application, and (if necessary) delete it from your device.`,
+          text: `The Service Provider may update the Application from time to time. Because the Application runs in your browser, updates are delivered when you load it, and features may be added, changed, or removed. The Service Provider does not guarantee that the Application will always suit your needs or work with every browser or device. The Service Provider may also stop providing the Application at any time without notice to you. Unless they inform you otherwise, upon any termination, (a) the rights and licenses granted to you in these terms will end; (b) you must stop using the Application.`,
         },
       ],
     },
