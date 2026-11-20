@@ -1,5 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, Code, FileCode, MessageSquare, Plus, Send, Sparkles, Square } from "lucide-react";
+import {
+  ArrowLeft,
+  Code,
+  FileCode,
+  MessageSquare,
+  Plus,
+  Send,
+  Sparkles,
+  Square,
+  Undo2,
+} from "lucide-react";
 import type { ChatMessage } from "../../lib/chat";
 import { extractCodeFiles } from "../../lib/codeFiles";
 import { ChatMessageView } from "./ChatMessageView";
@@ -21,6 +31,8 @@ export function CodeWorkspace({
   onSend,
   onStop,
   onNewChat,
+  canUndo,
+  onUndo,
   onBackToCopilot,
 }: {
   messages: ChatMessage[];
@@ -30,6 +42,8 @@ export function CodeWorkspace({
   onSend: (text: string) => void;
   onStop: () => void;
   onNewChat: () => void;
+  canUndo: boolean;
+  onUndo: () => void;
   onBackToCopilot: () => void;
 }) {
   const files = useMemo(() => extractCodeFiles(messages), [messages]);
@@ -45,6 +59,9 @@ export function CodeWorkspace({
   }, [files, selectedId]);
 
   useEffect(() => {
+    // Only follow the conversation once it has started; scrolling an empty
+    // thread hides the top of the intro on short screens.
+    if (messages.length === 0) return;
     const el = threadRef.current;
     if (el) el.scrollTop = el.scrollHeight;
   }, [messages.length, messages[messages.length - 1]?.content, streamingId]);
@@ -110,6 +127,23 @@ export function CodeWorkspace({
             </button>
           </div>
         </div>
+
+        {canUndo && (
+          <div
+            role="status"
+            className="anim-fade-in flex shrink-0 items-center gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2 text-[11.5px] text-amber-900"
+          >
+            <Undo2 className="h-3.5 w-3.5 shrink-0" />
+            <span className="min-w-0 flex-1 truncate">Started a fresh code chat.</span>
+            <button
+              type="button"
+              onClick={onUndo}
+              className="press shrink-0 rounded-md border border-amber-300 bg-white px-2 py-1 text-[11px] font-semibold text-amber-900 transition hover:bg-amber-100"
+            >
+              Undo
+            </button>
+          </div>
+        )}
 
         <div ref={threadRef} className="min-h-0 flex-1 overflow-y-auto">
           <div className="mx-auto w-full max-w-3xl px-4 py-5">

@@ -9,6 +9,7 @@ import {
   FileText,
   LogOut,
   Menu,
+  MessageSquare,
   Plus,
   Search,
   Send,
@@ -124,9 +125,11 @@ export default function Console() {
   const [codeMessages, setCodeMessages] = useState<ChatMessage[]>([]);
   const [codeInput, setCodeInput] = useState("");
   const [codeStreamingId, setCodeStreamingId] = useState<string | null>(null);
+  const [codeUndo, setCodeUndo] = useState<ChatMessage[] | null>(null);
   const [query, setQuery] = useState("");
   const cancelledRef = useRef(false);
   const codeCancelledRef = useRef(false);
+  const codeUndoTimer = useRef<number | null>(null);
   const threadRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -431,10 +434,23 @@ export default function Console() {
   }
 
   function startCodeChat() {
+    if (codeMessages.length === 0) return;
     codeCancelledRef.current = true;
     setCodeStreamingId(null);
-    setCodeMessages([]);
     setCodeInput("");
+    // Keep the cleared thread so a single click can be taken back.
+    setCodeUndo(codeMessages);
+    setCodeMessages([]);
+    if (codeUndoTimer.current) window.clearTimeout(codeUndoTimer.current);
+    codeUndoTimer.current = window.setTimeout(() => setCodeUndo(null), 15000);
+  }
+
+  function undoCodeChat() {
+    const restore = codeUndo;
+    if (!restore) return;
+    if (codeUndoTimer.current) window.clearTimeout(codeUndoTimer.current);
+    setCodeUndo(null);
+    setCodeMessages((current) => (current.length === 0 ? restore : current));
   }
 
   function createConversation() {
@@ -480,15 +496,20 @@ export default function Console() {
     setStreaming(null);
     setCodeStreamingId(null);
     setCodeMessages([]);
+    setCodeUndo(null);
     setSidebarOpen(false);
     setSettingsOpen(false);
     setGuideOpen(false);
     if (auth) void firebaseSignOut(auth);
   }
 
-  const filteredConversations = conversations.filter((conversation) =>
-    conversation.title.toLowerCase().includes(query.trim().toLowerCase())
+  const filteredConversations = conversations.filter(
+    (conversation) =>
+      conversation.messages.length > 0 &&
+      conversation.title.toLowerCase().includes(query.trim().toLowerCase())
   );
+  const lastCodePrompt = [...codeMessages].reverse().find((message) => message.role === "user");
+  const codeChatTitle = lastCodePrompt ? titleForConversation(lastCodePrompt.content) : "Code chat";
   const isStreaming = streaming !== null;
   const userEmail = firebaseUser?.email ?? "Signed in";
   const userInitial = (firebaseUser?.displayName?.trim().charAt(0) || userEmail.charAt(0)).toUpperCase();
@@ -583,6 +604,40 @@ export default function Console() {
             Recent
           </div>
           <div className="space-y-0.5">
+            {codeMessages.length > 0 && (
+              <div
+                className={cn(
+                  "group flex items-center gap-1 rounded-lg px-1 transition",
+                  view === "code" ? "bg-slate-100" : "hover:bg-slate-50"
+                )}
+              >
+                <button
+                  type="button"
+                  onClick={() => {
+                    setView("code");
+                    setSidebarOpen(false);
+                  }}
+                  className="min-w-0 flex-1 px-2 py-2.5 text-left"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <Code className="h-3 w-3 shrink-0 text-violet-600" />
+                    <span
+                      className={cn(
+                        "truncate text-[12px]",
+                        view === "code" ? "text-slate-900" : "text-slate-700"
+                      )}
+                    >
+                      {codeChatTitle}
+                    </span>
+                  </div>
+                  <div className="mt-1 flex items-center gap-1.5 pl-[18px] text-[10px] text-slate-600">
+                    <span>Code</span>
+                    <span className="h-0.5 w-0.5 rounded-full bg-slate-400" />
+                    <span>{codeMessages.length} msg</span>
+                  </div>
+                </button>
+              </div>
+            )}
             {filteredConversations.map((conversation) => (
               <div
                 key={conversation.id}
@@ -624,8 +679,18 @@ export default function Console() {
                 </button>
               </div>
             ))}
-            {filteredConversations.length === 0 && (
-              <p className="px-2 py-4 text-[11.5px] text-slate-500">No conversations match.</p>
+            {filteredConversations.length === 0 && codeMessages.length === 0 && (
+              query.trim() ? (
+                <p className="px-2 py-4 text-[11.5px] text-slate-500">No conversations match.</p>
+              ) : (
+                <div className="mt-2 rounded-lg border border-dashed border-slate-200 px-3 py-4 text-center">
+                  <MessageSquare className="mx-auto h-4 w-4 text-slate-400" />
+                  <p className="mt-2 text-[11.5px] font-medium text-slate-700">No chats yet</p>
+                  <p className="mt-1 text-[10.5px] leading-[1.6] text-slate-500">
+                    Copilot conversations and your code chat appear here.
+                  </p>
+                </div>
+              )
             )}
           </div>
         </div>
@@ -811,6 +876,8 @@ export default function Console() {
               codeCancelledRef.current = true;
             }}
             onNewChat={startCodeChat}
+            canUndo={codeUndo !== null}
+            onUndo={undoCodeChat}
             onBackToCopilot={openCopilot}
           />
         )}
