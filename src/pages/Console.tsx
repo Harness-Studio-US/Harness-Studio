@@ -30,7 +30,7 @@ import { VerifyEmail } from "../components/console/VerifyEmail";
 import { Logo, LogoMark } from "../components/Logo";
 import { streamAssistant, titleForConversation, type ChatMessage } from "../lib/chat";
 import { streamCodeAssistant } from "../lib/codeChat";
-import { applyReplyToProject, type ProjectFile } from "../lib/codeFiles";
+import { applyReplyToProject, replayConversation, type ProjectFile } from "../lib/codeFiles";
 import {
   acceptCopilotTerms,
   hasAcceptedCopilotTerms,
@@ -181,8 +181,10 @@ export default function Console() {
       return;
     }
     setConversations(loadConversations(firebaseUser.uid));
-    setCodeMessages(loadCodeMessages(firebaseUser.uid));
-    setCodeProject(loadCodeProject(firebaseUser.uid));
+    const replayed = replayConversation(loadCodeMessages(firebaseUser.uid));
+    setCodeMessages(replayed.messages);
+    const storedProject = loadCodeProject(firebaseUser.uid);
+    setCodeProject(storedProject.length > 0 ? storedProject : replayed.project);
     setActiveId("");
     setChatsReady(true);
     setAcceptedTerms(hasAcceptedCopilotTerms(firebaseUser.uid));

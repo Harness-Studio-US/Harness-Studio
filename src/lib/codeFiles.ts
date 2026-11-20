@@ -106,3 +106,21 @@ export function applyReplyToProject(
 
   return { project: next, edits };
 }
+
+/**
+ * Rebuilds the project (and the per-reply edit lists) from a stored
+ * conversation, so a chat written before this existed still shows its files.
+ */
+export function replayConversation(messages: ChatMessage[]): {
+  project: ProjectFile[];
+  messages: ChatMessage[];
+} {
+  let project: ProjectFile[] = [];
+  const replayed = messages.map((message) => {
+    if (message.role !== "assistant") return message;
+    const applied = applyReplyToProject(project, message);
+    project = applied.project;
+    return applied.edits.length > 0 ? { ...message, edits: applied.edits } : message;
+  });
+  return { project, messages: replayed };
+}
