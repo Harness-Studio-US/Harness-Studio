@@ -16,7 +16,6 @@ import {
   Loader2,
   LockKeyhole,
   Mail,
-  ShieldCheck,
 } from "lucide-react";
 import { Logo, LogoMark } from "../Logo";
 import { LegalLinks } from "../LegalLinks";
@@ -71,10 +70,6 @@ export function LoginShell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11.5px] text-muted">
-            <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck className="h-3.5 w-3.5 text-[#047857]" />
-              Firebase-secured sign-in
-            </span>
             <span>Password reset by email</span>
           </div>
         </section>
@@ -364,11 +359,6 @@ export function CopilotLogin() {
           {creating ? "Sign in" : "Create one"}
         </button>
       </p>
-
-      <div className="mt-5 flex items-start gap-2.5 border-t border-line pt-4 text-[11px] leading-[1.65] text-muted">
-        <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#047857]" />
-        <span>Secured by Firebase Authentication. Your password is never stored by this site.</span>
-      </div>
 
       <LegalLinks className="mt-4 justify-center" showContact={false} />
     </LoginShell>

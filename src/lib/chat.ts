@@ -1,3 +1,5 @@
+import { streamReply } from "./streaming";
+
 export type ToolName =
   | "web_search"
   | "code_execution"
@@ -45,20 +47,6 @@ type StreamOptions = {
   history: ChatMessage[];
   isCancelled: () => boolean;
 };
-
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-function estimateTokens(text: string): number {
-  return Math.max(1, Math.round(text.trim().length / 4));
-}
-
-function newId(): string {
-  try {
-    return crypto.randomUUID();
-  } catch {
-    return Math.random().toString(36).slice(2);
-  }
-}
 
 const activeTools: ToolName[] = ["web_search", "code_execution"];
 
@@ -281,69 +269,23 @@ const responses: Record<Intent, string> = {
   default: defaultResponse,
 };
 
-async function* streamSimulated(opts: StreamOptions): AsyncGenerator<StreamEvent> {
-  const { prompt, isCancelled } = opts;
-  const started = Date.now();
-  const intent = detectIntent(prompt);
-  const plan = toolPlan(intent, activeTools);
-  const thinking = thinkingFor(intent, activeTools);
-
-  await sleep(260);
-
-  for (const step of thinking) {
-    if (isCancelled()) return;
-    yield { type: "thinking", text: step };
-    await sleep(180 + Math.random() * 160);
-  }
-
-  const tools: ToolCall[] = [];
-  for (const name of plan) {
-    if (isCancelled()) return;
-    const meta = toolMeta[name];
-    const call: ToolCall = {
-      id: newId(),
-      name,
-      label: meta.label,
-      args: meta.args(prompt),
-      status: "running",
-    };
-    tools.push(call);
-    yield { type: "tool", call };
-    await sleep(520 + Math.random() * 500);
-    if (isCancelled()) return;
-    const durationMs = Math.round(520 + Math.random() * 700);
-    yield { type: "tool_result", id: call.id, result: meta.result, durationMs };
-    call.status = "done";
-  }
-
-  const body = responses[intent];
-
-  await sleep(180);
-  let ttft = 0;
-  const tokens = body.match(/\S+\s*/g) ?? [];
-  let buffer = "";
-  for (let i = 0; i < tokens.length; i += 1) {
-    if (isCancelled()) return;
-    if (i === 0) ttft = Date.now() - started;
-    // Emit small groups of words so streaming feels natural.
-    buffer += tokens[i];
-    if (buffer.length > 8 || i === tokens.length - 1) {
-      yield { type: "token", text: buffer };
-      buffer = "";
-      await sleep(14 + Math.random() * 22);
-    }
-  }
-
-  yield {
-    type: "done",
-    usage: { in: estimateTokens(opts.history.map((m) => m.content).join(" ") + prompt), out: estimateTokens(body) },
-    latencyMs: Date.now() - started,
-    ttftMs: ttft || 320,
-  };
-}
-
 export async function* streamAssistant(opts: StreamOptions): AsyncGenerator<StreamEvent> {
-  yield* streamSimulated(opts);
+  const intent = detectIntent(opts.prompt);
+  const plan = toolPlan(intent, activeTools);
+
+  yield* streamReply({
+    prompt: opts.prompt,
+    history: opts.history,
+    thinking: thinkingFor(intent, activeTools),
+    tools: plan.map((name) => ({
+      name,
+      label: toolMeta[name].label,
+      args: toolMeta[name].args(opts.prompt),
+      result: toolMeta[name].result,
+    })),
+    body: responses[intent],
+    isCancelled: opts.isCancelled,
+  });
 }
 
 export function titleForConversation(prompt: string): string {

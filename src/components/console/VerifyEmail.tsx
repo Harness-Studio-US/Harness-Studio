@@ -162,10 +162,7 @@ export function VerifyEmail({
 
       <div className="mt-5 flex items-start gap-2.5 border-t border-line pt-4 text-[11px] leading-[1.65] text-muted">
         <MailCheck className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#047857]" />
-        <span>
-          Verification is handled by Firebase Authentication. Your password is never stored by this
-          site.
-        </span>
+        <span>Your password is never stored by this site.</span>
       </div>
 
       <LegalLinks className="mt-4 justify-center" showContact={false} />

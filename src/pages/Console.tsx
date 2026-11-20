@@ -28,6 +28,7 @@ import { SettingsPanel } from "../components/console/SettingsPanel";
 import { VerifyEmail } from "../components/console/VerifyEmail";
 import { Logo, LogoMark } from "../components/Logo";
 import { streamAssistant, titleForConversation, type ChatMessage } from "../lib/chat";
+import { streamCodeAssistant } from "../lib/codeChat";
 import {
   acceptCopilotTerms,
   hasAcceptedCopilotTerms,
@@ -45,6 +46,7 @@ type Conversation = {
 };
 
 const chatsKey = (userId: string) => `harness-copilot-conversations-v1:${userId}`;
+const codeChatKey = (userId: string) => `harness-code-chat-v1:${userId}`;
 
 const suggestions = [
   "Make the dashboard easier to scan",
@@ -80,6 +82,19 @@ function loadConversations(userId: string): Conversation[] {
   return [emptyConversation()];
 }
 
+function loadCodeMessages(userId: string): ChatMessage[] {
+  try {
+    const raw = localStorage.getItem(codeChatKey(userId));
+    if (raw) {
+      const parsed = JSON.parse(raw) as ChatMessage[];
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch {
+    /* ignore corrupted storage */
+  }
+  return [];
+}
+
 function formatRelative(timestamp: number): string {
   const diff = Date.now() - timestamp;
   const minutes = Math.floor(diff / 60000);
@@ -106,8 +121,12 @@ export default function Console() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const [view, setView] = useState<"copilot" | "code">("copilot");
+  const [codeMessages, setCodeMessages] = useState<ChatMessage[]>([]);
+  const [codeInput, setCodeInput] = useState("");
+  const [codeStreamingId, setCodeStreamingId] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const cancelledRef = useRef(false);
+  const codeCancelledRef = useRef(false);
   const threadRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -116,8 +135,10 @@ export default function Console() {
       ? "Harness Copilot"
       : !firebaseUser
         ? "Sign in — Harness Copilot"
-        : "Harness Copilot — AI workspace";
-  }, [authReady, firebaseUser]);
+        : view === "code"
+          ? "Harness Code — coding chat"
+          : "Harness Copilot — AI workspace";
+  }, [authReady, firebaseUser, view]);
 
   useEffect(() => {
     if (!auth) return;
@@ -135,9 +156,12 @@ export default function Console() {
       setAcceptedTerms(false);
       setTermsReady(false);
       setActiveId("");
+      setCodeMessages([]);
+      setCodeStreamingId(null);
       return;
     }
     setConversations(loadConversations(firebaseUser.uid));
+    setCodeMessages(loadCodeMessages(firebaseUser.uid));
     setActiveId("");
     setChatsReady(true);
     setAcceptedTerms(hasAcceptedCopilotTerms(firebaseUser.uid));
@@ -174,6 +198,18 @@ export default function Console() {
     }, 300);
     return () => window.clearTimeout(timer);
   }, [conversations, firebaseUser, chatsReady]);
+
+  useEffect(() => {
+    if (!firebaseUser || !chatsReady) return;
+    const timer = window.setTimeout(() => {
+      try {
+        localStorage.setItem(codeChatKey(firebaseUser.uid), JSON.stringify(codeMessages));
+      } catch {
+        /* storage quota — ignore */
+      }
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [codeMessages, firebaseUser, chatsReady]);
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -314,6 +350,93 @@ export default function Console() {
     void send(text);
   }
 
+  function patchCodeMessage(id: string, patch: (message: ChatMessage) => ChatMessage) {
+    setCodeMessages((prev) =>
+      prev.map((message) => (message.id === id ? patch(message) : message))
+    );
+  }
+
+  async function sendCode(raw: string) {
+    const text = raw.trim();
+    if (!text || codeStreamingId) return;
+
+    const history = codeMessages;
+    const userMessage: ChatMessage = { id: uid(), role: "user", content: text };
+    const assistantId = uid();
+    const assistantMessage: ChatMessage = {
+      id: assistantId,
+      role: "assistant",
+      content: "",
+      thinking: [],
+      toolCalls: [],
+    };
+
+    setCodeMessages((prev) => [...prev, userMessage, assistantMessage]);
+    setCodeInput("");
+    setCodeStreamingId(assistantId);
+    codeCancelledRef.current = false;
+
+    try {
+      for await (const event of streamCodeAssistant({
+        prompt: text,
+        history,
+        isCancelled: () => codeCancelledRef.current,
+      })) {
+        if (event.type === "thinking") {
+          patchCodeMessage(assistantId, (message) => ({
+            ...message,
+            thinking: [...(message.thinking ?? []), event.text],
+          }));
+        } else if (event.type === "tool") {
+          patchCodeMessage(assistantId, (message) => ({
+            ...message,
+            toolCalls: [...(message.toolCalls ?? []), event.call],
+          }));
+        } else if (event.type === "tool_result") {
+          patchCodeMessage(assistantId, (message) => ({
+            ...message,
+            toolCalls: (message.toolCalls ?? []).map((call) =>
+              call.id === event.id
+                ? { ...call, status: "done" as const, result: event.result, durationMs: event.durationMs }
+                : call
+            ),
+          }));
+        } else if (event.type === "token") {
+          patchCodeMessage(assistantId, (message) => ({
+            ...message,
+            content: message.content + event.text,
+          }));
+        } else if (event.type === "done") {
+          patchCodeMessage(assistantId, (message) => ({
+            ...message,
+            usage: event.usage,
+            latencyMs: event.latencyMs,
+          }));
+        }
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unexpected error";
+      patchCodeMessage(assistantId, (current) => ({
+        ...current,
+        error: true,
+        content: `${current.content}\n\n**Request failed.** \`${message}\``,
+      }));
+    } finally {
+      if (codeCancelledRef.current) {
+        patchCodeMessage(assistantId, (current) => ({ ...current, stopped: true }));
+      }
+      setCodeStreamingId((prev) => (prev === assistantId ? null : prev));
+      codeCancelledRef.current = false;
+    }
+  }
+
+  function startCodeChat() {
+    codeCancelledRef.current = true;
+    setCodeStreamingId(null);
+    setCodeMessages([]);
+    setCodeInput("");
+  }
+
   function createConversation() {
     const conversation = emptyConversation();
     setConversations((prev) => [conversation, ...prev]);
@@ -353,7 +476,10 @@ export default function Console() {
 
   function signOutUser() {
     cancelledRef.current = true;
+    codeCancelledRef.current = true;
     setStreaming(null);
+    setCodeStreamingId(null);
+    setCodeMessages([]);
     setSidebarOpen(false);
     setSettingsOpen(false);
     setGuideOpen(false);
@@ -613,7 +739,9 @@ export default function Console() {
           </button>
 
           <div className="flex min-w-0 items-center gap-2.5">
-            <span className="truncate text-[13.5px] font-semibold text-slate-900">Harness Copilot</span>
+            <span className="truncate text-[13.5px] font-semibold text-slate-900">
+              {view === "code" ? "Harness Code" : "Harness Copilot"}
+            </span>
           </div>
 
           <div
@@ -674,9 +802,16 @@ export default function Console() {
 
         {view === "code" && (
           <CodeWorkspace
-            key={activeConversation?.id ?? "empty"}
-            messages={activeConversation?.messages ?? []}
-            onAskCopilot={openCopilot}
+            messages={codeMessages}
+            streamingId={codeStreamingId}
+            input={codeInput}
+            onInputChange={setCodeInput}
+            onSend={(text) => void sendCode(text)}
+            onStop={() => {
+              codeCancelledRef.current = true;
+            }}
+            onNewChat={startCodeChat}
+            onBackToCopilot={openCopilot}
           />
         )}
 
