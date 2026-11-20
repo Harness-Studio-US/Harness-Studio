@@ -3,10 +3,11 @@ import {
   AlertTriangle,
   CheckCircle2,
   ChevronDown,
+  FileCode,
   Loader2,
   Sparkles,
 } from "lucide-react";
-import type { ChatMessage, ToolCall } from "../../lib/chat";
+import type { ChatMessage, ProjectEdit, ToolCall } from "../../lib/chat";
 import { Markdown } from "../Markdown";
 import { LogoMark } from "../Logo";
 import { CopyButton } from "../CodeBlock";
@@ -32,7 +33,17 @@ function ToolCallCard({ call, streaming }: { call: ToolCall; streaming: boolean 
   );
 }
 
-export function ChatMessageView({ message, streaming }: { message: ChatMessage; streaming: boolean }) {
+export function ChatMessageView({
+  message,
+  streaming,
+  author = "Harness Copilot",
+  edits,
+}: {
+  message: ChatMessage;
+  streaming: boolean;
+  author?: string;
+  edits?: ProjectEdit[];
+}) {
   const [thinkingOpen, setThinkingOpen] = useState(false);
 
   if (message.role === "user") {
@@ -60,7 +71,7 @@ export function ChatMessageView({ message, streaming }: { message: ChatMessage; 
 
       <div className="min-w-0 flex-1">
         <div className="mb-2 flex flex-wrap items-center gap-2">
-          <span className="text-[13px] font-semibold text-slate-900">Harness Copilot</span>
+          <span className="text-[13px] font-semibold text-slate-900">{author}</span>
           {message.error && (
             <span className="inline-flex items-center gap-1 rounded border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-700">
               <AlertTriangle className="h-2.5 w-2.5" />
@@ -123,6 +134,33 @@ export function ChatMessageView({ message, streaming }: { message: ChatMessage; 
           <div className={cn(message.error && "rounded-lg border border-rose-200 bg-rose-50 p-3")}>
             <Markdown content={message.content} />
             {streaming && message.content && <span className="caret" />}
+          </div>
+        )}
+
+        {!streaming && (edits?.length ?? 0) > 0 && (
+          <div className="anim-fade-in mt-3 overflow-hidden rounded-lg border border-violet-200 bg-violet-50/40">
+            <div className="flex items-center gap-2 border-b border-violet-200 px-3 py-2">
+              <FileCode className="h-3.5 w-3.5 shrink-0 text-violet-700" />
+              <span className="text-[11.5px] font-semibold text-slate-800">
+                {author} updated your project
+              </span>
+              <span className="ml-auto text-[10.5px] text-slate-600">
+                {edits!.length} file{edits!.length === 1 ? "" : "s"}
+              </span>
+            </div>
+            <ul className="divide-y divide-violet-100">
+              {edits!.map((edit) => (
+                <li key={edit.name} className="flex items-center gap-2 px-3 py-1.5">
+                  <span className="truncate font-mono text-[11px] text-slate-800">{edit.name}</span>
+                  <span className="shrink-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[9.5px] uppercase tracking-[0.06em] text-slate-600">
+                    {edit.action}
+                  </span>
+                  <span className="ml-auto shrink-0 text-[10.5px] text-slate-600">
+                    {edit.lines} lines
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 

@@ -18,6 +18,13 @@ export type ToolCall = {
 
 export type ChatUsage = { in: number; out: number };
 
+/** A file Harness Code wrote into the project for one reply. */
+export type ProjectEdit = {
+  name: string;
+  action: "created" | "updated";
+  lines: number;
+};
+
 export type ChatMessage = {
   id: string;
   role: "user" | "assistant";
@@ -28,6 +35,7 @@ export type ChatMessage = {
   latencyMs?: number;
   error?: boolean;
   stopped?: boolean;
+  edits?: ProjectEdit[];
 };
 
 export type StreamEvent =

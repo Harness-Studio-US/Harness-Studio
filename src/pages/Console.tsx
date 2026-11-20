@@ -30,6 +30,7 @@ import { VerifyEmail } from "../components/console/VerifyEmail";
 import { Logo, LogoMark } from "../components/Logo";
 import { streamAssistant, titleForConversation, type ChatMessage } from "../lib/chat";
 import { streamCodeAssistant } from "../lib/codeChat";
+import { applyReplyToProject, type ProjectFile } from "../lib/codeFiles";
 import {
   acceptCopilotTerms,
   hasAcceptedCopilotTerms,
@@ -48,6 +49,7 @@ type Conversation = {
 
 const chatsKey = (userId: string) => `harness-copilot-conversations-v1:${userId}`;
 const codeChatKey = (userId: string) => `harness-code-chat-v1:${userId}`;
+const codeProjectKey = (userId: string) => `harness-code-project-v1:${userId}`;
 
 const suggestions = [
   "Make the dashboard easier to scan",
@@ -96,6 +98,19 @@ function loadCodeMessages(userId: string): ChatMessage[] {
   return [];
 }
 
+function loadCodeProject(userId: string): ProjectFile[] {
+  try {
+    const raw = localStorage.getItem(codeProjectKey(userId));
+    if (raw) {
+      const parsed = JSON.parse(raw) as ProjectFile[];
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch {
+    /* ignore corrupted storage */
+  }
+  return [];
+}
+
 function formatRelative(timestamp: number): string {
   const diff = Date.now() - timestamp;
   const minutes = Math.floor(diff / 60000);
@@ -123,6 +138,7 @@ export default function Console() {
   const [accountOpen, setAccountOpen] = useState(false);
   const [view, setView] = useState<"copilot" | "code">("copilot");
   const [codeMessages, setCodeMessages] = useState<ChatMessage[]>([]);
+  const [codeProject, setCodeProject] = useState<ProjectFile[]>([]);
   const [codeInput, setCodeInput] = useState("");
   const [codeStreamingId, setCodeStreamingId] = useState<string | null>(null);
   const [codeUndo, setCodeUndo] = useState<ChatMessage[] | null>(null);
@@ -160,11 +176,13 @@ export default function Console() {
       setTermsReady(false);
       setActiveId("");
       setCodeMessages([]);
+      setCodeProject([]);
       setCodeStreamingId(null);
       return;
     }
     setConversations(loadConversations(firebaseUser.uid));
     setCodeMessages(loadCodeMessages(firebaseUser.uid));
+    setCodeProject(loadCodeProject(firebaseUser.uid));
     setActiveId("");
     setChatsReady(true);
     setAcceptedTerms(hasAcceptedCopilotTerms(firebaseUser.uid));
@@ -213,6 +231,18 @@ export default function Console() {
     }, 300);
     return () => window.clearTimeout(timer);
   }, [codeMessages, firebaseUser, chatsReady]);
+
+  useEffect(() => {
+    if (!firebaseUser || !chatsReady) return;
+    const timer = window.setTimeout(() => {
+      try {
+        localStorage.setItem(codeProjectKey(firebaseUser.uid), JSON.stringify(codeProject));
+      } catch {
+        /* storage quota — ignore */
+      }
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [codeProject, firebaseUser, chatsReady]);
 
   useEffect(() => {
     const el = textareaRef.current;
@@ -378,6 +408,7 @@ export default function Console() {
     setCodeInput("");
     setCodeStreamingId(assistantId);
     codeCancelledRef.current = false;
+    let reply = "";
 
     try {
       for await (const event of streamCodeAssistant({
@@ -405,6 +436,7 @@ export default function Console() {
             ),
           }));
         } else if (event.type === "token") {
+          reply += event.text;
           patchCodeMessage(assistantId, (message) => ({
             ...message,
             content: message.content + event.text,
@@ -427,6 +459,17 @@ export default function Console() {
     } finally {
       if (codeCancelledRef.current) {
         patchCodeMessage(assistantId, (current) => ({ ...current, stopped: true }));
+      } else if (reply.trim()) {
+        // The reply's code blocks become files in the project.
+        const applied = applyReplyToProject(codeProject, {
+          id: assistantId,
+          role: "assistant",
+          content: reply,
+        });
+        if (applied.edits.length > 0) {
+          setCodeProject(applied.project);
+          patchCodeMessage(assistantId, (current) => ({ ...current, edits: applied.edits }));
+        }
       }
       setCodeStreamingId((prev) => (prev === assistantId ? null : prev));
       codeCancelledRef.current = false;
@@ -496,6 +539,7 @@ export default function Console() {
     setStreaming(null);
     setCodeStreamingId(null);
     setCodeMessages([]);
+    setCodeProject([]);
     setCodeUndo(null);
     setSidebarOpen(false);
     setSettingsOpen(false);
@@ -868,6 +912,7 @@ export default function Console() {
         {view === "code" && (
           <CodeWorkspace
             messages={codeMessages}
+            project={codeProject}
             streamingId={codeStreamingId}
             input={codeInput}
             onInputChange={setCodeInput}

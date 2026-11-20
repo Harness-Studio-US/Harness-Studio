@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   Code,
@@ -11,7 +11,7 @@ import {
   Undo2,
 } from "lucide-react";
 import type { ChatMessage } from "../../lib/chat";
-import { extractCodeFiles } from "../../lib/codeFiles";
+import type { ProjectFile } from "../../lib/codeFiles";
 import { ChatMessageView } from "./ChatMessageView";
 import { CopyButton } from "../CodeBlock";
 import { cn } from "../../lib/cn";
@@ -25,6 +25,7 @@ const codeSuggestions = [
 
 export function CodeWorkspace({
   messages,
+  project,
   streamingId,
   input,
   onInputChange,
@@ -36,6 +37,7 @@ export function CodeWorkspace({
   onBackToCopilot,
 }: {
   messages: ChatMessage[];
+  project: ProjectFile[];
   streamingId: string | null;
   input: string;
   onInputChange: (value: string) => void;
@@ -46,17 +48,16 @@ export function CodeWorkspace({
   onUndo: () => void;
   onBackToCopilot: () => void;
 }) {
-  const files = useMemo(() => extractCodeFiles(messages), [messages]);
-  const [selectedId, setSelectedId] = useState(files[0]?.id ?? "");
+  const [selectedName, setSelectedName] = useState(project[0]?.name ?? "");
   const [pane, setPane] = useState<"chat" | "code">("chat");
   const threadRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
-    if (!files.some((file) => file.id === selectedId)) {
-      setSelectedId(files[0]?.id ?? "");
+    if (!project.some((file) => file.name === selectedName)) {
+      setSelectedName(project[0]?.name ?? "");
     }
-  }, [files, selectedId]);
+  }, [project, selectedName]);
 
   useEffect(() => {
     // Only follow the conversation once it has started; scrolling an empty
@@ -73,7 +74,7 @@ export function CodeWorkspace({
     el.style.height = `${Math.min(el.scrollHeight, 160)}px`;
   }, [input]);
 
-  const active = files.find((file) => file.id === selectedId) ?? files[0] ?? null;
+  const active = project.find((file) => file.name === selectedName) ?? project[0] ?? null;
   const lines = active ? active.code.split("\n") : [];
   const streaming = streamingId !== null;
 
@@ -122,7 +123,7 @@ export function CodeWorkspace({
               <FileCode className="h-3 w-3" />
               Code
               <span className="rounded-full bg-slate-100 px-1.5 text-[10px] text-slate-600">
-                {files.length}
+                {project.length}
               </span>
             </button>
           </div>
@@ -178,7 +179,12 @@ export function CodeWorkspace({
               <div className="space-y-5">
                 {messages.map((message) => (
                   <div key={message.id} className="stream-in">
-                    <ChatMessageView message={message} streaming={streamingId === message.id} />
+                    <ChatMessageView
+                      message={message}
+                      streaming={streamingId === message.id}
+                      author="Harness Code"
+                      edits={message.edits}
+                    />
                   </div>
                 ))}
               </div>
@@ -258,10 +264,10 @@ export function CodeWorkspace({
         <div className="flex shrink-0 items-center gap-2 border-b border-slate-200 bg-[#fbfcfe] px-3.5 py-2.5">
           <FileCode className="h-3.5 w-3.5 shrink-0 text-slate-400" />
           <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-500">
-            Code from this chat
+            Your project
           </span>
           <span className="rounded-full border border-slate-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-slate-600">
-            {files.length}
+            {project.length}
           </span>
           <button
             type="button"
@@ -279,25 +285,26 @@ export function CodeWorkspace({
               <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-[#fbfcfe]">
                 <Code className="h-4 w-4 text-slate-500" />
               </div>
-              <p className="mt-3 text-[12px] font-medium text-slate-800">No code yet</p>
+              <p className="mt-3 text-[12px] font-medium text-slate-800">No files yet</p>
               <p className="mt-1.5 text-[11.5px] leading-[1.65] text-slate-500">
-                Whatever Harness Code writes in this chat lands here, ready to read and copy.
+                Ask for a change and Harness Code writes the file here. Writing the same file again
+                updates it.
               </p>
             </div>
           </div>
         ) : (
           <>
             <div className="anim-stagger flex shrink-0 gap-1.5 overflow-x-auto px-2.5 py-2">
-              {files.map((file) => (
+              {project.map((file) => (
                 <button
-                  key={file.id}
+                  key={file.name}
                   type="button"
-                  onClick={() => setSelectedId(file.id)}
-                  aria-current={file.id === active.id}
+                  onClick={() => setSelectedName(file.name)}
+                  aria-current={file.name === active.name}
                   title={file.name}
                   className={cn(
                     "press flex shrink-0 items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-left transition",
-                    file.id === active.id
+                    file.name === active.name
                       ? "bg-white text-slate-900 shadow-sm ring-1 ring-slate-200"
                       : "text-slate-600 hover:bg-white/80 hover:text-slate-900"
                   )}
