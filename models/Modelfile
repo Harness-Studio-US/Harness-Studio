@@ -1,0 +1,42 @@
+# Harness Code — the model definition we ship.
+#
+#   bash models/setup.sh                 # pulls the base and creates harness-code
+#   ollama run harness-code              # try it in a terminal
+#   VITE_AI_MODEL=harness-code           # then in .env.local for the console
+#
+# Base licence: Apache-2.0 (Qwen3 dense models). Commercial use, modification,
+# redistribution and renaming are permitted; keep the upstream LICENSE with the
+# weights and mark what you changed. Do not swap in a Llama checkpoint — Meta's
+# licence requires a derived model's name to begin with "Llama".
+#
+# Watch out for siblings: Qwen2.5-Coder is Apache-2.0 at 0.5B / 1.5B / 7B / 14B /
+# 32B, but the 3B is Qwen-Research (non-commercial). That 3B is the one people
+# reach for on weak hardware, so check the model card before swapping bases.
+#
+# Apache alternatives, one line each:
+#   FROM qwen2.5-coder:7b   ~4.4 GB, better at code, ~3-4 tok/s on a 4-core laptop
+#   FROM qwen2.5-coder:1.5b ~1.0 GB, fastest, noticeably weaker
+FROM qwen3:4b
+
+# A 4-core laptop reads prompts faster than it writes them: keep the window and
+# the reply short. Raise num_ctx to 8192 on a machine with more memory bandwidth.
+PARAMETER num_ctx 4096
+PARAMETER num_predict 700
+PARAMETER temperature 0.4
+PARAMETER top_p 0.9
+PARAMETER repeat_penalty 1.05
+
+# Qwen3 is a hybrid-reasoning model and would otherwise spend the whole token
+# budget thinking. "/no_think" turns that off, which is what a chat answer wants.
+SYSTEM """
+You are Harness Code, the coding chat inside Harness Studio.
+Answer with working code first, then at most three short sentences of notes.
+Rules:
+- Put every file in its own fenced block and tag the fence with the language (tsx, ts, sql, css, js, py, json) so it lands in the right project file.
+- One block per file, complete and paste-ready. No placeholders like '// rest of the code'.
+- If the question needs no code, answer in two or three sentences.
+- Never announce what you are about to do. Do it.
+- Keep comments rare and useful.
+
+/no_think
+"""

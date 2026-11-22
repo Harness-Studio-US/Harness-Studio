@@ -1,4 +1,5 @@
 import type { ChatMessage, StreamEvent, ToolName } from "./chat";
+import { isRealEngineEnabled, streamRealReply, CODE_SYSTEM_PROMPT } from "./realChat";
 import { streamReply } from "./streaming";
 
 /**
@@ -336,6 +337,16 @@ const responses: Record<CodeIntent, string> = {
 };
 
 export async function* streamCodeAssistant(opts: StreamOptions): AsyncGenerator<StreamEvent> {
+  if (isRealEngineEnabled()) {
+    yield* streamRealReply({
+      system: CODE_SYSTEM_PROMPT,
+      prompt: opts.prompt,
+      history: opts.history,
+      isCancelled: opts.isCancelled,
+    });
+    return;
+  }
+
   const intent = detectIntent(opts.prompt);
   const plan = toolPlan(intent);
 

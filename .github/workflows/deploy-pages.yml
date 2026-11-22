@@ -69,6 +69,14 @@ jobs:
           VITE_FIREBASE_STORAGE_BUCKET: ${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}
           VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID: ${{ secrets.VITE_FIREBASE_APP_ID }}
+          # Harness Code runs on your own machine, so the address is not in the
+          # repository. Set the repository variable VITE_AI_ENDPOINT
+          # (Settings -> Secrets and variables -> Actions -> Variables) to the
+          # HTTPS address of the tunnel in front of Ollama, ending in /v1.
+          # While that variable is unset the site builds the scripted demo.
+          VITE_AI_ENDPOINT: ${{ vars.VITE_AI_ENDPOINT }}
+          VITE_AI_MODEL: ${{ vars.VITE_AI_ENDPOINT != '' && 'harness-code' || '' }}
+          VITE_AI_NO_THINK: ${{ vars.VITE_AI_ENDPOINT != '' && '1' || '' }}
         run: bun run build:pages
 
       - uses: actions/configure-pages@v5

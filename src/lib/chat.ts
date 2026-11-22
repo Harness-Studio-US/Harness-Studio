@@ -1,3 +1,4 @@
+import { COPILOT_SYSTEM_PROMPT, isRealEngineEnabled, streamRealReply } from "./realChat";
 import { streamReply } from "./streaming";
 
 export type ToolName =
@@ -278,6 +279,16 @@ const responses: Record<Intent, string> = {
 };
 
 export async function* streamAssistant(opts: StreamOptions): AsyncGenerator<StreamEvent> {
+  if (isRealEngineEnabled()) {
+    yield* streamRealReply({
+      system: COPILOT_SYSTEM_PROMPT,
+      prompt: opts.prompt,
+      history: opts.history,
+      isCancelled: opts.isCancelled,
+    });
+    return;
+  }
+
   const intent = detectIntent(opts.prompt);
   const plan = toolPlan(intent, activeTools);
 
