@@ -3,14 +3,15 @@ import {
   AlertTriangle,
   CheckCircle2,
   ChevronDown,
-  Download,
   FileCode,
   FileDown,
   Loader2,
   Sparkles,
 } from "lucide-react";
 import type { ChatMessage, ProjectEdit, ToolCall } from "../../lib/chat";
-import { downloadFile, formatBytes, stripFileFences } from "../../lib/files";
+import type { OutgoingFile } from "../../lib/files";
+import { stripFileFences } from "../../lib/files";
+import { FileCard, FileViewer } from "./FilePreview";
 import { Markdown } from "../Markdown";
 import { LogoMark } from "../Logo";
 import { CopyButton } from "../CodeBlock";
@@ -49,6 +50,7 @@ export function ChatMessageView({
   edits?: ProjectEdit[];
 }) {
   const [thinkingOpen, setThinkingOpen] = useState(false);
+  const [openFile, setOpenFile] = useState<OutgoingFile | null>(null);
 
   if (message.role === "user") {
     return (
@@ -155,25 +157,15 @@ export function ChatMessageView({
             </div>
             <ul className="divide-y divide-emerald-100">
               {message.files!.map((file) => (
-                <li key={file.name} className="flex items-center gap-2 px-3 py-1.5">
-                  <span className="truncate font-mono text-[11px] text-slate-800">{file.name}</span>
-                  <span className="ml-auto shrink-0 text-[10.5px] text-slate-600">
-                    {formatBytes(file.bytes)}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => downloadFile(file)}
-                    aria-label={`Download ${file.name}`}
-                    className="press flex shrink-0 items-center gap-1 rounded-md border border-emerald-300 bg-white px-2 py-1 text-[10.5px] font-medium text-emerald-800 transition hover:bg-emerald-50"
-                  >
-                    <Download className="h-3 w-3" />
-                    Download
-                  </button>
+                <li key={file.name}>
+                  <FileCard file={file} onOpen={setOpenFile} />
                 </li>
               ))}
             </ul>
           </div>
         )}
+
+        {openFile && <FileViewer file={openFile} onClose={() => setOpenFile(null)} />}
 
         {!streaming && (edits?.length ?? 0) > 0 && (
           <div className="anim-fade-in mt-3 overflow-hidden rounded-lg border border-violet-200 bg-violet-50/40">
