@@ -32,6 +32,5 @@ echo "  ollama run $name \"a fetch wrapper with a timeout\""
 echo
 echo "Then point the console at it by adding this line to .env.local:"
 echo "  VITE_AI_MODEL=$name"
-echo "  VITE_AI_NO_THINK=1"
 echo
 echo "and restart with: bun run dev"
