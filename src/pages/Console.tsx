@@ -544,6 +544,19 @@ export default function Console() {
     setCodeMessages((current) => (current.length === 0 ? restore : current));
   }
 
+  /** Throws away the code chat and the files it wrote. Not undoable. */
+  function deleteCodeChat() {
+    codeCancelledRef.current = true;
+    if (codeUndoTimer.current) window.clearTimeout(codeUndoTimer.current);
+    setCodeStreamingId(null);
+    setCodeInput("");
+    setCodeAttachments([]);
+    setCodeMessages([]);
+    setCodeProject([]);
+    setCodeUndo(null);
+    if (view === "code") setView("copilot");
+  }
+
   function createConversation() {
     const conversation = emptyConversation();
     setConversations((prev) => [conversation, ...prev]);
@@ -729,6 +742,15 @@ export default function Console() {
                     <span className="h-0.5 w-0.5 rounded-full bg-slate-400" />
                     <span>{codeMessages.length} msg</span>
                   </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={deleteCodeChat}
+                  className="mr-1 rounded p-1 text-slate-500 opacity-0 transition hover:bg-slate-100 hover:text-rose-700 group-hover:opacity-100 focus:opacity-100"
+                  aria-label="Delete code chat"
+                  title="Delete this code chat and its files"
+                >
+                  <Trash2 className="h-3 w-3" />
                 </button>
               </div>
             )}
