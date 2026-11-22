@@ -389,12 +389,15 @@ export default function Console() {
           }));
         }
       }
-    } catch {
+    } catch (error) {
       // Nothing came back: the machine serving the model is off, restarting or
       // mid-update. Let the dots run a moment, then say it in plain words.
+      const detail = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+      console.error("[Harness Copilot] request failed", error);
       if (!cancelledRef.current) await wait(SERVER_BUSY_DELAY_MS);
       patchMessage(conv.id, assistantId, (current) => ({
         ...current,
+        errorDetail: detail,
         content: current.content.trim()
           ? `${current.content}\n\n${SERVER_BUSY_MESSAGE}`
           : SERVER_BUSY_MESSAGE,
@@ -490,10 +493,13 @@ export default function Console() {
           }));
         }
       }
-    } catch {
+    } catch (error) {
+      const detail = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+      console.error("[Harness Code] request failed", error);
       if (!codeCancelledRef.current) await wait(SERVER_BUSY_DELAY_MS);
       patchCodeMessage(assistantId, (current) => ({
         ...current,
+        errorDetail: detail,
         content: current.content.trim()
           ? `${current.content}\n\n${SERVER_BUSY_MESSAGE}`
           : SERVER_BUSY_MESSAGE,

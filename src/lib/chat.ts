@@ -51,6 +51,8 @@ export type ChatMessage = {
   usage?: ChatUsage;
   latencyMs?: number;
   error?: boolean;
+  /** The raw reason a request failed, shown in small type under the message. */
+  errorDetail?: string;
   stopped?: boolean;
   edits?: ProjectEdit[];
 };

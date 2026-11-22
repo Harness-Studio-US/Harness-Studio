@@ -202,6 +202,12 @@ export function ChatMessageView({
           </div>
         )}
 
+        {message.errorDetail && (
+          <p className="mt-2 break-words rounded border border-slate-200 bg-slate-50 px-2 py-1 font-mono text-[10.5px] leading-relaxed text-slate-500">
+            {message.errorDetail}
+          </p>
+        )}
+
         {!streaming && message.content && (
           <div className="mt-2 flex items-center gap-2 text-[10.5px] text-slate-600">
             <CopyButton text={message.content} className="h-7 px-2 text-[10.5px]" />

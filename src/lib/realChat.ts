@@ -115,8 +115,9 @@ export async function* streamRealReply(opts: RealReplyOptions): AsyncGenerator<S
       }),
       signal: controller.signal,
     });
-  } catch {
-    throw new Error(`No answer from the model. Is \`ollama serve\` running and \`${model}\` pulled?`);
+  } catch (error) {
+    const reason = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+    throw new Error(`could not reach ${chatUrl} (${reason})`);
   }
 
   if (!response.ok || !response.body) {
