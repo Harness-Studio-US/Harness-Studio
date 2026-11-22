@@ -20,6 +20,17 @@ export type ToolCall = {
 
 export type ChatUsage = { in: number; out: number };
 
+/**
+ * A failed request almost always means the machine serving the model is off or
+ * restarting. The chat waits a moment, then says this instead of showing a
+ * raw network error.
+ */
+export const SERVER_BUSY_MESSAGE =
+  "We are working on updates or maintaining our server. Please wait for a moment.";
+
+/** How long the thinking dots stay up before the message above replaces them. */
+export const SERVER_BUSY_DELAY_MS = 3000;
+
 /** A file Harness Code wrote into the project for one reply. */
 export type ProjectEdit = {
   name: string;

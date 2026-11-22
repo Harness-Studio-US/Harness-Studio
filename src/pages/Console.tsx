@@ -29,7 +29,13 @@ import { CopilotAuthLoading, CopilotLogin } from "../components/console/CopilotL
 import { SettingsPanel } from "../components/console/SettingsPanel";
 import { VerifyEmail } from "../components/console/VerifyEmail";
 import { Logo, LogoMark } from "../components/Logo";
-import { streamAssistant, titleForConversation, type ChatMessage } from "../lib/chat";
+import {
+  SERVER_BUSY_DELAY_MS,
+  SERVER_BUSY_MESSAGE,
+  streamAssistant,
+  titleForConversation,
+  type ChatMessage,
+} from "../lib/chat";
 import { streamCodeAssistant } from "../lib/codeChat";
 import { extractOutgoingFiles, MAX_ATTACHMENTS, type Attachment } from "../lib/files";
 import { applyReplyToProject, replayConversation, type ProjectFile } from "../lib/codeFiles";
@@ -48,6 +54,8 @@ type Conversation = {
   messages: ChatMessage[];
   updatedAt: number;
 };
+
+const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
 
 const chatsKey = (userId: string) => `harness-copilot-conversations-v1:${userId}`;
 const codeChatKey = (userId: string) => `harness-code-chat-v1:${userId}`;
@@ -381,12 +389,15 @@ export default function Console() {
           }));
         }
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unexpected error";
+    } catch {
+      // Nothing came back: the machine serving the model is off, restarting or
+      // mid-update. Let the dots run a moment, then say it in plain words.
+      if (!cancelledRef.current) await wait(SERVER_BUSY_DELAY_MS);
       patchMessage(conv.id, assistantId, (current) => ({
         ...current,
-        error: true,
-        content: `${current.content}\n\n**Request failed.** \`${message}\``,
+        content: current.content.trim()
+          ? `${current.content}\n\n${SERVER_BUSY_MESSAGE}`
+          : SERVER_BUSY_MESSAGE,
       }));
     } finally {
       if (cancelledRef.current) {
@@ -479,12 +490,13 @@ export default function Console() {
           }));
         }
       }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unexpected error";
+    } catch {
+      if (!codeCancelledRef.current) await wait(SERVER_BUSY_DELAY_MS);
       patchCodeMessage(assistantId, (current) => ({
         ...current,
-        error: true,
-        content: `${current.content}\n\n**Request failed.** \`${message}\``,
+        content: current.content.trim()
+          ? `${current.content}\n\n${SERVER_BUSY_MESSAGE}`
+          : SERVER_BUSY_MESSAGE,
       }));
     } finally {
       if (codeCancelledRef.current) {
