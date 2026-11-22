@@ -79,6 +79,36 @@ const noThink =
 /** A CPU-bound laptop spends most of its time reading the prompt, so only the last few turns go over. */
 const HISTORY_LIMIT = 6;
 
+/**
+ * num_ctx is 4096 tokens, which is roughly 12k characters for this tokenizer.
+ * A thread that once carried a long reply or a pasted file would otherwise push
+ * the prompt past the window, and Ollama answers that with a 400 instead of a
+ * reply — from then on every message in that thread fails.
+ */
+const HISTORY_CHAR_BUDGET = 5000;
+
+type WireMessage = { role: "system" | "user" | "assistant"; content: string };
+
+/** Newest turns first, stopping as soon as the character budget is spent. */
+function recentHistory(history: ChatMessage[]): WireMessage[] {
+  const kept: WireMessage[] = [];
+  let used = 0;
+
+  for (let index = history.length - 1; index >= 0 && kept.length < HISTORY_LIMIT; index--) {
+    const message = history[index];
+    const content = message.content.trim();
+    if (!content) continue;
+
+    const note = historyNote(message.attachments);
+    if (used + content.length + note.length > HISTORY_CHAR_BUDGET) break;
+
+    used += content.length + note.length;
+    kept.unshift({ role: message.role, content: content + note });
+  }
+
+  return kept;
+}
+
 export async function* streamRealReply(opts: RealReplyOptions): AsyncGenerator<StreamEvent> {
   const started = Date.now();
   const controller = new AbortController();
@@ -88,41 +118,49 @@ export async function* streamRealReply(opts: RealReplyOptions): AsyncGenerator<S
   const attachmentBlock = buildAttachmentBlock(opts.attachments ?? []);
   const promptWithFiles = attachmentBlock ? `${attachmentBlock}\n\n${opts.prompt}` : opts.prompt;
 
-  const messages = [
-    { role: "system" as const, content: noThink ? `${opts.system}\n\n/no_think` : opts.system },
-    ...opts.history
-      .filter((message) => message.content.trim().length > 0)
-      .slice(-HISTORY_LIMIT)
-      .map((message) => ({
-        role: message.role,
-        content: message.content + historyNote(message.attachments),
-      })),
-    { role: "user" as const, content: promptWithFiles },
+  const messages: WireMessage[] = [
+    { role: "system", content: noThink ? `${opts.system}\n\n/no_think` : opts.system },
+    ...recentHistory(opts.history),
+    { role: "user", content: promptWithFiles },
   ];
 
-  let response: Response;
-  try {
-    response = await fetch(chatUrl, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        model,
-        messages,
-        stream: true,
-        temperature: 0.4,
-        // Small models on a CPU answer slowly; cap the reply so a demo stays watchable.
-        max_tokens: 700,
-      }),
-      signal: controller.signal,
-    });
-  } catch (error) {
-    const reason = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
-    throw new Error(`could not reach ${chatUrl} (${reason})`);
+  // A thread that still overflows the context is retried with the current
+  // message alone, so the person always gets an answer.
+  const attempts: WireMessage[][] = [messages, [messages[0], messages[messages.length - 1]]];
+
+  let response: Response | undefined;
+  for (let attempt = 0; attempt < attempts.length; attempt++) {
+    try {
+      response = await fetch(chatUrl, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          model,
+          messages: attempts[attempt],
+          stream: true,
+          temperature: 0.4,
+          // Small models on a CPU answer slowly; cap the reply so a demo stays watchable.
+          max_tokens: 700,
+        }),
+        signal: controller.signal,
+      });
+    } catch (error) {
+      const reason = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+      throw new Error(`could not reach ${chatUrl} (${reason})`);
+    }
+
+    if (response.ok) break;
+    // Only an over-long prompt is worth retrying; anything else is a real error.
+    const retryable = (response.status === 400 || response.status === 413) && attempt === 0;
+    if (!retryable) break;
+    response = undefined;
   }
 
+  if (!response) throw new Error("no response from the model");
+
   if (!response.ok || !response.body) {
-    const detail = (await response.text().catch(() => "")).slice(0, 200);
-    throw new Error(`The model returned ${response.status}${detail ? `: ${detail}` : ""}`);
+    const detail = (await response.text().catch(() => "")).slice(0, 300);
+    throw new Error(`the model returned ${response.status}${detail ? `: ${detail}` : ""}`);
   }
 
   const reader = response.body.getReader();
