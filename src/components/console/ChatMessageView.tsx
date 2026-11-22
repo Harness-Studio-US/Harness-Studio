@@ -3,14 +3,18 @@ import {
   AlertTriangle,
   CheckCircle2,
   ChevronDown,
+  Download,
   FileCode,
+  FileDown,
   Loader2,
   Sparkles,
 } from "lucide-react";
 import type { ChatMessage, ProjectEdit, ToolCall } from "../../lib/chat";
+import { downloadFile, formatBytes, stripFileFences } from "../../lib/files";
 import { Markdown } from "../Markdown";
 import { LogoMark } from "../Logo";
 import { CopyButton } from "../CodeBlock";
+import { AttachmentList } from "./Attachments";
 import { cn } from "../../lib/cn";
 
 function ToolCallCard({ call, streaming }: { call: ToolCall; streaming: boolean }) {
@@ -51,6 +55,7 @@ export function ChatMessageView({
       <div className="flex items-start justify-end gap-2.5">
         <div className="max-w-[85%] rounded-xl rounded-tr-sm border border-slate-200 bg-[#f1f5f9] px-4 py-3">
           <p className="whitespace-pre-wrap text-[14px] leading-[1.7] text-slate-800">{message.content}</p>
+          {message.attachments?.length ? <AttachmentList files={message.attachments} /> : null}
         </div>
         <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-[10px] font-semibold text-slate-600">
           You
@@ -132,8 +137,41 @@ export function ChatMessageView({
           </div>
         ) : (
           <div className={cn(message.error && "rounded-lg border border-rose-200 bg-rose-50 p-3")}>
-            <Markdown content={message.content} />
+            <Markdown
+              content={message.files?.length ? stripFileFences(message.content) : message.content}
+            />
             {streaming && message.content && <span className="caret" />}
+          </div>
+        )}
+
+        {!streaming && (message.files?.length ?? 0) > 0 && (
+          <div className="anim-fade-in mt-3 overflow-hidden rounded-lg border border-emerald-200 bg-emerald-50/40">
+            <div className="flex items-center gap-2 border-b border-emerald-200 px-3 py-2">
+              <FileDown className="h-3.5 w-3.5 shrink-0 text-emerald-700" />
+              <span className="text-[11.5px] font-semibold text-slate-800">Files from {author}</span>
+              <span className="ml-auto text-[10.5px] text-slate-600">
+                {message.files!.length} file{message.files!.length === 1 ? "" : "s"}
+              </span>
+            </div>
+            <ul className="divide-y divide-emerald-100">
+              {message.files!.map((file) => (
+                <li key={file.name} className="flex items-center gap-2 px-3 py-1.5">
+                  <span className="truncate font-mono text-[11px] text-slate-800">{file.name}</span>
+                  <span className="ml-auto shrink-0 text-[10.5px] text-slate-600">
+                    {formatBytes(file.bytes)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => downloadFile(file)}
+                    aria-label={`Download ${file.name}`}
+                    className="press flex shrink-0 items-center gap-1 rounded-md border border-emerald-300 bg-white px-2 py-1 text-[10.5px] font-medium text-emerald-800 transition hover:bg-emerald-50"
+                  >
+                    <Download className="h-3 w-3" />
+                    Download
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 

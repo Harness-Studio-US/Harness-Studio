@@ -1,4 +1,5 @@
 import type { ChatMessage, StreamEvent, ToolName } from "./chat";
+import type { Attachment } from "./files";
 import { isRealEngineEnabled, streamRealReply, CODE_SYSTEM_PROMPT } from "./realChat";
 import { streamReply } from "./streaming";
 
@@ -21,6 +22,7 @@ type CodeIntent =
 type StreamOptions = {
   prompt: string;
   history: ChatMessage[];
+  attachments?: Attachment[];
   isCancelled: () => boolean;
 };
 
@@ -342,6 +344,7 @@ export async function* streamCodeAssistant(opts: StreamOptions): AsyncGenerator<
       system: CODE_SYSTEM_PROMPT,
       prompt: opts.prompt,
       history: opts.history,
+      attachments: opts.attachments,
       isCancelled: opts.isCancelled,
     });
     return;

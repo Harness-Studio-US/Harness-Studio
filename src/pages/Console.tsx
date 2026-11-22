@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { onAuthStateChanged, signOut as firebaseSignOut, type User } from "firebase/auth";
 import { ChatMessageView } from "../components/console/ChatMessageView";
+import { AttachmentChips, AttachButton } from "../components/console/Attachments";
 import { CodeWorkspace } from "../components/console/CodeWorkspace";
 import { FirstRunGuide, LegalConsent } from "../components/console/CopilotOnboarding";
 import { CopilotAuthLoading, CopilotLogin } from "../components/console/CopilotLogin";
@@ -30,6 +31,7 @@ import { VerifyEmail } from "../components/console/VerifyEmail";
 import { Logo, LogoMark } from "../components/Logo";
 import { streamAssistant, titleForConversation, type ChatMessage } from "../lib/chat";
 import { streamCodeAssistant } from "../lib/codeChat";
+import { extractOutgoingFiles, MAX_ATTACHMENTS, type Attachment } from "../lib/files";
 import { applyReplyToProject, replayConversation, type ProjectFile } from "../lib/codeFiles";
 import {
   acceptCopilotTerms,
@@ -64,6 +66,12 @@ function uid(): string {
   } catch {
     return Math.random().toString(36).slice(2) + Date.now().toString(36);
   }
+}
+
+/** Files a reply handed over, or undefined when it contained none. */
+function outgoingFiles(text: string) {
+  const files = extractOutgoingFiles(text);
+  return files.length > 0 ? files : undefined;
 }
 
 function emptyConversation(): Conversation {
@@ -132,6 +140,7 @@ export default function Console() {
   const [chatsReady, setChatsReady] = useState(false);
   const [activeId, setActiveId] = useState<string>("");
   const [input, setInput] = useState("");
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [streaming, setStreaming] = useState<{ convId: string; messageId: string } | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -140,6 +149,7 @@ export default function Console() {
   const [codeMessages, setCodeMessages] = useState<ChatMessage[]>([]);
   const [codeProject, setCodeProject] = useState<ProjectFile[]>([]);
   const [codeInput, setCodeInput] = useState("");
+  const [codeAttachments, setCodeAttachments] = useState<Attachment[]>([]);
   const [codeStreamingId, setCodeStreamingId] = useState<string | null>(null);
   const [codeUndo, setCodeUndo] = useState<ChatMessage[] | null>(null);
   const [query, setQuery] = useState("");
@@ -286,7 +296,8 @@ export default function Console() {
 
   async function send(raw: string) {
     const text = raw.trim();
-    if (!text || streaming) return;
+    const files = attachments;
+    if ((!text && files.length === 0) || streaming) return;
 
     const conv = activeConversation ?? emptyConversation();
     if (!activeConversation) {
@@ -295,7 +306,12 @@ export default function Console() {
     }
 
     const history = conv.messages;
-    const userMessage: ChatMessage = { id: uid(), role: "user", content: text };
+    const userMessage: ChatMessage = {
+      id: uid(),
+      role: "user",
+      content: text || "Here's a file — take a look.",
+      attachments: files.length > 0 ? files : undefined,
+    };
     const assistantId = uid();
     const assistantMessage: ChatMessage = {
       id: assistantId,
@@ -313,7 +329,7 @@ export default function Console() {
               ...conversation,
               title:
                 conversation.messages.length === 0
-                  ? titleForConversation(text)
+                  ? titleForConversation(text || files[0]?.name || "New chat")
                   : conversation.title,
               messages: [...conversation.messages, userMessage, assistantMessage],
               updatedAt: Date.now(),
@@ -322,12 +338,14 @@ export default function Console() {
     );
 
     setStreaming({ convId: conv.id, messageId: assistantId });
+    setAttachments([]);
     cancelledRef.current = false;
 
     try {
       for await (const event of streamAssistant({
-        prompt: text,
+        prompt: text || "Here's a file — take a look.",
         history,
+        attachments: files,
         isCancelled: () => cancelledRef.current,
       })) {
         if (event.type === "thinking") {
@@ -359,6 +377,7 @@ export default function Console() {
             ...message,
             usage: event.usage,
             latencyMs: event.latencyMs,
+            files: outgoingFiles(message.content),
           }));
         }
       }
@@ -379,7 +398,7 @@ export default function Console() {
   }
 
   function submit() {
-    if (!input.trim() || streaming) return;
+    if ((!input.trim() && attachments.length === 0) || streaming) return;
     const text = input;
     setInput("");
     void send(text);
@@ -393,10 +412,16 @@ export default function Console() {
 
   async function sendCode(raw: string) {
     const text = raw.trim();
-    if (!text || codeStreamingId) return;
+    const files = codeAttachments;
+    if ((!text && files.length === 0) || codeStreamingId) return;
 
     const history = codeMessages;
-    const userMessage: ChatMessage = { id: uid(), role: "user", content: text };
+    const userMessage: ChatMessage = {
+      id: uid(),
+      role: "user",
+      content: text || "Here's a file — take a look.",
+      attachments: files.length > 0 ? files : undefined,
+    };
     const assistantId = uid();
     const assistantMessage: ChatMessage = {
       id: assistantId,
@@ -408,14 +433,16 @@ export default function Console() {
 
     setCodeMessages((prev) => [...prev, userMessage, assistantMessage]);
     setCodeInput("");
+    setCodeAttachments([]);
     setCodeStreamingId(assistantId);
     codeCancelledRef.current = false;
     let reply = "";
 
     try {
       for await (const event of streamCodeAssistant({
-        prompt: text,
+        prompt: text || "Here's a file — take a look.",
         history,
+        attachments: files,
         isCancelled: () => codeCancelledRef.current,
       })) {
         if (event.type === "thinking") {
@@ -448,6 +475,7 @@ export default function Console() {
             ...message,
             usage: event.usage,
             latencyMs: event.latencyMs,
+            files: outgoingFiles(message.content),
           }));
         }
       }
@@ -538,6 +566,8 @@ export default function Console() {
   function signOutUser() {
     cancelledRef.current = true;
     codeCancelledRef.current = true;
+    setAttachments([]);
+    setCodeAttachments([]);
     setStreaming(null);
     setCodeStreamingId(null);
     setCodeMessages([]);
@@ -919,6 +949,13 @@ export default function Console() {
             input={codeInput}
             onInputChange={setCodeInput}
             onSend={(text) => void sendCode(text)}
+            attachments={codeAttachments}
+            onAttach={(picked) =>
+              setCodeAttachments((prev) => [...prev, ...picked].slice(0, MAX_ATTACHMENTS))
+            }
+            onRemoveAttachment={(id) =>
+              setCodeAttachments((prev) => prev.filter((file) => file.id !== id))
+            }
             onStop={() => {
               codeCancelledRef.current = true;
             }}
@@ -1010,9 +1047,21 @@ export default function Console() {
                 aria-label="Message Harness Copilot"
               />
 
+              <AttachmentChips
+                files={attachments}
+                onRemove={(id) => setAttachments((prev) => prev.filter((file) => file.id !== id))}
+              />
+
               <div className="mt-2 flex items-center justify-end gap-2">
+                <AttachButton
+                  onFiles={(picked) =>
+                    setAttachments((prev) => [...prev, ...picked].slice(0, MAX_ATTACHMENTS))
+                  }
+                  disabled={isStreaming}
+                  className="mr-auto"
+                />
                 <span className="mr-auto hidden text-[11px] text-slate-600 sm:block">
-                  No special commands needed.
+                  Attach a file, or paste its text.
                 </span>
                 {isStreaming ? (
                   <button
@@ -1029,7 +1078,7 @@ export default function Console() {
                   <button
                     type="button"
                     onClick={submit}
-                    disabled={!input.trim()}
+                    disabled={!input.trim() && attachments.length === 0}
                     className="flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br from-sky-600 to-violet-700 text-white transition hover:brightness-110 disabled:opacity-30"
                     aria-label="Send message"
                   >

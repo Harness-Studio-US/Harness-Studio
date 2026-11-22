@@ -12,7 +12,9 @@ import {
 } from "lucide-react";
 import type { ChatMessage } from "../../lib/chat";
 import type { ProjectFile } from "../../lib/codeFiles";
+import type { Attachment } from "../../lib/files";
 import { ChatMessageView } from "./ChatMessageView";
+import { AttachmentChips, AttachButton } from "./Attachments";
 import { CopyButton } from "../CodeBlock";
 import { cn } from "../../lib/cn";
 
@@ -35,6 +37,9 @@ export function CodeWorkspace({
   canUndo,
   onUndo,
   onBackToCopilot,
+  attachments,
+  onAttach,
+  onRemoveAttachment,
 }: {
   messages: ChatMessage[];
   project: ProjectFile[];
@@ -42,6 +47,9 @@ export function CodeWorkspace({
   input: string;
   onInputChange: (value: string) => void;
   onSend: (text: string) => void;
+  attachments: Attachment[];
+  onAttach: (files: Attachment[]) => void;
+  onRemoveAttachment: (id: string) => void;
   onStop: () => void;
   onNewChat: () => void;
   canUndo: boolean;
@@ -79,7 +87,7 @@ export function CodeWorkspace({
   const streaming = streamingId !== null;
 
   function submit() {
-    if (!input.trim() || streaming) return;
+    if ((!input.trim() && attachments.length === 0) || streaming) return;
     onSend(input);
   }
 
@@ -211,7 +219,10 @@ export function CodeWorkspace({
                 aria-label="Message Harness Code"
               />
 
+              <AttachmentChips files={attachments} onRemove={onRemoveAttachment} />
+
               <div className="mt-2 flex items-center justify-end gap-2">
+                <AttachButton onFiles={onAttach} disabled={streaming} className="mr-auto" />
                 <span className="mr-auto hidden text-[10.5px] text-slate-500 sm:block">
                   Code first. Paste it straight into your project.
                 </span>
@@ -228,7 +239,7 @@ export function CodeWorkspace({
                   <button
                     type="button"
                     onClick={submit}
-                    disabled={!input.trim()}
+                    disabled={!input.trim() && attachments.length === 0}
                     className="flex h-9 w-9 items-center justify-center rounded-md bg-gradient-to-br from-sky-600 to-violet-700 text-white transition hover:brightness-110 disabled:opacity-30"
                     aria-label="Send message"
                   >

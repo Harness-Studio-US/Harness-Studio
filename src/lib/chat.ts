@@ -1,4 +1,5 @@
 import { COPILOT_SYSTEM_PROMPT, isRealEngineEnabled, streamRealReply } from "./realChat";
+import type { Attachment, OutgoingFile } from "./files";
 import { streamReply } from "./streaming";
 
 export type ToolName =
@@ -30,6 +31,10 @@ export type ChatMessage = {
   id: string;
   role: "user" | "assistant";
   content: string;
+  /** Files the user attached to this message. */
+  attachments?: Attachment[];
+  /** Files the assistant handed back, ready to download. */
+  files?: OutgoingFile[];
   thinking?: string[];
   toolCalls?: ToolCall[];
   usage?: ChatUsage;
@@ -54,6 +59,7 @@ export type StreamEvent =
 type StreamOptions = {
   prompt: string;
   history: ChatMessage[];
+  attachments?: Attachment[];
   isCancelled: () => boolean;
 };
 
@@ -284,6 +290,7 @@ export async function* streamAssistant(opts: StreamOptions): AsyncGenerator<Stre
       system: COPILOT_SYSTEM_PROMPT,
       prompt: opts.prompt,
       history: opts.history,
+      attachments: opts.attachments,
       isCancelled: opts.isCancelled,
     });
     return;

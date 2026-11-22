@@ -1,4 +1,5 @@
 import type { ChatMessage, StreamEvent } from "./chat";
+import { buildAttachmentBlock, historyNote, type Attachment } from "./files";
 
 /**
  * Runs Harness Copilot and Harness Code against a real model on your own
@@ -35,6 +36,10 @@ export const CODE_SYSTEM_PROMPT = [
   "- If the question needs no code, answer in two or three sentences.",
   "- Never announce what you are about to do. Do it.",
   "- Keep comments rare and useful.",
+  "Files:",
+  "- To hand the user a file, put its complete contents in a fence that starts with the file name, like ```file:notes.md, with nothing else on that line.",
+  "  The page turns that block into a file the user can download. One block per file, no commentary inside it.",
+  "- Files the user attached arrive above their message between --- file: NAME --- markers. Read them and answer from them; never say you cannot see an attached file.",
 ].join("\n");
 
 export const COPILOT_SYSTEM_PROMPT = [
@@ -43,12 +48,15 @@ export const COPILOT_SYSTEM_PROMPT = [
   "Be brief and concrete: two to five short sentences in plain language, no filler.",
   "Ask one question at the end only when you genuinely need it.",
   "Use Markdown when a list helps. Never invent details about their project.",
+  "To hand the user a file, put its complete contents in a fence that starts with the file name, like ```file:notes.md, and the page turns it into a download.",
+  "If the user attached a file, its text arrives above their message between --- file: NAME --- markers. Read it and answer from it.",
 ].join("\n");
 
 export type RealReplyOptions = {
   system: string;
   prompt: string;
   history: ChatMessage[];
+  attachments?: Attachment[];
   isCancelled: () => boolean;
 };
 
@@ -75,13 +83,21 @@ export async function* streamRealReply(opts: RealReplyOptions): AsyncGenerator<S
   const started = Date.now();
   const controller = new AbortController();
 
+  // The file text rides along with the prompt rather than the stored message,
+  // so a long attachment never gets re-sent with every later turn.
+  const attachmentBlock = buildAttachmentBlock(opts.attachments ?? []);
+  const promptWithFiles = attachmentBlock ? `${attachmentBlock}\n\n${opts.prompt}` : opts.prompt;
+
   const messages = [
     { role: "system" as const, content: noThink ? `${opts.system}\n\n/no_think` : opts.system },
     ...opts.history
       .filter((message) => message.content.trim().length > 0)
       .slice(-HISTORY_LIMIT)
-      .map((message) => ({ role: message.role, content: message.content })),
-    { role: "user" as const, content: opts.prompt },
+      .map((message) => ({
+        role: message.role,
+        content: message.content + historyNote(message.attachments),
+      })),
+    { role: "user" as const, content: promptWithFiles },
   ];
 
   let response: Response;
