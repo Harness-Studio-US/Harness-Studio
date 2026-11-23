@@ -18,6 +18,10 @@ import { CopyButton } from "../CodeBlock";
 import { AttachmentList } from "./Attachments";
 import { cn } from "../../lib/cn";
 
+function formatLatency(ms: number): string {
+  return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${Math.round(ms)}ms`;
+}
+
 function ToolCallCard({ call, streaming }: { call: ToolCall; streaming: boolean }) {
   const running = call.status === "running" && streaming;
 
@@ -43,25 +47,42 @@ export function ChatMessageView({
   streaming,
   author = "Harness Copilot",
   edits,
+  onEdit,
 }: {
   message: ChatMessage;
   streaming: boolean;
   author?: string;
   edits?: ProjectEdit[];
+  /** Present when a sent message can be taken back and rewritten. */
+  onEdit?: () => void;
 }) {
   const [thinkingOpen, setThinkingOpen] = useState(false);
   const [openFile, setOpenFile] = useState<OutgoingFile | null>(null);
 
   if (message.role === "user") {
     return (
-      <div className="flex items-start justify-end gap-2.5">
-        <div className="max-w-[85%] rounded-xl rounded-tr-sm border border-slate-200 bg-[#f1f5f9] px-4 py-3">
-          <p className="whitespace-pre-wrap text-[14px] leading-[1.7] text-slate-800">{message.content}</p>
-          {message.attachments?.length ? <AttachmentList files={message.attachments} /> : null}
+      <div className="flex flex-col items-end gap-1">
+        <div className="flex w-full items-start justify-end gap-2.5">
+          <div className="max-w-[85%] rounded-xl rounded-tr-sm border border-slate-200 bg-[#f1f5f9] px-4 py-3">
+            <p className="whitespace-pre-wrap text-[14px] leading-[1.7] text-slate-800">
+              {message.content}
+            </p>
+            {message.attachments?.length ? <AttachmentList files={message.attachments} /> : null}
+          </div>
+          <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-[10px] font-semibold text-slate-600">
+            You
+          </div>
         </div>
-        <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-[10px] font-semibold text-slate-600">
-          You
-        </div>
+        {onEdit && !streaming && (
+          <button
+            type="button"
+            onClick={onEdit}
+            title="Take this message back and change it"
+            className="mr-10 rounded px-1.5 py-0.5 text-[10.5px] text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+          >
+            Edit &amp; resend
+          </button>
+        )}
       </div>
     );
   }
@@ -210,6 +231,12 @@ export function ChatMessageView({
         {!streaming && message.content && (
           <div className="mt-2 flex items-center gap-2 text-[10.5px] text-slate-600">
             <CopyButton text={message.content} className="h-7 px-2 text-[10.5px]" />
+            {message.usage && (
+              <span className="ml-0.5">
+                {message.usage.out} tokens
+                {message.latencyMs ? ` · ${formatLatency(message.latencyMs)}` : ""}
+              </span>
+            )}
           </div>
         )}
       </div>

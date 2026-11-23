@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  ArrowDown,
   ArrowLeft,
   ArrowUpRight,
   BookOpen,
@@ -11,6 +12,7 @@ import {
   LogOut,
   Menu,
   MessageSquare,
+  Pencil,
   Pin,
   PinOff,
   Plus,
@@ -41,7 +43,12 @@ import {
   type ChatMessage,
 } from "../lib/chat";
 import { streamCodeAssistant } from "../lib/codeChat";
-import { extractOutgoingFiles, MAX_ATTACHMENTS, type Attachment } from "../lib/files";
+import {
+  extractOutgoingFiles,
+  MAX_ATTACHMENTS,
+  readAttachments,
+  type Attachment,
+} from "../lib/files";
 import {
   applyReplyToProject,
   langFromName,
@@ -173,11 +180,24 @@ export default function Console() {
   const [codeStreamingId, setCodeStreamingId] = useState<string | null>(null);
   const [codeUndo, setCodeUndo] = useState<ChatMessage[] | null>(null);
   const [query, setQuery] = useState("");
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameDraft, setRenameDraft] = useState("");
+  /** The chat just deleted, kept for a few seconds so Delete can be taken back. */
+  const [deletedChat, setDeletedChat] = useState<{
+    conversation: Conversation;
+    index: number;
+  } | null>(null);
+  /** A file being dragged over the workspace, so the pane can say it will take it. */
+  const [dragActive, setDragActive] = useState(false);
+  /** Whether the thread is scrolled far enough down to hide the jump button. */
+  const [atBottom, setAtBottom] = useState(true);
   const cancelledRef = useRef(false);
   const codeCancelledRef = useRef(false);
   const codeUndoTimer = useRef<number | null>(null);
+  const deleteTimer = useRef<number | null>(null);
   const threadRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     document.title = !authReady
@@ -282,6 +302,19 @@ export default function Console() {
     el.style.height = "auto";
     el.style.height = `${Math.min(el.scrollHeight, 180)}px`;
   }, [input]);
+
+  useEffect(() => {
+    // Cmd/Ctrl+K is the one shortcut people try first: go straight to search.
+    const onKey = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setSidebarOpen(true);
+        window.setTimeout(() => searchRef.current?.focus(), 40);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   const lastMessage = activeConversation?.messages[activeConversation.messages.length - 1];
 
@@ -653,6 +686,43 @@ export default function Console() {
     setCodeProject((prev) => prev.filter((file) => file.name !== name));
   }
 
+  function duplicateCodeFile(from: string, to: string) {
+    setCodeProject((prev) => {
+      const file = prev.find((current) => current.name === from);
+      if (!file || prev.some((current) => current.name === to)) return prev;
+      return [
+        ...prev,
+        { name: to, lang: file.lang, code: file.code, updatedAt: Date.now() },
+      ];
+    });
+  }
+
+  /** A file the person starts themselves, ready to type into or hand to the model. */
+  function createCodeFile(name: string) {
+    setCodeProject((prev) =>
+      prev.some((file) => file.name === name)
+        ? prev
+        : [
+            ...prev,
+            { name, lang: langFromName(name), code: "", updatedAt: Date.now() },
+          ]
+    );
+  }
+
+  /**
+   * A hand edit is kept like a model edit: the replaced text stays as the file's
+   * previous version, so Changes still shows what the person changed.
+   */
+  function updateCodeFile(name: string, code: string) {
+    setCodeProject((prev) =>
+      prev.map((file) =>
+        file.name === name && file.code !== code
+          ? { ...file, previous: file.code, code, updatedAt: Date.now() }
+          : file
+      )
+    );
+  }
+
   /**
    * A second pass over one file. A 4B model happily ships a mistyped closing tag,
    * so this asks it to re-read the file it just wrote instead of the whole thread.
@@ -724,6 +794,23 @@ export default function Console() {
     window.setTimeout(() => textareaRef.current?.focus(), 50);
   }
 
+  function startRenameConversation(conversation: Conversation) {
+    setRenamingId(conversation.id);
+    setRenameDraft(conversation.title);
+  }
+
+  function commitRenameConversation() {
+    const id = renamingId;
+    const title = renameDraft.trim();
+    setRenamingId(null);
+    if (!id || !title) return;
+    setConversations((prev) =>
+      prev.map((conversation) =>
+        conversation.id === id ? { ...conversation, title } : conversation
+      )
+    );
+  }
+
   function togglePin(id: string) {
     setConversations((prev) =>
       prev.map((conversation) =>
@@ -755,15 +842,63 @@ export default function Console() {
   }
 
   function deleteConversation(id: string) {
+    const index = conversations.findIndex((conversation) => conversation.id === id);
+    if (index < 0) return;
+    const removed = conversations[index];
     const remaining = conversations.filter((conversation) => conversation.id !== id);
+
     if (remaining.length === 0) {
       const conversation = emptyConversation();
       setConversations([conversation]);
       setActiveId(conversation.id);
-      return;
+    } else {
+      setConversations(remaining);
+      if (activeId === id) setActiveId(remaining[0].id);
     }
-    setConversations(remaining);
-    if (activeId === id) setActiveId(remaining[0].id);
+
+    setDeletedChat({ conversation: removed, index });
+    if (deleteTimer.current) window.clearTimeout(deleteTimer.current);
+    deleteTimer.current = window.setTimeout(() => setDeletedChat(null), 8000);
+  }
+
+  function undoDeleteConversation() {
+    const removed = deletedChat;
+    if (!removed) return;
+    if (deleteTimer.current) window.clearTimeout(deleteTimer.current);
+    setDeletedChat(null);
+    setConversations((prev) => {
+      if (prev.some((conversation) => conversation.id === removed.conversation.id)) return prev;
+      const next = [...prev];
+      next.splice(Math.min(removed.index, next.length), 0, removed.conversation);
+      return next;
+    });
+    setActiveId(removed.conversation.id);
+    setView("copilot");
+  }
+
+  /**
+   * Rewinds the thread to a message so it can be changed and sent again. The
+   * reply it had is dropped: asking the same thing twice would leave two
+   * answers to the same question in the thread.
+   */
+  function editCopilotMessage(messageId: string) {
+    const conversation = activeConversation;
+    if (!conversation || streaming) return;
+
+    const index = conversation.messages.findIndex((message) => message.id === messageId);
+    if (index < 0) return;
+    const message = conversation.messages[index];
+
+    setConversations((prev) =>
+      prev.map((current) =>
+        current.id !== conversation.id
+          ? current
+          : { ...current, messages: current.messages.slice(0, index), updatedAt: Date.now() }
+      )
+    );
+    setInput(message.content);
+    setAttachments(message.attachments ?? []);
+    window.setTimeout(() => textareaRef.current?.focus(), 60);
   }
 
   function acceptTerms() {
@@ -786,6 +921,8 @@ export default function Console() {
     setCodeMessages([]);
     setCodeProject([]);
     setCodeUndo(null);
+    setDeletedChat(null);
+    if (deleteTimer.current) window.clearTimeout(deleteTimer.current);
     setSidebarOpen(false);
     setSettingsOpen(false);
     setGuideOpen(false);
@@ -891,11 +1028,14 @@ export default function Console() {
           <div className="relative mt-2.5">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-3 w-3 -translate-y-1/2 text-slate-500" />
             <input
+              ref={searchRef}
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search conversations"
+              placeholder="Search chats (⌘K)"
+              title="Search chats — Ctrl/⌘ K"
               className="field h-9 pl-8 text-[12px]"
-              aria-label="Search conversations"
+              aria-label="Search chats"
+              aria-keyshortcuts="Control+K Meta+K"
             />
           </div>
         </div>
@@ -956,13 +1096,35 @@ export default function Console() {
                   conversation.id === activeId ? "bg-slate-100" : "hover:bg-slate-50"
                 )}
               >
+                {renamingId === conversation.id ? (
+                  <input
+                    autoFocus
+                    value={renameDraft}
+                    onChange={(event) => setRenameDraft(event.target.value)}
+                    onBlur={commitRenameConversation}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter") {
+                        event.preventDefault();
+                        commitRenameConversation();
+                      } else if (event.key === "Escape") {
+                        event.preventDefault();
+                        setRenamingId(null);
+                      }
+                    }}
+                    aria-label="Chat name"
+                    className="mx-1 min-w-0 flex-1 rounded-md border border-violet-300 bg-white px-1.5 py-1 text-[12px] text-slate-900 outline-none ring-2 ring-violet-100"
+                  />
+                ) : (
+                  <>
                 <button
                   type="button"
+                  onDoubleClick={() => startRenameConversation(conversation)}
                   onClick={() => {
                     setActiveId(conversation.id);
                     setView("copilot");
                     setSidebarOpen(false);
                   }}
+                  title={`${conversation.title} — double-click to rename`}
                   className="min-w-0 flex-1 px-2 py-2.5 text-left"
                 >
                   <div
@@ -985,6 +1147,8 @@ export default function Console() {
                     )}
                   </div>
                 </button>
+                  </>
+                )}
                 <button
                   type="button"
                   onClick={() => togglePin(conversation.id)}
@@ -1006,6 +1170,15 @@ export default function Console() {
                   ) : (
                     <Pin className="h-3 w-3" />
                   )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => startRenameConversation(conversation)}
+                  className="rounded p-1 text-slate-500 opacity-0 transition hover:bg-slate-100 hover:text-slate-900 group-hover:opacity-100 focus:opacity-100"
+                  aria-label={`Rename ${conversation.title}`}
+                  title="Rename chat"
+                >
+                  <Pencil className="h-3 w-3" />
                 </button>
                 <button
                   type="button"
@@ -1130,7 +1303,39 @@ export default function Console() {
       </aside>
 
       {/* main */}
-      <div className="flex min-w-0 flex-1 flex-col bg-white">
+      <div
+        className={cn(
+          "relative flex min-w-0 flex-1 flex-col bg-white",
+          dragActive && "ring-2 ring-inset ring-violet-300"
+        )}
+        onDragOver={(event) => {
+          if (!Array.from(event.dataTransfer.types).includes("Files")) return;
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "copy";
+          setDragActive(true);
+        }}
+        onDragLeave={(event) => {
+          if (event.currentTarget.contains(event.relatedTarget as Node)) return;
+          setDragActive(false);
+        }}
+        onDrop={(event) => {
+          const dropped = event.dataTransfer.files;
+          if (!dropped || dropped.length === 0) return;
+          event.preventDefault();
+          setDragActive(false);
+          void readAttachments(dropped).then((picked) =>
+            setAttachments((prev) => [...prev, ...picked].slice(0, MAX_ATTACHMENTS))
+          );
+          window.setTimeout(() => textareaRef.current?.focus(), 60);
+        }}
+      >
+        {dragActive && (
+          <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-violet-50/60">
+            <span className="rounded-lg border border-violet-300 bg-white px-3 py-2 text-[12px] font-medium text-violet-800 shadow-sm">
+              Drop files to attach
+            </span>
+          </div>
+        )}
         <header className="anim-fade-in flex h-16 shrink-0 items-center gap-3 border-b border-slate-200 bg-white/95 px-4 backdrop-blur sm:px-6">
           <button
             type="button"
@@ -1238,6 +1443,9 @@ export default function Console() {
             onRegenerate={() => void regenerateCode()}
             onRenameFile={renameCodeFile}
             onDeleteFile={deleteCodeFile}
+            onUpdateFile={updateCodeFile}
+            onCreateFile={createCodeFile}
+            onDuplicateFile={duplicateCodeFile}
             onSendToCopilot={sendCodeFileToCopilot}
             onCheckFile={checkCodeFile}
             canUndo={codeUndo !== null}
@@ -1249,6 +1457,10 @@ export default function Console() {
 
         <div
           ref={threadRef}
+          onScroll={(event) => {
+            const el = event.currentTarget;
+            setAtBottom(el.scrollHeight - el.scrollTop - el.clientHeight < 48);
+          }}
           className={cn("flex-1 overflow-y-auto", view === "code" && "hidden")}
         >
           <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col px-4 py-6">
@@ -1296,6 +1508,11 @@ export default function Console() {
                     <ChatMessageView
                       message={message}
                       streaming={streaming?.messageId === message.id}
+                      onEdit={
+                        message.role === "user"
+                          ? () => editCopilotMessage(message.id)
+                          : undefined
+                      }
                     />
                   </div>
                 ))}
@@ -1319,6 +1536,21 @@ export default function Console() {
             )}
           </div>
         </div>
+
+        {view === "copilot" && !atBottom && (activeConversation?.messages.length ?? 0) > 0 && (
+          <button
+            type="button"
+            onClick={() => {
+              const el = threadRef.current;
+              if (el) el.scrollTop = el.scrollHeight;
+              setAtBottom(true);
+            }}
+            className="press absolute bottom-28 left-1/2 z-10 flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-[11.5px] font-medium text-slate-700 shadow-[0_8px_24px_-12px_rgba(15,23,42,0.45)] transition hover:bg-slate-50"
+          >
+            <ArrowDown className="h-3.5 w-3.5" />
+            Jump to latest
+          </button>
+        )}
 
         <div
           className={cn(
@@ -1391,6 +1623,22 @@ export default function Console() {
           </div>
         </div>
       </div>
+
+      {deletedChat && (
+        <div
+          role="status"
+          className="anim-fade-in fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[12px] text-slate-700 shadow-[0_16px_40px_-20px_rgba(15,23,42,0.5)]"
+        >
+          <span>Chat deleted.</span>
+          <button
+            type="button"
+            onClick={undoDeleteConversation}
+            className="press rounded-md border border-slate-200 px-2 py-1 text-[11.5px] font-semibold text-slate-800 transition hover:bg-slate-50"
+          >
+            Undo
+          </button>
+        </div>
+      )}
 
       <FirstRunGuide open={guideOpen} onClose={dismissGuide} />
       <SettingsPanel

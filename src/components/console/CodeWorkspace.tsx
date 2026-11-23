@@ -4,6 +4,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Code,
+  Copy,
   Download,
   FileCode,
   MessageSquare,
@@ -19,7 +20,7 @@ import {
 } from "lucide-react";
 import type { ChatMessage } from "../../lib/chat";
 import { diffLines, type ProjectFile } from "../../lib/codeFiles";
-import type { Attachment } from "../../lib/files";
+import { readAttachments, type Attachment } from "../../lib/files";
 import { findSyntaxIssue } from "../../lib/syntax";
 import { downloadText } from "../../lib/transcript";
 import { downloadZip } from "../../lib/zip";
@@ -48,6 +49,9 @@ export function CodeWorkspace({
   onRegenerate,
   onRenameFile,
   onDeleteFile,
+  onUpdateFile,
+  onCreateFile,
+  onDuplicateFile,
   onSendToCopilot,
   onCheckFile,
   canUndo,
@@ -72,6 +76,9 @@ export function CodeWorkspace({
   onRegenerate: () => void;
   onRenameFile: (from: string, to: string) => void;
   onDeleteFile: (name: string) => void;
+  onUpdateFile: (name: string, code: string) => void;
+  onCreateFile: (name: string) => void;
+  onDuplicateFile: (from: string, to: string) => void;
   onSendToCopilot: (file: ProjectFile) => void;
   onCheckFile: (file: ProjectFile) => void;
   canUndo: boolean;
@@ -85,6 +92,10 @@ export function CodeWorkspace({
   const [menuOpen, setMenuOpen] = useState(false);
   /** The name being typed, or null when the header shows the name as text. */
   const [renaming, setRenaming] = useState<string | null>(null);
+  /** The file open in the plain-text editor, and the text being typed there. */
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+  const [dragActive, setDragActive] = useState(false);
   const threadRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -98,6 +109,8 @@ export function CodeWorkspace({
     setShowDiff(false);
     setMenuOpen(false);
     setRenaming(null);
+    setEditing(false);
+    setDraft("");
   }, [selectedName]);
 
   useEffect(() => {
@@ -129,6 +142,48 @@ export function CodeWorkspace({
     onSend(input);
   }
 
+  function startEdit() {
+    if (!active) return;
+    setShowDiff(false);
+    setDraft(active.code);
+    setEditing(true);
+  }
+
+  function saveEdit() {
+    if (!active) return;
+    if (draft !== active.code) onUpdateFile(active.name, draft);
+    setEditing(false);
+  }
+
+  function duplicateFile() {
+    if (!active) return;
+    setMenuOpen(false);
+    const dot = active.name.lastIndexOf(".");
+    const base = dot > 0 ? active.name.slice(0, dot) : active.name;
+    const ext = dot > 0 ? active.name.slice(dot) : "";
+    let name = `${base}-copy${ext}`;
+    let count = 2;
+    while (project.some((file) => file.name === name)) {
+      name = `${base}-copy-${count}${ext}`;
+      count++;
+    }
+    onDuplicateFile(active.name, name);
+    setSelectedName(name);
+  }
+
+  function newFile() {
+    let name = "untitled.ts";
+    let count = 2;
+    while (project.some((file) => file.name === name)) {
+      name = `untitled-${count}.ts`;
+      count++;
+    }
+    onCreateFile(name);
+    setSelectedName(name);
+    setEditing(false);
+    setShowDiff(false);
+  }
+
   function commitRename() {
     const next = (renaming ?? "").trim();
     setRenaming(null);
@@ -140,7 +195,36 @@ export function CodeWorkspace({
   }
 
   return (
-    <div className="anim-fade-in flex min-h-0 flex-1 flex-col lg:flex-row">
+    <div
+      className={cn(
+        "anim-fade-in relative flex min-h-0 flex-1 flex-col lg:flex-row",
+        dragActive && "ring-2 ring-inset ring-violet-300"
+      )}
+      onDragOver={(event) => {
+        if (!Array.from(event.dataTransfer.types).includes("Files")) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = "copy";
+        setDragActive(true);
+      }}
+      onDragLeave={(event) => {
+        if (event.currentTarget.contains(event.relatedTarget as Node)) return;
+        setDragActive(false);
+      }}
+      onDrop={(event) => {
+        const dropped = event.dataTransfer.files;
+        if (!dropped || dropped.length === 0) return;
+        event.preventDefault();
+        setDragActive(false);
+        void readAttachments(dropped).then(onAttach);
+      }}
+    >
+      {dragActive && (
+        <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-violet-50/60">
+          <span className="rounded-lg border border-violet-300 bg-white px-3 py-2 text-[12px] font-medium text-violet-800 shadow-sm">
+            Drop files to attach
+          </span>
+        </div>
+      )}
       {/* ------------------------------------------------ chat */}
       <div
         className={cn(
@@ -423,6 +507,15 @@ export function CodeWorkspace({
                   <span className="truncate font-mono text-[11.5px]">{file.name}</span>
                 </button>
               ))}
+              <button
+                type="button"
+                onClick={newFile}
+                title="Start a new file in this project"
+                className="press ml-auto flex shrink-0 items-center gap-1 rounded-lg px-2 py-1.5 text-[11.5px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                New file
+              </button>
             </div>
 
             <div className="flex min-h-0 flex-1 flex-col">
@@ -491,7 +584,37 @@ export function CodeWorkspace({
                       </button>
                     </div>
                   )}
-                  <CopyButton text={active.code} className="h-7 shrink-0 px-2 text-[11px]" />
+                  {editing ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={saveEdit}
+                        className="press flex h-7 items-center rounded-md bg-slate-900 px-2.5 text-[11px] font-semibold text-white transition hover:bg-slate-800"
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditing(false)}
+                        className="press flex h-7 items-center rounded-md px-2 text-[11px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                      >
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        onClick={startEdit}
+                        title="Edit this file"
+                        className="press flex h-7 items-center gap-1 rounded-md px-2 text-[11px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                      >
+                        <Pencil className="h-3 w-3" />
+                        <span className="hidden sm:inline">Edit</span>
+                      </button>
+                      <CopyButton text={active.code} className="h-7 shrink-0 px-2 text-[11px]" />
+                    </>
+                  )}
                   <div className="relative shrink-0">
                     <button
                       type="button"
@@ -527,6 +650,15 @@ export function CodeWorkspace({
                           >
                             <Pencil className="h-3.5 w-3.5 text-slate-400" />
                             Rename
+                          </button>
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={duplicateFile}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-left text-slate-700 transition hover:bg-slate-50"
+                          >
+                            <Copy className="h-3.5 w-3.5 text-slate-400" />
+                            Duplicate
                           </button>
                           <button
                             type="button"
@@ -583,7 +715,7 @@ export function CodeWorkspace({
                 </div>
               </div>
 
-              {issue && (
+              {issue && !editing && (
                 <div className="flex items-start gap-2 border-b border-amber-200 bg-amber-50 px-3 py-2 text-[11.5px] leading-[1.5] text-amber-900">
                   <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                   <span className="min-w-0 flex-1">Possible syntax error: {issue}</span>
@@ -598,7 +730,15 @@ export function CodeWorkspace({
               )}
 
               <div className="min-h-0 flex-1 overflow-auto bg-white">
-                {showDiff && active.previous !== undefined ? (
+                {editing ? (
+                  <textarea
+                    value={draft}
+                    onChange={(event) => setDraft(event.target.value)}
+                    spellCheck={false}
+                    aria-label={`Edit ${active.name}`}
+                    className="block h-full min-h-full w-full resize-none bg-white px-4 py-4 font-mono text-[12.5px] leading-[22px] text-slate-800 outline-none"
+                  />
+                ) : showDiff && active.previous !== undefined ? (
                   <div className="min-w-max py-3 font-mono text-[12px] leading-[20px]">
                     {diffLines(active.previous, active.code).map((line, index) => (
                       <div
