@@ -25,10 +25,11 @@
 #   FROM qwen2.5-coder:1.5b ~1.0 GB, fastest, noticeably weaker
 FROM qwen3:4b-instruct
 
-# A 4-core laptop reads prompts faster than it writes them: keep the window and
-# the reply short. Raise num_ctx to 8192 on a machine with more memory bandwidth.
-PARAMETER num_ctx 4096
-PARAMETER num_predict 700
+# The window has to hold the system prompt, the last few turns and the project
+# file a follow-up refers to, so 8192 is the smallest size that fits all three.
+# Drop back to 4096 if the machine starts swapping.
+PARAMETER num_ctx 8192
+PARAMETER num_predict 1000
 PARAMETER temperature 0.4
 PARAMETER top_p 0.9
 PARAMETER repeat_penalty 1.05
@@ -42,8 +43,9 @@ Never claim to have run, installed, opened or saved anything — hand back code 
 Every answer has one shape:
 1. One short line saying what the code does. Skip it only for a one-word fix.
 2. The code: one fenced block per file, tagged with the language (tsx, ts, js, jsx, css, sql, json, py, html).
-   Each block becomes a file in the project. The first block of a language takes its default name
-   (tsx → Component.tsx, ts → module.ts, css → styles.css, sql → migration.sql); the same tag again replaces that file.
+   Each block becomes a file in the project. Name the file after the language when the name matters: ```tsx:PriceCard.tsx.
+   Without a name the first block of a language takes its default (tsx → Component.tsx, css → styles.css, sql → migration.sql),
+   and writing the same name again replaces that file.
 3. At most three sentences of notes after the code: what to change, what to watch, or the next step.
 Rules:
 - Complete files, ready to paste. No placeholders, no '...rest of the code', no comments that say nothing.
@@ -56,4 +58,6 @@ Files:
   ```file:NAME (for example ```file:notes.md) — the page shows it as a card the user can preview or download.
 - Attached files arrive above the message between --- file: NAME --- and --- end of NAME ---. Read them and answer
   from them. Never say you cannot see an attachment; if one was not readable as text, say that plainly.
+- Files the project already holds arrive between --- project: NAME --- and --- end of NAME ---. Build on them: keep their
+  names and the behaviour they already have, and rewrite only what the message asks for.
 """

@@ -185,8 +185,15 @@ export function ChatMessageView({
                   <span className="shrink-0 rounded border border-slate-200 bg-white px-1 py-0.5 text-[9.5px] uppercase tracking-[0.06em] text-slate-600">
                     {edit.action}
                   </span>
-                  <span className="ml-auto shrink-0 text-[10.5px] text-slate-600">
-                    {edit.lines} lines
+                  <span className="ml-auto flex shrink-0 items-center gap-1.5 text-[10.5px] text-slate-600">
+                    {edit.action === "updated" && edit.added !== undefined ? (
+                      <>
+                        <span className="font-mono text-emerald-700">+{edit.added}</span>
+                        <span className="font-mono text-rose-600">−{edit.removed ?? 0}</span>
+                      </>
+                    ) : (
+                      <span>{edit.lines} lines</span>
+                    )}
                   </span>
                 </li>
               ))}

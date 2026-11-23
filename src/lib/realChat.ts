@@ -1,4 +1,5 @@
 import type { ChatMessage, StreamEvent } from "./chat";
+import { buildProjectContext, type ProjectFile } from "./codeFiles";
 import { buildAttachmentBlock, historyNote, type Attachment } from "./files";
 
 /**
@@ -54,8 +55,9 @@ export const CODE_SYSTEM_PROMPT = [
   "Every answer has one shape:",
   "1. One short line saying what the code does. Skip it only for a one-word fix.",
   "2. The code: one fenced block per file, tagged with the language (tsx, ts, js, jsx, css, sql, json, py, html).",
-  "   Each block becomes a file in the project. The first block of a language takes its default name",
-  "   (tsx → Component.tsx, ts → module.ts, css → styles.css, sql → migration.sql); the same tag again replaces that file.",
+  "   Each block becomes a file in the project. Name the file after the language when the name matters: ```tsx:PriceCard.tsx.",
+  "   Without a name the first block of a language takes its default (tsx → Component.tsx, css → styles.css, sql → migration.sql),",
+  "   and writing the same name again replaces that file.",
   "3. At most three sentences of notes after the code: what to change, what to watch, or the next step.",
   "Rules:",
   "- Complete files, ready to paste. No placeholders, no '...rest of the code', no comments that say nothing.",
@@ -68,6 +70,8 @@ export const CODE_SYSTEM_PROMPT = [
   "  ```file:NAME (for example ```file:notes.md) — the page shows it as a card the user can preview or download.",
   "- Attached files arrive above the message between --- file: NAME --- and --- end of NAME ---. Read them and answer",
   "  from them. Never say you cannot see an attachment; if one was not readable as text, say that plainly.",
+  "- Files the project already holds arrive between --- project: NAME --- and --- end of NAME ---. Build on them: keep their",
+  "  names and the behaviour they already have, and rewrite only what the message asks for.",
 ].join("\n");
 
 export const COPILOT_SYSTEM_PROMPT = [
@@ -92,6 +96,8 @@ export type RealReplyOptions = {
   prompt: string;
   history: ChatMessage[];
   attachments?: Attachment[];
+  /** The project so far, so follow-ups can build on files the history forgot. */
+  project?: ProjectFile[];
   isCancelled: () => boolean;
 };
 
@@ -121,7 +127,7 @@ const HISTORY_LIMIT = 6;
  * the prompt past the window, and Ollama answers that with a 400 instead of a
  * reply — from then on every message in that thread fails.
  */
-const HISTORY_CHAR_BUDGET = 5000;
+const HISTORY_CHAR_BUDGET = 6000;
 
 type WireMessage = { role: "system" | "user" | "assistant"; content: string };
 
@@ -151,9 +157,13 @@ export async function* streamRealReply(opts: RealReplyOptions): AsyncGenerator<S
   const name = opts.model ?? codeModel;
 
   // The file text rides along with the prompt rather than the stored message,
-  // so a long attachment never gets re-sent with every later turn.
+  // so a long attachment never gets re-sent with every later turn. The project
+  // goes the same way: only the files this message is about, not the whole set.
+  const projectBlock = buildProjectContext(opts.project ?? [], opts.prompt);
   const attachmentBlock = buildAttachmentBlock(opts.attachments ?? []);
-  const promptWithFiles = attachmentBlock ? `${attachmentBlock}\n\n${opts.prompt}` : opts.prompt;
+  const promptWithFiles = [projectBlock, attachmentBlock, opts.prompt]
+    .filter((part) => part.length > 0)
+    .join("\n\n");
 
   const messages: WireMessage[] = [
     { role: "system", content: wantsNoThink(name) ? `${opts.system}\n\n/no_think` : opts.system },
@@ -177,7 +187,8 @@ export async function* streamRealReply(opts: RealReplyOptions): AsyncGenerator<S
           stream: true,
           temperature: 0.4,
           // Small models on a CPU answer slowly; cap the reply so a demo stays watchable.
-          max_tokens: 700,
+          // A whole component plus its styles needs more room than a chat answer.
+          max_tokens: 1000,
         }),
         signal: controller.signal,
       });

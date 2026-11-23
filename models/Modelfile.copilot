@@ -12,8 +12,8 @@
 # step with COPILOT_SYSTEM_PROMPT in src/lib/realChat.ts.
 FROM qwen3:4b-instruct
 
-PARAMETER num_ctx 4096
-PARAMETER num_predict 700
+PARAMETER num_ctx 8192
+PARAMETER num_predict 1000
 PARAMETER temperature 0.4
 PARAMETER top_p 0.9
 PARAMETER repeat_penalty 1.05

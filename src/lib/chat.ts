@@ -55,6 +55,9 @@ export type ProjectEdit = {
   name: string;
   action: "created" | "updated";
   lines: number;
+  /** Lines the edit added and removed, so "updated" can show its size. */
+  added?: number;
+  removed?: number;
 };
 
 export type ChatMessage = {
@@ -165,9 +168,9 @@ const toolMeta: Record<ToolName, { label: string; args: (prompt: string) => Reco
     result: "5 results · docs.harness.studio, openai.com, nodejs.org · citations attached",
   },
   code_execution: {
-    label: "Trying it out",
-    args: () => ({ language: "node", command: "npm test -- --runInBand", timeout_ms: 120000 }),
-    result: "Sandbox exited 0 · 34 tests passed · no regressions in auth or session modules",
+    label: "Reading through your project",
+    args: () => ({ scope: "src/", mode: "read-only" }),
+    result: "Read the six files involved — nothing was run",
   },
   file_search: {
     label: "Looking through your project",

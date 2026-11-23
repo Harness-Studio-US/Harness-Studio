@@ -1,4 +1,5 @@
 import type { ChatMessage, StreamEvent, ToolName } from "./chat";
+import type { ProjectFile } from "./codeFiles";
 import type { Attachment } from "./files";
 import {
   isRealEngineEnabled,
@@ -28,6 +29,8 @@ type StreamOptions = {
   prompt: string;
   history: ChatMessage[];
   attachments?: Attachment[];
+  /** The project so far, so a follow-up can edit the file it means. */
+  project?: ProjectFile[];
   isCancelled: () => boolean;
 };
 
@@ -71,9 +74,9 @@ const toolMeta: Record<ToolName, { label: string; args: (prompt: string) => Reco
     result: "5 results · developer.mozilla.org, react.dev, nodejs.org",
   },
   code_execution: {
-    label: "Running it in the sandbox",
-    args: () => ({ runtime: "node 22", command: "node --experimental-strip-types example.ts", timeout_ms: 60000 }),
-    result: "Exited 0 · output matched the expected shape",
+    label: "Reading the code through",
+    args: () => ({ scope: "the function and its call sites", mode: "read-only" }),
+    result: "Read it end to end — nothing was executed",
   },
   file_search: {
     label: "Reading the file",
@@ -351,6 +354,7 @@ export async function* streamCodeAssistant(opts: StreamOptions): AsyncGenerator<
       prompt: opts.prompt,
       history: opts.history,
       attachments: opts.attachments,
+      project: opts.project,
       isCancelled: opts.isCancelled,
     });
     return;

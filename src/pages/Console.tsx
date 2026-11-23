@@ -424,39 +424,30 @@ export default function Console() {
     );
   }
 
-  async function sendCode(raw: string) {
-    const text = raw.trim();
-    const files = codeAttachments;
-    if ((!text && files.length === 0) || codeStreamingId) return;
-
-    const history = codeMessages;
-    const userMessage: ChatMessage = {
-      id: uid(),
-      role: "user",
-      content: text || "Here's a file — take a look.",
-      attachments: files.length > 0 ? files : undefined,
-    };
-    const assistantId = uid();
-    const assistantMessage: ChatMessage = {
-      id: assistantId,
-      role: "assistant",
-      content: "",
-      thinking: [],
-      toolCalls: [],
-    };
-
-    setCodeMessages((prev) => [...prev, userMessage, assistantMessage]);
-    setCodeInput("");
-    setCodeAttachments([]);
+  /** Runs one reply against the model and folds its files into the project. */
+  async function streamCodeAnswer({
+    assistantId,
+    prompt,
+    files,
+    history,
+    baseProject,
+  }: {
+    assistantId: string;
+    prompt: string;
+    files: Attachment[];
+    history: ChatMessage[];
+    baseProject: ProjectFile[];
+  }) {
     setCodeStreamingId(assistantId);
     codeCancelledRef.current = false;
     let reply = "";
 
     try {
       for await (const event of streamCodeAssistant({
-        prompt: text || "Here's a file — take a look.",
+        prompt,
         history,
         attachments: files,
+        project: baseProject,
         isCancelled: () => codeCancelledRef.current,
       })) {
         if (event.type === "thinking") {
@@ -509,7 +500,7 @@ export default function Console() {
         patchCodeMessage(assistantId, (current) => ({ ...current, stopped: true }));
       } else if (reply.trim()) {
         // The reply's code blocks become files in the project.
-        const applied = applyReplyToProject(codeProject, {
+        const applied = applyReplyToProject(baseProject, {
           id: assistantId,
           role: "assistant",
           content: reply,
@@ -522,6 +513,75 @@ export default function Console() {
       setCodeStreamingId((prev) => (prev === assistantId ? null : prev));
       codeCancelledRef.current = false;
     }
+  }
+
+  async function sendCode(raw: string) {
+    const text = raw.trim();
+    const files = codeAttachments;
+    if ((!text && files.length === 0) || codeStreamingId) return;
+
+    const history = codeMessages;
+    const userMessage: ChatMessage = {
+      id: uid(),
+      role: "user",
+      content: text || "Here's a file — take a look.",
+      attachments: files.length > 0 ? files : undefined,
+    };
+    const assistantId = uid();
+
+    setCodeMessages((prev) => [
+      ...prev,
+      userMessage,
+      { id: assistantId, role: "assistant", content: "", thinking: [], toolCalls: [] },
+    ]);
+    setCodeInput("");
+    setCodeAttachments([]);
+
+    await streamCodeAnswer({
+      assistantId,
+      prompt: text || "Here's a file — take a look.",
+      files,
+      history,
+      baseProject: codeProject,
+    });
+  }
+
+  /**
+   * Drops the last reply and asks the same thing again. The files that reply
+   * wrote leave the project first, so a retry cannot leave a second copy of the
+   * same change behind.
+   */
+  async function regenerateCode() {
+    if (codeStreamingId) return;
+
+    let lastUser = -1;
+    for (let index = codeMessages.length - 1; index >= 0; index--) {
+      if (codeMessages[index].role === "user") {
+        lastUser = index;
+        break;
+      }
+    }
+    if (lastUser < 0) return;
+
+    const promptMessage = codeMessages[lastUser];
+    const history = codeMessages.slice(0, lastUser);
+    const replayed = replayConversation(history);
+    const assistantId = uid();
+
+    setCodeProject(replayed.project);
+    setCodeMessages([
+      ...history,
+      promptMessage,
+      { id: assistantId, role: "assistant", content: "", thinking: [], toolCalls: [] },
+    ]);
+
+    await streamCodeAnswer({
+      assistantId,
+      prompt: promptMessage.content,
+      files: promptMessage.attachments ?? [],
+      history,
+      baseProject: replayed.project,
+    });
   }
 
   function startCodeChat() {
@@ -1000,6 +1060,7 @@ export default function Console() {
               codeCancelledRef.current = true;
             }}
             onNewChat={startCodeChat}
+            onRegenerate={() => void regenerateCode()}
             canUndo={codeUndo !== null}
             onUndo={undoCodeChat}
             onBackToCopilot={openCopilot}
