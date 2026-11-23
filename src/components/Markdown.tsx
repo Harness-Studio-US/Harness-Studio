@@ -2,7 +2,7 @@ import { Fragment, type ReactNode } from "react";
 import { CodeBlock } from "./CodeBlock";
 
 type Block =
-  | { kind: "code"; lang: string; code: string }
+  | { kind: "code"; lang: string; filename?: string; code: string }
   | { kind: "heading"; level: 1 | 2 | 3; text: string }
   | { kind: "paragraph"; text: string }
   | { kind: "list"; ordered: boolean; items: string[] }
@@ -17,7 +17,10 @@ function parseBlocks(content: string): Block[] {
     const line = lines[i];
 
     if (line.trimStart().startsWith("```")) {
-      const lang = line.trim().slice(3).trim();
+      // ```tsx:PriceCard.tsx hands over a file name as well as a language.
+      const [tag, name] = line.trim().slice(3).trim().split(":");
+      const lang = tag.trim();
+      const filename = name?.trim() || undefined;
       const codeLines: string[] = [];
       i += 1;
       while (i < lines.length && !lines[i].trimStart().startsWith("```")) {
@@ -25,7 +28,7 @@ function parseBlocks(content: string): Block[] {
         i += 1;
       }
       i += 1; // closing fence (or end of stream)
-      blocks.push({ kind: "code", lang: lang || "text", code: codeLines.join("\n") });
+      blocks.push({ kind: "code", lang: lang || "text", filename, code: codeLines.join("\n") });
       continue;
     }
 
@@ -143,6 +146,7 @@ export function Markdown({ content }: { content: string }) {
                 key={index}
                 code={block.code}
                 lang={block.lang}
+                filename={block.filename}
                 className="my-3 border-slate-800 bg-[#0b1120]"
               />
             );

@@ -38,7 +38,12 @@ import {
 } from "../lib/chat";
 import { streamCodeAssistant } from "../lib/codeChat";
 import { extractOutgoingFiles, MAX_ATTACHMENTS, type Attachment } from "../lib/files";
-import { applyReplyToProject, replayConversation, type ProjectFile } from "../lib/codeFiles";
+import {
+  applyReplyToProject,
+  langFromName,
+  replayConversation,
+  type ProjectFile,
+} from "../lib/codeFiles";
 import {
   acceptCopilotTerms,
   hasAcceptedCopilotTerms,
@@ -584,6 +589,29 @@ export default function Console() {
     });
   }
 
+  /** Renaming is local to the project: the model is told the new name next turn. */
+  function renameCodeFile(from: string, to: string) {
+    setCodeProject((prev) =>
+      prev.map((file) =>
+        file.name === from ? { ...file, name: to, lang: langFromName(to) || file.lang } : file
+      )
+    );
+  }
+
+  function deleteCodeFile(name: string) {
+    setCodeProject((prev) => prev.filter((file) => file.name !== name));
+  }
+
+  /** Hands a project file to Copilot as an attachment, ready for a question about it. */
+  function sendCodeFileToCopilot(file: ProjectFile) {
+    const size = new TextEncoder().encode(file.code).length;
+    setAttachments([
+      { id: uid(), name: file.name, size, mime: "text/plain", text: file.code },
+    ]);
+    setView("copilot");
+    window.setTimeout(() => textareaRef.current?.focus(), 80);
+  }
+
   function startCodeChat() {
     if (codeMessages.length === 0) return;
     codeCancelledRef.current = true;
@@ -1061,6 +1089,9 @@ export default function Console() {
             }}
             onNewChat={startCodeChat}
             onRegenerate={() => void regenerateCode()}
+            onRenameFile={renameCodeFile}
+            onDeleteFile={deleteCodeFile}
+            onSendToCopilot={sendCodeFileToCopilot}
             canUndo={codeUndo !== null}
             onUndo={undoCodeChat}
             onBackToCopilot={openCopilot}

@@ -41,6 +41,34 @@ const baseNames: Record<string, string> = {
   text: "snippet.txt",
 };
 
+const langsByExtension: Record<string, string> = {
+  tsx: "tsx",
+  jsx: "jsx",
+  ts: "ts",
+  js: "js",
+  mjs: "js",
+  cjs: "js",
+  css: "css",
+  scss: "scss",
+  html: "html",
+  json: "json",
+  sql: "sql",
+  py: "py",
+  md: "text",
+  txt: "text",
+  prisma: "prisma",
+  yml: "yml",
+  yaml: "yaml",
+  sh: "bash",
+  diff: "diff",
+};
+
+/** What a renamed file should be shown as; empty when the extension says nothing. */
+export function langFromName(name: string): string {
+  const extension = name.split(".").pop()?.toLowerCase() ?? "";
+  return langsByExtension[extension] ?? "";
+}
+
 /** `PriceCard.tsx` stays as written; anything path-like or unsafe is dropped. */
 function safeFileName(raw: string): string {
   const cleaned = raw

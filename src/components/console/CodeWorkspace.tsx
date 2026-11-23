@@ -6,15 +6,19 @@ import {
   Download,
   FileCode,
   MessageSquare,
+  MoreHorizontal,
+  Pencil,
   Plus,
   RotateCcw,
   Send,
   Square,
+  Trash2,
   Undo2,
 } from "lucide-react";
 import type { ChatMessage } from "../../lib/chat";
 import { diffLines, type ProjectFile } from "../../lib/codeFiles";
-import { downloadMany, type Attachment } from "../../lib/files";
+import type { Attachment } from "../../lib/files";
+import { downloadZip } from "../../lib/zip";
 import { ChatMessageView } from "./ChatMessageView";
 import { AttachmentChips, AttachButton } from "./Attachments";
 import { CopyButton } from "../CodeBlock";
@@ -37,6 +41,9 @@ export function CodeWorkspace({
   onStop,
   onNewChat,
   onRegenerate,
+  onRenameFile,
+  onDeleteFile,
+  onSendToCopilot,
   canUndo,
   onUndo,
   onBackToCopilot,
@@ -56,6 +63,9 @@ export function CodeWorkspace({
   onStop: () => void;
   onNewChat: () => void;
   onRegenerate: () => void;
+  onRenameFile: (from: string, to: string) => void;
+  onDeleteFile: (name: string) => void;
+  onSendToCopilot: (file: ProjectFile) => void;
   canUndo: boolean;
   onUndo: () => void;
   onBackToCopilot: () => void;
@@ -64,6 +74,9 @@ export function CodeWorkspace({
   const [pane, setPane] = useState<"chat" | "code">("chat");
   /** Files that replaced an earlier version can be read as a diff. */
   const [showDiff, setShowDiff] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  /** The name being typed, or null when the header shows the name as text. */
+  const [renaming, setRenaming] = useState<string | null>(null);
   const threadRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -75,6 +88,8 @@ export function CodeWorkspace({
 
   useEffect(() => {
     setShowDiff(false);
+    setMenuOpen(false);
+    setRenaming(null);
   }, [selectedName]);
 
   useEffect(() => {
@@ -101,6 +116,16 @@ export function CodeWorkspace({
   function submit() {
     if (!canSend) return;
     onSend(input);
+  }
+
+  function commitRename() {
+    const next = (renaming ?? "").trim();
+    setRenaming(null);
+    if (!active || !next || next === active.name) return;
+    // A name already taken would silently overwrite the other file.
+    if (project.some((file) => file.name === next)) return;
+    onRenameFile(active.name, next);
+    setSelectedName(next);
   }
 
   return (
@@ -318,9 +343,9 @@ export function CodeWorkspace({
               <button
                 type="button"
                 onClick={() =>
-                  downloadMany(project.map((file) => ({ name: file.name, text: file.code })))
+                  downloadZip(project.map((file) => ({ name: file.name, text: file.code })))
                 }
-                title={`Download all ${project.length} files`}
+                title={`Download all ${project.length} files as a .zip`}
                 className="press flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11.5px] font-medium text-slate-700 transition hover:bg-slate-50 hover:text-slate-900"
               >
                 <Download className="h-3.5 w-3.5" />
@@ -381,10 +406,31 @@ export function CodeWorkspace({
 
             <div className="flex min-h-0 flex-1 flex-col">
               <div className="flex shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-4 py-2.5">
-                <div className="min-w-0">
-                  <div className="truncate font-mono text-[12px] font-medium text-slate-800">
-                    {active.name}
-                  </div>
+                <div className="min-w-0 flex-1">
+                  {renaming !== null ? (
+                    <input
+                      autoFocus
+                      value={renaming}
+                      onChange={(event) => setRenaming(event.target.value)}
+                      onBlur={commitRename}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                          event.preventDefault();
+                          commitRename();
+                        } else if (event.key === "Escape") {
+                          event.preventDefault();
+                          setRenaming(null);
+                        }
+                      }}
+                      spellCheck={false}
+                      aria-label="File name"
+                      className="w-full rounded-md border border-violet-300 bg-white px-1.5 py-0.5 font-mono text-[12px] text-slate-900 outline-none ring-2 ring-violet-100"
+                    />
+                  ) : (
+                    <div className="truncate font-mono text-[12px] font-medium text-slate-800">
+                      {active.name}
+                    </div>
+                  )}
                   <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-slate-400">
                     <span className="uppercase tracking-[0.06em]">{active.lang || "text"}</span>
                     <span className="h-0.5 w-0.5 rounded-full bg-slate-300" />
@@ -425,6 +471,70 @@ export function CodeWorkspace({
                     </div>
                   )}
                   <CopyButton text={active.code} className="h-7 shrink-0 px-2 text-[11px]" />
+                  <div className="relative shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setMenuOpen((open) => !open)}
+                      aria-expanded={menuOpen}
+                      aria-haspopup="menu"
+                      title="File actions"
+                      className="press flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </button>
+                    {menuOpen && (
+                      <>
+                        <button
+                          type="button"
+                          tabIndex={-1}
+                          aria-hidden
+                          onClick={() => setMenuOpen(false)}
+                          className="fixed inset-0 z-10 cursor-default"
+                        />
+                        <div
+                          role="menu"
+                          className="absolute right-0 top-full z-20 mt-1 w-44 overflow-hidden rounded-lg border border-slate-200 bg-white py-1 text-[12px] shadow-[0_12px_30px_-12px_rgba(15,23,42,0.35)]"
+                        >
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setMenuOpen(false);
+                              setRenaming(active.name);
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-left text-slate-700 transition hover:bg-slate-50"
+                          >
+                            <Pencil className="h-3.5 w-3.5 text-slate-400" />
+                            Rename
+                          </button>
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setMenuOpen(false);
+                              onSendToCopilot(active);
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-left text-slate-700 transition hover:bg-slate-50"
+                          >
+                            <MessageSquare className="h-3.5 w-3.5 text-slate-400" />
+                            Ask Copilot
+                          </button>
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setMenuOpen(false);
+                              onDeleteFile(active.name);
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-left text-rose-600 transition hover:bg-rose-50"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            Delete
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
 

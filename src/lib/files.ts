@@ -168,12 +168,5 @@ export function downloadFile(file: { name: string; text: string }): void {
   window.setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
 
-/**
- * Saves a whole project. Browsers drop downloads fired in the same tick, so
- * each file is spaced out; every one is independent once started.
- */
-export function downloadMany(files: { name: string; text: string }[]): void {
-  files.forEach((file, index) => {
-    window.setTimeout(() => downloadFile(file), index * 250);
-  });
-}
+
+
