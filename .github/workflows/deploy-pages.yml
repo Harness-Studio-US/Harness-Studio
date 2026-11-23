@@ -76,6 +76,9 @@ jobs:
           # While that variable is unset the site builds the scripted demo.
           VITE_AI_ENDPOINT: ${{ vars.VITE_AI_ENDPOINT }}
           VITE_AI_MODEL: ${{ vars.VITE_AI_ENDPOINT != '' && 'harness-code' || '' }}
+          # Copilot's own model. Both are built by models/setup*.sh; without
+          # this the two chats share the one model.
+          VITE_AI_COPILOT_MODEL: ${{ vars.VITE_AI_ENDPOINT != '' && 'harness-copilot' || '' }}
         run: bun run build:pages
 
       - uses: actions/configure-pages@v5

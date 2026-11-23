@@ -1,6 +1,11 @@
 import type { ChatMessage, StreamEvent, ToolName } from "./chat";
 import type { Attachment } from "./files";
-import { isRealEngineEnabled, streamRealReply, CODE_SYSTEM_PROMPT } from "./realChat";
+import {
+  isRealEngineEnabled,
+  modelNameFor,
+  streamRealReply,
+  CODE_SYSTEM_PROMPT,
+} from "./realChat";
 import { streamReply } from "./streaming";
 
 /**
@@ -342,6 +347,7 @@ export async function* streamCodeAssistant(opts: StreamOptions): AsyncGenerator<
   if (isRealEngineEnabled()) {
     yield* streamRealReply({
       system: CODE_SYSTEM_PROMPT,
+      model: modelNameFor("code"),
       prompt: opts.prompt,
       history: opts.history,
       attachments: opts.attachments,

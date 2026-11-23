@@ -30,8 +30,8 @@ import { SettingsPanel } from "../components/console/SettingsPanel";
 import { VerifyEmail } from "../components/console/VerifyEmail";
 import { Logo, LogoMark } from "../components/Logo";
 import {
+  failureMessage,
   SERVER_BUSY_DELAY_MS,
-  SERVER_BUSY_MESSAGE,
   streamAssistant,
   titleForConversation,
   type ChatMessage,
@@ -399,8 +399,8 @@ export default function Console() {
         ...current,
         errorDetail: detail,
         content: current.content.trim()
-          ? `${current.content}\n\n${SERVER_BUSY_MESSAGE}`
-          : SERVER_BUSY_MESSAGE,
+          ? `${current.content}\n\n${failureMessage(detail)}`
+          : failureMessage(detail),
       }));
     } finally {
       if (cancelledRef.current) {
@@ -501,8 +501,8 @@ export default function Console() {
         ...current,
         errorDetail: detail,
         content: current.content.trim()
-          ? `${current.content}\n\n${SERVER_BUSY_MESSAGE}`
-          : SERVER_BUSY_MESSAGE,
+          ? `${current.content}\n\n${failureMessage(detail)}`
+          : failureMessage(detail),
       }));
     } finally {
       if (codeCancelledRef.current) {

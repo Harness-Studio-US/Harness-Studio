@@ -9,7 +9,20 @@ import { buildAttachmentBlock, historyNote, type Attachment } from "./files";
  * Ollama (see vite.config.ts). Set `VITE_AI_MODEL` to switch it on; leave it
  * empty and the shipped demo behaves exactly as before.
  */
-const model = String(import.meta.env.VITE_AI_MODEL ?? "").trim();
+const codeModel = String(import.meta.env.VITE_AI_MODEL ?? "").trim();
+
+/**
+ * Copilot can talk to its own model, so each chat carries its own instructions
+ * on the machine (harness-code and harness-copilot). With no override both
+ * chats use the one model, which is how a single-model setup still works.
+ */
+const copilotModel =
+  String(import.meta.env.VITE_AI_COPILOT_MODEL ?? "").trim() || codeModel;
+
+/** The Ollama model behind a chat. */
+export function modelNameFor(chat: "copilot" | "code"): string {
+  return chat === "code" ? codeModel : copilotModel;
+}
 
 /**
  * Where the model answers. Locally that is Vite's /api/ollama proxy. A hosted
@@ -21,39 +34,58 @@ const endpoint = String(import.meta.env.VITE_AI_ENDPOINT ?? "").trim().replace(/
 
 const chatUrl = endpoint ? `${endpoint}/chat/completions` : "/api/ollama/chat/completions";
 
-export const realModelName = model;
-
 export function isRealEngineEnabled(): boolean {
-  return model.length > 0;
+  return codeModel.length > 0;
 }
 
+/**
+ * Prompts for a small model on a laptop: short lines, one clear shape per
+ * answer, and the file contract spelled out with an example. Long rule lists
+ * cost context the 4k window cannot spare and a 4B model follows them worse.
+ *
+ * The fence syntax below is load-bearing — src/lib/files.ts parses
+ * ```file:NAME blocks into cards, and src/lib/codeFiles.ts turns each
+ * language-tagged block into a project file.
+ */
 export const CODE_SYSTEM_PROMPT = [
-  "You are Harness Code, the coding chat inside Harness Studio.",
-  "Answer with working code first, then at most three short sentences of notes.",
+  "You are Harness Code, the coding chat inside Harness Studio. You answer with working code, not plans.",
+  "Every answer has one shape:",
+  "1. One short line saying what the code does. Skip it only for a one-word fix.",
+  "2. The code: one fenced block per file, tagged with the language (tsx, ts, js, jsx, css, sql, json, py, html).",
+  "   Each block becomes a file in the project. The first block of a language takes its default name",
+  "   (tsx → Component.tsx, ts → module.ts, css → styles.css, sql → migration.sql); the same tag again replaces that file.",
+  "3. At most three sentences of notes after the code: what to change, what to watch, or the next step.",
   "Rules:",
-  "- Put every file in its own fenced block and tag the fence with the language (tsx, ts, sql, css, js, py, json) so it lands in the right project file.",
-  "- One block per file, complete and paste-ready. No placeholders like '// rest of the code'.",
-  "- If the question needs no code, answer in two or three sentences.",
-  "- Never announce what you are about to do. Do it.",
-  "- Keep comments rare and useful.",
+  "- Complete files, ready to paste. No placeholders, no '...rest of the code', no comments that say nothing.",
+  "- Use current syntax: React 18+ function components, TypeScript strict, ESM imports. Show every import you use.",
+  "- If the message is a question rather than a task, answer in two or three sentences and add code only if it helps.",
+  "- If the request is too vague to code against, ask one specific question instead of guessing.",
+  "- Never restate the request, never announce what you are about to do, never pad with praise or caveats.",
   "Files:",
-  "- To hand the user a file, put its complete contents in a fence that starts with the file name, like ```file:notes.md, with nothing else on that line.",
-  "  The page turns that block into a file the user can download. One block per file, no commentary inside it.",
-  "- Files the user attached arrive above their message between --- file: NAME --- markers. Read them and answer from them; never say you cannot see an attached file.",
+  "- For a file that is not project code (a README, CSV or notes), put its full contents in a fence whose first line is",
+  "  ```file:NAME (for example ```file:notes.md) — the page shows it as a card the user can preview or download.",
+  "- Attached files arrive above the message between --- file: NAME --- and --- end of NAME ---. Read them and answer",
+  "  from them. Never say you cannot see an attachment; if one was not readable as text, say that plainly.",
 ].join("\n");
 
 export const COPILOT_SYSTEM_PROMPT = [
-  "You are Harness, the AI teammate inside Harness Studio.",
-  "You help someone change how their project looks, fix what is not working, add a screen, or understand part of it.",
-  "Be brief and concrete: two to five short sentences in plain language, no filler.",
-  "Ask one question at the end only when you genuinely need it.",
-  "Use Markdown when a list helps. Never invent details about their project.",
-  "To hand the user a file, put its complete contents in a fence that starts with the file name, like ```file:notes.md, and the page turns it into a download.",
-  "If the user attached a file, its text arrives above their message between --- file: NAME --- markers. Read it and answer from it.",
+  "You are Harness, the AI teammate inside Harness Studio: a web page where someone builds and fixes their project with you.",
+  "Answer first, explain second. Two to four short sentences for a normal question; a numbered list only when the answer is a sequence of steps.",
+  "No preamble: never open with 'Sure', 'Great question', or a restatement of what was asked, and never announce what you are about to do.",
+  "Be concrete — name the file, the value or the screen you mean. Harness Studio has four screens: Copilot, Code, Settings and Guide. Do not mention any other part of it.",
+  "If you need one missing detail, ask a single short question at the end. If you do not know something about their project, say so instead of inventing it.",
+  "Markdown is fine: **bold** for a button or file name, `code` for identifiers, bullets for parallel items. Keep code inline unless it is a whole function.",
+  "Files:",
+  "- To hand over a file, write one short line about it, then its full contents in a fence whose first line is ```file:NAME",
+  "  (for example ```file:notes.md). The page turns it into a card the user can preview or download; never repeat the contents outside the fence.",
+  "- Attached files arrive above the message between --- file: NAME --- and --- end of NAME ---. Read them and answer from them.",
+  "  Never say you cannot see an attachment; if one was not readable as text, say that plainly.",
 ].join("\n");
 
 export type RealReplyOptions = {
   system: string;
+  /** Which Ollama model answers; defaults to the code model. */
+  model?: string;
   prompt: string;
   history: ChatMessage[];
   attachments?: Attachment[];
@@ -73,8 +105,9 @@ const approxTokens = (text: string) => Math.max(1, Math.round(text.trim().length
  * Set VITE_AI_NO_THINK=1 when the model is served under another name (a
  * `models/Modelfile` wrapper, for example).
  */
-const noThink =
-  /^qwen3/i.test(model) || String(import.meta.env.VITE_AI_NO_THINK ?? "") === "1";
+function wantsNoThink(name: string): boolean {
+  return /^qwen3/i.test(name) || String(import.meta.env.VITE_AI_NO_THINK ?? "") === "1";
+}
 
 /** A CPU-bound laptop spends most of its time reading the prompt, so only the last few turns go over. */
 const HISTORY_LIMIT = 6;
@@ -112,6 +145,7 @@ function recentHistory(history: ChatMessage[]): WireMessage[] {
 export async function* streamRealReply(opts: RealReplyOptions): AsyncGenerator<StreamEvent> {
   const started = Date.now();
   const controller = new AbortController();
+  const name = opts.model ?? codeModel;
 
   // The file text rides along with the prompt rather than the stored message,
   // so a long attachment never gets re-sent with every later turn.
@@ -119,7 +153,7 @@ export async function* streamRealReply(opts: RealReplyOptions): AsyncGenerator<S
   const promptWithFiles = attachmentBlock ? `${attachmentBlock}\n\n${opts.prompt}` : opts.prompt;
 
   const messages: WireMessage[] = [
-    { role: "system", content: noThink ? `${opts.system}\n\n/no_think` : opts.system },
+    { role: "system", content: wantsNoThink(name) ? `${opts.system}\n\n/no_think` : opts.system },
     ...recentHistory(opts.history),
     { role: "user", content: promptWithFiles },
   ];
@@ -135,7 +169,7 @@ export async function* streamRealReply(opts: RealReplyOptions): AsyncGenerator<S
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          model,
+          model: name,
           messages: attempts[attempt],
           stream: true,
           temperature: 0.4,

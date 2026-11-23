@@ -13,6 +13,7 @@ set -euo pipefail
 
 REPO_RAW="${REPO_RAW:-https://raw.githubusercontent.com/Harness-Studio-US/Harness-Studio/main/models}"
 NAME="${NAME:-harness-code}"
+COPILOT_NAME="${COPILOT_NAME:-harness-copilot}"
 WEBSITE_ORIGIN="${WEBSITE_ORIGIN:-https://harness-studio-us.github.io}"
 
 say() { printf '%s\n' "$*"; }
@@ -69,15 +70,23 @@ for _ in $(seq 1 30); do
 done
 [ "$ready" -eq 1 ] || die "Ollama did not come back. Read: sudo journalctl -u ollama -n 50 --no-pager"
 
-say "5/5  building $NAME (a few GB the first time)"
+say "5/5  building $NAME and $COPILOT_NAME (a few GB the first time)"
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
-curl -fsSL -o "$work/Modelfile" "$REPO_RAW/Modelfile" || die "could not download the Modelfile"
-base="$(awk '/^FROM[[:space:]]/{print $2; exit}' "$work/Modelfile")"
-[ -n "$base" ] || die "no FROM line in the downloaded Modelfile"
-say "     base model: $base"
-ollama pull "$base"
-ollama create "$NAME" -f "$work/Modelfile"
+for spec in "Modelfile:$NAME" "Modelfile.copilot:$COPILOT_NAME"; do
+  file="${spec%%:*}"
+  name="${spec##*:}"
+  curl -fsSL -o "$work/$file" "$REPO_RAW/$file" || die "could not download $file"
+  base="$(awk '/^FROM[[:space:]]/{print $2; exit}' "$work/$file")"
+  [ -n "$base" ] || die "no FROM line in $file"
+  say "     $name: base model $base"
+  ollama pull "$base"
+  ollama create "$name" -f "$work/$file"
+  # Keep a copy: rebuilding later needs this file, and the temp folder goes away.
+  install -d /usr/local/share/harness-code
+  install -m 0644 "$work/$file" "/usr/local/share/harness-code/$file"
+done
+say "     Modelfiles kept in /usr/local/share/harness-code/"
 
 say ""
 say "Graphics chip Ollama can see:"
@@ -90,3 +99,7 @@ say '  cloudflared tunnel --url http://127.0.0.1:11434 --http-host-header="local
 say ""
 say "It prints a line like https://something-something.trycloudflare.com"
 say "Put that URL plus /v1 into the repository variable VITE_AI_ENDPOINT."
+say ""
+say "To change a model's instructions, edit its file in /usr/local/share/harness-code/"
+say "(Modelfile is $NAME, Modelfile.copilot is $COPILOT_NAME) and rebuild it, for example:"
+say "  sudo ollama create $NAME -f /usr/local/share/harness-code/Modelfile"

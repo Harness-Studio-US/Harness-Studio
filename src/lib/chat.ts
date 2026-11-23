@@ -1,4 +1,9 @@
-import { COPILOT_SYSTEM_PROMPT, isRealEngineEnabled, streamRealReply } from "./realChat";
+import {
+  COPILOT_SYSTEM_PROMPT,
+  isRealEngineEnabled,
+  modelNameFor,
+  streamRealReply,
+} from "./realChat";
 import type { Attachment, OutgoingFile } from "./files";
 import { streamReply } from "./streaming";
 
@@ -30,6 +35,20 @@ export const SERVER_BUSY_MESSAGE =
 
 /** How long the thinking dots stay up before the message above replaces them. */
 export const SERVER_BUSY_DELAY_MS = 3000;
+
+/**
+ * A request that never reached the model is a different problem: the tunnel is
+ * down, the machine is asleep, or the page points at an address that has gone.
+ */
+export const UNREACHABLE_MESSAGE =
+  "I could not reach the model on your machine. Check that the tunnel is running, then send that again.";
+
+/** Picks the notice that matches what actually went wrong. */
+export function failureMessage(reason?: string): string {
+  return /could not reach|no response|load failed|failed to fetch|networkerror|returned 530/i.test(reason ?? "")
+    ? UNREACHABLE_MESSAGE
+    : SERVER_BUSY_MESSAGE;
+}
 
 /** A file Harness Code wrote into the project for one reply. */
 export type ProjectEdit = {
@@ -301,6 +320,7 @@ export async function* streamAssistant(opts: StreamOptions): AsyncGenerator<Stre
   if (isRealEngineEnabled()) {
     yield* streamRealReply({
       system: COPILOT_SYSTEM_PROMPT,
+      model: modelNameFor("copilot"),
       prompt: opts.prompt,
       history: opts.history,
       attachments: opts.attachments,
