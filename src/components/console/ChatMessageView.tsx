@@ -6,7 +6,10 @@ import {
   FileCode,
   FileDown,
   Loader2,
+  RotateCcw,
   Sparkles,
+  ThumbsDown,
+  ThumbsUp,
 } from "lucide-react";
 import type { ChatMessage, ProjectEdit, ToolCall } from "../../lib/chat";
 import type { OutgoingFile } from "../../lib/files";
@@ -17,6 +20,8 @@ import { LogoMark } from "../Logo";
 import { CopyButton } from "../CodeBlock";
 import { AttachmentList } from "./Attachments";
 import { cn } from "../../lib/cn";
+
+const dislikeReasons = ["Not accurate", "Too long", "Wrong code", "Missed my question"];
 
 function ToolCallCard({ call, streaming }: { call: ToolCall; streaming: boolean }) {
   const running = call.status === "running" && streaming;
@@ -44,6 +49,7 @@ export function ChatMessageView({
   author = "Harness Copilot",
   edits,
   onEdit,
+  onRegenerate,
 }: {
   message: ChatMessage;
   streaming: boolean;
@@ -51,9 +57,20 @@ export function ChatMessageView({
   edits?: ProjectEdit[];
   /** Present when a sent message can be taken back and rewritten. */
   onEdit?: () => void;
+  /** Present on the newest reply only: asking again replaces it. */
+  onRegenerate?: () => void;
 }) {
   const [thinkingOpen, setThinkingOpen] = useState(false);
   const [openFile, setOpenFile] = useState<OutgoingFile | null>(null);
+  const [feedback, setFeedback] = useState<"up" | "down" | null>(null);
+  const [reasonOpen, setReasonOpen] = useState(false);
+  const [otherOpen, setOtherOpen] = useState(false);
+  const [otherReason, setOtherReason] = useState("");
+
+  function closeReason() {
+    setReasonOpen(false);
+    setOtherOpen(false);
+  }
 
   if (message.role === "user") {
     return (
@@ -225,8 +242,129 @@ export function ChatMessageView({
         )}
 
         {!streaming && message.content && (
-          <div className="mt-2 flex items-center gap-2 text-[10.5px] text-slate-600">
-            <CopyButton text={message.content} className="h-7 px-2 text-[10.5px]" />
+          <div className="relative mt-2 flex items-center gap-1 text-slate-500">
+            <CopyButton
+              text={message.content}
+              iconOnly
+              className="h-7 w-7 justify-center border-0 bg-transparent px-0 shadow-none hover:bg-slate-100"
+            />
+            {onRegenerate && (
+              <button
+                type="button"
+                onClick={onRegenerate}
+                aria-label="Regenerate this reply"
+                title="Regenerate this reply"
+                className="press flex h-7 w-7 items-center justify-center rounded-md transition hover:bg-slate-100 hover:text-slate-800"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setFeedback("up");
+                closeReason();
+              }}
+              aria-label="Good reply"
+              aria-pressed={feedback === "up"}
+              title="Good reply"
+              className={cn(
+                "press flex h-7 w-7 items-center justify-center rounded-md transition hover:bg-slate-100 hover:text-slate-800",
+                feedback === "up" && "text-emerald-600"
+              )}
+            >
+              <ThumbsUp className={cn("h-3.5 w-3.5", feedback === "up" && "fill-current")} />
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setFeedback("down");
+                setReasonOpen(true);
+              }}
+              aria-label="Bad reply"
+              aria-pressed={feedback === "down"}
+              title="Bad reply"
+              className={cn(
+                "press flex h-7 w-7 items-center justify-center rounded-md transition hover:bg-slate-100 hover:text-slate-800",
+                feedback === "down" && "text-rose-600"
+              )}
+            >
+              <ThumbsDown className={cn("h-3.5 w-3.5", feedback === "down" && "fill-current")} />
+            </button>
+            {feedback && !reasonOpen && (
+              <span className="ml-1 text-[10.5px] text-slate-500">
+                {feedback === "up" ? "Thanks!" : "Thanks — noted."}
+              </span>
+            )}
+
+            {reasonOpen && (
+              <>
+                <button
+                  type="button"
+                  tabIndex={-1}
+                  aria-hidden
+                  onClick={closeReason}
+                  className="fixed inset-0 z-10 cursor-default"
+                />
+                <div
+                  role="dialog"
+                  aria-label="Why did you dislike this prompt?"
+                  className="absolute left-0 top-full z-20 mt-1 w-[17rem] rounded-xl border border-slate-200 bg-white p-3 text-left shadow-[0_20px_45px_-24px_rgba(15,23,42,0.45)]"
+                >
+                  <p className="text-[12px] font-semibold text-slate-900">
+                    Why did you dislike this prompt?
+                  </p>
+                  <div className="mt-2 flex flex-wrap gap-1.5">
+                    {dislikeReasons.map((reason) => (
+                      <button
+                        key={reason}
+                        type="button"
+                        onClick={closeReason}
+                        className="rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 transition hover:bg-slate-50 hover:text-slate-900"
+                      >
+                        {reason}
+                      </button>
+                    ))}
+                    <button
+                      type="button"
+                      onClick={() => setOtherOpen(true)}
+                      className={cn(
+                        "rounded-md border px-2 py-1 text-[11px] transition",
+                        otherOpen
+                          ? "border-violet-300 bg-violet-50 text-violet-800"
+                          : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                      )}
+                    >
+                      Other
+                    </button>
+                  </div>
+                  {otherOpen && (
+                    <div className="mt-2">
+                      <textarea
+                        autoFocus
+                        value={otherReason}
+                        onChange={(event) => setOtherReason(event.target.value)}
+                        rows={2}
+                        placeholder="What went wrong?"
+                        aria-label="Your reason"
+                        className="w-full resize-none rounded-md border border-slate-200 px-2 py-1.5 text-[11.5px] leading-[1.6] text-slate-800 outline-none transition focus:border-violet-300"
+                      />
+                      <button
+                        type="button"
+                        disabled={!otherReason.trim()}
+                        onClick={() => {
+                          setOtherReason("");
+                          closeReason();
+                        }}
+                        className="mt-1.5 rounded-md bg-slate-900 px-2.5 py-1 text-[11px] font-semibold text-white transition hover:bg-slate-800 disabled:opacity-40"
+                      >
+                        Send
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

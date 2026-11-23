@@ -6,10 +6,13 @@ export function CopyButton({
   text,
   className,
   tone = "light",
+  iconOnly = false,
 }: {
   text: string;
   className?: string;
   tone?: "light" | "dark";
+  /** Just the glyph, for rows of small message actions. */
+  iconOnly?: boolean;
 }) {
   const [copied, setCopied] = useState(false);
 
@@ -41,7 +44,7 @@ export function CopyButton({
       ) : (
         <Copy className="h-3 w-3" />
       )}
-      {copied ? "Copied" : "Copy"}
+      {!iconOnly && (copied ? "Copied" : "Copy")}
     </button>
   );
 }

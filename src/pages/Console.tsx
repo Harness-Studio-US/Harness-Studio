@@ -17,7 +17,6 @@ import {
   Pin,
   PinOff,
   Plus,
-  RotateCcw,
   Search,
   Send,
   ShieldCheck,
@@ -1667,7 +1666,7 @@ export default function Console() {
               </div>
             ) : (
               <div className="space-y-6">
-                {activeConversation.messages.map((message) => (
+                {activeConversation.messages.map((message, index) => (
                   <div key={message.id} className="stream-in">
                     <ChatMessageView
                       message={message}
@@ -1677,25 +1676,15 @@ export default function Console() {
                           ? () => editCopilotMessage(message.id)
                           : undefined
                       }
+                      onRegenerate={
+                        index === activeConversation.messages.length - 1 &&
+                        message.role === "assistant"
+                          ? () => void regenerateReply()
+                          : undefined
+                      }
                     />
                   </div>
                 ))}
-
-                {activeConversation.messages[activeConversation.messages.length - 1]?.role ===
-                  "assistant" &&
-                  !isStreaming && (
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => void regenerateReply()}
-                        title="Ask again and replace this reply"
-                        className="press flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11.5px] font-medium text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition hover:bg-slate-50 hover:text-slate-900"
-                      >
-                        <RotateCcw className="h-3.5 w-3.5" />
-                        Regenerate
-                      </button>
-                    </div>
-                  )}
               </div>
             )}
           </div>

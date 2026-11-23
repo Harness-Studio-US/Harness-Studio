@@ -12,7 +12,6 @@ import {
   MoreHorizontal,
   Pencil,
   Plus,
-  RotateCcw,
   Search,
   Send,
   ShieldCheck,
@@ -364,30 +363,21 @@ export function CodeWorkspace({
               </div>
             ) : (
               <div className="space-y-7">
-                {messages.map((message) => (
+                {messages.map((message, index) => (
                   <div key={message.id} className="stream-in">
                     <ChatMessageView
                       message={message}
                       streaming={streamingId === message.id}
                       author="Harness Code"
                       edits={message.edits}
+                      onRegenerate={
+                        index === messages.length - 1 && message.role === "assistant"
+                          ? onRegenerate
+                          : undefined
+                      }
                     />
                   </div>
                 ))}
-
-                {messages[messages.length - 1]?.role === "assistant" && !streaming && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={onRegenerate}
-                      title="Ask again and replace this reply"
-                      className="press flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11.5px] font-medium text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition hover:bg-slate-50 hover:text-slate-900"
-                    >
-                      <RotateCcw className="h-3.5 w-3.5" />
-                      Regenerate
-                    </button>
-                  </div>
-                )}
               </div>
             )}
           </div>
