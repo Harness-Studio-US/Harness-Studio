@@ -68,7 +68,7 @@ export function Logo({
             textClassName || "text-[18px]"
           )}
         >
-          Harness <span className={accent}>Studio</span>
+          Harness <span className={accent}>{product}</span>
         </span>
         {showTagline && (
           <span className={cn("mt-1 text-[8px] font-medium uppercase tracking-[0.24em]", tagline)}>
