@@ -18,10 +18,6 @@ import { CopyButton } from "../CodeBlock";
 import { AttachmentList } from "./Attachments";
 import { cn } from "../../lib/cn";
 
-function formatLatency(ms: number): string {
-  return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${Math.round(ms)}ms`;
-}
-
 function ToolCallCard({ call, streaming }: { call: ToolCall; streaming: boolean }) {
   const running = call.status === "running" && streaming;
 
@@ -231,12 +227,6 @@ export function ChatMessageView({
         {!streaming && message.content && (
           <div className="mt-2 flex items-center gap-2 text-[10.5px] text-slate-600">
             <CopyButton text={message.content} className="h-7 px-2 text-[10.5px]" />
-            {message.usage && (
-              <span className="ml-0.5">
-                {message.usage.out} tokens
-                {message.latencyMs ? ` · ${formatLatency(message.latencyMs)}` : ""}
-              </span>
-            )}
           </div>
         )}
       </div>
