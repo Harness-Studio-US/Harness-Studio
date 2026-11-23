@@ -1,11 +1,11 @@
 import { assetUrl } from "../lib/assets";
 import { cn } from "../lib/cn";
 
-export function LogoMark({ className }: { className?: string }) {
+export function LogoMark({ className, alt }: { className?: string; alt?: string }) {
   return (
     <img
       src={assetUrl("/brand/harness-mark.png")}
-      alt="Harness Studio monogram"
+      alt={alt ?? "Harness Studio monogram"}
       width={512}
       height={458}
       draggable={false}
@@ -21,6 +21,8 @@ export function Logo({
   stacked = false,
   showTagline = false,
   tone = "light",
+  /* The console brand is "Harness Console"; the site stays "Harness Studio". */
+  product = "Studio",
 }: {
   className?: string;
   markClassName?: string;
@@ -28,6 +30,7 @@ export function Logo({
   stacked?: boolean;
   showTagline?: boolean;
   tone?: "light" | "dark";
+  product?: string;
 }) {
   const onDark = tone === "dark";
   const wordmark = onDark ? "text-white" : "text-slate-900";
@@ -36,10 +39,13 @@ export function Logo({
   if (stacked) {
     return (
       <div className={cn("flex flex-col items-center gap-3", className)}>
-        <LogoMark className={cn("h-14 w-14", markClassName)} />
+        <LogoMark
+          className={cn("h-14 w-14", markClassName)}
+          alt={`Harness ${product} monogram`}
+        />
         <div className="text-center">
           <div className={cn("text-xl font-extrabold leading-tight tracking-tight", wordmark, textClassName)}>
-            Harness <span className={accent}>Studio</span>
+            Harness <span className={accent}>{product}</span>
           </div>
           {showTagline && (
             <div className={cn("mt-1.5 text-[9px] font-medium uppercase tracking-[0.34em]", tagline)}>
@@ -53,7 +59,7 @@ export function Logo({
 
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
-      <LogoMark className={cn("h-8 w-8", markClassName)} />
+      <LogoMark className={cn("h-8 w-8", markClassName)} alt={`Harness ${product} monogram`} />
       <div className="flex flex-col leading-none">
         <span
           className={cn(

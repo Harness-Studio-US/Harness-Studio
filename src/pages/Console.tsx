@@ -6,11 +6,15 @@ import {
   BookOpen,
   ChevronUp,
   Code,
+  Download,
   FileText,
   LogOut,
   Menu,
   MessageSquare,
+  Pin,
+  PinOff,
   Plus,
+  RotateCcw,
   Search,
   Send,
   ShieldCheck,
@@ -51,6 +55,7 @@ import {
   markCopilotGuideSeen,
 } from "../lib/copilotState";
 import { auth } from "../lib/firebase";
+import { chatMarkdown, downloadText, exportFileName } from "../lib/transcript";
 import { cn } from "../lib/cn";
 
 type Conversation = {
@@ -58,6 +63,8 @@ type Conversation = {
   title: string;
   messages: ChatMessage[];
   updatedAt: number;
+  /** Pinned chats stay at the top of the sidebar. */
+  pinned?: boolean;
 };
 
 const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(resolve, ms));
@@ -307,9 +314,12 @@ export default function Console() {
     );
   }
 
-  async function send(raw: string) {
+  async function send(
+    raw: string,
+    options: { files?: Attachment[]; history?: ChatMessage[]; retry?: boolean } = {}
+  ) {
     const text = raw.trim();
-    const files = attachments;
+    const files = options.files ?? attachments;
     if ((!text && files.length === 0) || streaming) return;
 
     const conv = activeConversation ?? emptyConversation();
@@ -318,7 +328,7 @@ export default function Console() {
       setActiveId(conv.id);
     }
 
-    const history = conv.messages;
+    const history = options.history ?? conv.messages;
     const userMessage: ChatMessage = {
       id: uid(),
       role: "user",
@@ -351,7 +361,7 @@ export default function Console() {
     );
 
     setStreaming({ convId: conv.id, messageId: assistantId });
-    setAttachments([]);
+    if (!options.retry) setAttachments([]);
     cancelledRef.current = false;
 
     try {
@@ -423,6 +433,41 @@ export default function Console() {
     void send(text);
   }
 
+  /**
+   * Drops the last reply and asks the same question again. The old answer and
+   * its user message leave the thread first, so a retry never leaves two
+   * answers to the same question behind.
+   */
+  async function regenerateReply() {
+    if (streaming || !activeConversation) return;
+    const messages = activeConversation.messages;
+
+    let lastUser = -1;
+    for (let index = messages.length - 1; index >= 0; index--) {
+      if (messages[index].role === "user") {
+        lastUser = index;
+        break;
+      }
+    }
+    if (lastUser < 0) return;
+
+    const promptMessage = messages[lastUser];
+    const history = messages.slice(0, lastUser);
+    setConversations((prev) =>
+      prev.map((conversation) =>
+        conversation.id !== activeConversation.id
+          ? conversation
+          : { ...conversation, messages: history, updatedAt: Date.now() }
+      )
+    );
+
+    await send(promptMessage.content, {
+      files: promptMessage.attachments ?? [],
+      history,
+      retry: true,
+    });
+  }
+
   function patchCodeMessage(id: string, patch: (message: ChatMessage) => ChatMessage) {
     setCodeMessages((prev) =>
       prev.map((message) => (message.id === id ? patch(message) : message))
@@ -436,12 +481,14 @@ export default function Console() {
     files,
     history,
     baseProject,
+    temperature,
   }: {
     assistantId: string;
     prompt: string;
     files: Attachment[];
     history: ChatMessage[];
     baseProject: ProjectFile[];
+    temperature?: number;
   }) {
     setCodeStreamingId(assistantId);
     codeCancelledRef.current = false;
@@ -453,6 +500,7 @@ export default function Console() {
         history,
         attachments: files,
         project: baseProject,
+        temperature,
         isCancelled: () => codeCancelledRef.current,
       })) {
         if (event.type === "thinking") {
@@ -520,7 +568,7 @@ export default function Console() {
     }
   }
 
-  async function sendCode(raw: string) {
+  async function sendCode(raw: string, temperature?: number) {
     const text = raw.trim();
     const files = codeAttachments;
     if ((!text && files.length === 0) || codeStreamingId) return;
@@ -544,6 +592,7 @@ export default function Console() {
 
     await streamCodeAnswer({
       assistantId,
+      temperature,
       prompt: text || "Here's a file — take a look.",
       files,
       history,
@@ -582,6 +631,8 @@ export default function Console() {
 
     await streamCodeAnswer({
       assistantId,
+      // A retry should not replay the same sample that just failed.
+      temperature: 0.55,
       prompt: promptMessage.content,
       files: promptMessage.attachments ?? [],
       history,
@@ -600,6 +651,19 @@ export default function Console() {
 
   function deleteCodeFile(name: string) {
     setCodeProject((prev) => prev.filter((file) => file.name !== name));
+  }
+
+  /**
+   * A second pass over one file. A 4B model happily ships a mistyped closing tag,
+   * so this asks it to re-read the file it just wrote instead of the whole thread.
+   */
+  function checkCodeFile(file: ProjectFile) {
+    void sendCode(
+      `Re-read ${file.name} carefully and fix real mistakes: unclosed or misspelled tags, ` +
+        "missing imports, names used before they exist, unbalanced quotes or braces, wrong SQL. " +
+        `Return the corrected file in one fenced block named ${file.name}, keeping every part that was already right. ` +
+        'If nothing is wrong, answer only: No errors found.'
+    );
   }
 
   /** Hands a project file to Copilot as an attachment, ready for a question about it. */
@@ -660,6 +724,36 @@ export default function Console() {
     window.setTimeout(() => textareaRef.current?.focus(), 50);
   }
 
+  function togglePin(id: string) {
+    setConversations((prev) =>
+      prev.map((conversation) =>
+        conversation.id === id ? { ...conversation, pinned: !conversation.pinned } : conversation
+      )
+    );
+  }
+
+  function exportCopilotChat() {
+    const conversation = activeConversation;
+    if (!conversation || conversation.messages.length === 0) return;
+    downloadText(
+      exportFileName(conversation.title),
+      chatMarkdown({ title: conversation.title, messages: conversation.messages })
+    );
+  }
+
+  function exportCodeChat() {
+    if (codeMessages.length === 0) return;
+    downloadText(
+      exportFileName(codeChatTitle),
+      chatMarkdown({
+        title: codeChatTitle,
+        messages: codeMessages,
+        project: codeProject,
+        author: "Harness Code",
+      })
+    );
+  }
+
   function deleteConversation(id: string) {
     const remaining = conversations.filter((conversation) => conversation.id !== id);
     if (remaining.length === 0) {
@@ -698,11 +792,23 @@ export default function Console() {
     if (auth) void firebaseSignOut(auth);
   }
 
-  const filteredConversations = conversations.filter(
+  const needle = query.trim().toLowerCase();
+  const matchesInMessages = (conversation: Conversation) =>
+    needle.length > 0 &&
+    !conversation.title.toLowerCase().includes(needle) &&
+    conversation.messages.some((message) => message.content.toLowerCase().includes(needle));
+  const matching = conversations.filter(
     (conversation) =>
       conversation.messages.length > 0 &&
-      conversation.title.toLowerCase().includes(query.trim().toLowerCase())
+      (needle.length === 0 ||
+        conversation.title.toLowerCase().includes(needle) ||
+        conversation.messages.some((message) => message.content.toLowerCase().includes(needle)))
   );
+  // Pinned chats sit above the rest; everything else keeps its own order.
+  const filteredConversations = [
+    ...matching.filter((conversation) => conversation.pinned),
+    ...matching.filter((conversation) => !conversation.pinned),
+  ];
   const lastCodePrompt = [...codeMessages].reverse().find((message) => message.role === "user");
   const codeChatTitle = lastCodePrompt ? titleForConversation(lastCodePrompt.content) : "Code chat";
   const isStreaming = streaming !== null;
@@ -760,8 +866,8 @@ export default function Console() {
         )}
       >
         <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
-          <Link to="/" aria-label="Harness Studio home">
-            <Logo markClassName="h-7 w-7" />
+          <Link to="/" aria-label="Harness Console home">
+            <Logo markClassName="h-7 w-7" product="Console" />
           </Link>
           <button
             type="button"
@@ -871,7 +977,35 @@ export default function Console() {
                     <span>{formatRelative(conversation.updatedAt)}</span>
                     <span className="h-0.5 w-0.5 rounded-full bg-slate-400" />
                     <span>{conversation.messages.length} msg</span>
+                    {matchesInMessages(conversation) && (
+                      <>
+                        <span className="h-0.5 w-0.5 rounded-full bg-slate-400" />
+                        <span>in messages</span>
+                      </>
+                    )}
                   </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => togglePin(conversation.id)}
+                  className={cn(
+                    "rounded p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900",
+                    conversation.pinned
+                      ? "opacity-100"
+                      : "opacity-0 group-hover:opacity-100 focus:opacity-100"
+                  )}
+                  aria-label={
+                    conversation.pinned
+                      ? `Unpin ${conversation.title}`
+                      : `Pin ${conversation.title}`
+                  }
+                  title={conversation.pinned ? "Unpin chat" : "Pin to top"}
+                >
+                  {conversation.pinned ? (
+                    <PinOff className="h-3 w-3" />
+                  ) : (
+                    <Pin className="h-3 w-3" />
+                  )}
                 </button>
                 <button
                   type="button"
@@ -1044,6 +1178,19 @@ export default function Console() {
           </div>
 
           <div className="ml-auto flex items-center gap-2">
+            {view === "copilot" &&
+              activeConversation &&
+              activeConversation.messages.length > 0 && (
+                <button
+                  type="button"
+                  onClick={exportCopilotChat}
+                  title="Download this chat as Markdown"
+                  className="press flex items-center gap-1.5 rounded-md px-2.5 py-2 text-[12px] font-medium text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">Export</span>
+                </button>
+              )}
             <button
               type="button"
               onClick={() => setSettingsOpen(true)}
@@ -1092,9 +1239,11 @@ export default function Console() {
             onRenameFile={renameCodeFile}
             onDeleteFile={deleteCodeFile}
             onSendToCopilot={sendCodeFileToCopilot}
+            onCheckFile={checkCodeFile}
             canUndo={codeUndo !== null}
             onUndo={undoCodeChat}
             onBackToCopilot={openCopilot}
+            onExport={exportCodeChat}
           />
         )}
 
@@ -1150,6 +1299,22 @@ export default function Console() {
                     />
                   </div>
                 ))}
+
+                {activeConversation.messages[activeConversation.messages.length - 1]?.role ===
+                  "assistant" &&
+                  !isStreaming && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => void regenerateReply()}
+                        title="Ask again and replace this reply"
+                        className="press flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[11.5px] font-medium text-slate-600 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition hover:bg-slate-50 hover:text-slate-900"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        Regenerate
+                      </button>
+                    </div>
+                  )}
               </div>
             )}
           </div>

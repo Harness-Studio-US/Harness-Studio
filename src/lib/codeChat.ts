@@ -31,6 +31,8 @@ type StreamOptions = {
   attachments?: Attachment[];
   /** The project so far, so a follow-up can edit the file it means. */
   project?: ProjectFile[];
+  /** Regenerate raises it, so a retry is a genuinely different attempt. */
+  temperature?: number;
   isCancelled: () => boolean;
 };
 
@@ -351,6 +353,9 @@ export async function* streamCodeAssistant(opts: StreamOptions): AsyncGenerator<
     yield* streamRealReply({
       system: CODE_SYSTEM_PROMPT,
       model: modelNameFor("code"),
+      // Code wants the most likely token, not a lively one: a 4B model left at
+      // 0.4 invents class names and mangles closing tags.
+      temperature: opts.temperature ?? 0.2,
       prompt: opts.prompt,
       history: opts.history,
       attachments: opts.attachments,

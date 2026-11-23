@@ -79,6 +79,17 @@ for spec in "Modelfile:$NAME" "Modelfile.copilot:$COPILOT_NAME"; do
   curl -fsSL -o "$work/$file" "$REPO_RAW/$file" || die "could not download $file"
   base="$(awk '/^FROM[[:space:]]/{print $2; exit}' "$work/$file")"
   [ -n "$base" ] || die "no FROM line in $file"
+  # HARNESS_BASE=qwen2.5-coder:7b swaps in a stronger Apache base; the prompt
+  # and parameters in the Modelfile stay exactly the same.
+  if [ -n "${HARNESS_BASE:-}" ] && [ "${HARNESS_BASE}" != "$base" ]; then
+    say "     overriding base: $base -> $HARNESS_BASE"
+    awk -v base="$HARNESS_BASE" '
+      /^FROM[[:space:]]/ && !done { print "FROM " base; done = 1; next }
+      { print }
+    ' "$work/$file" >"$work/$file.tmp"
+    mv "$work/$file.tmp" "$work/$file"
+    base="$HARNESS_BASE"
+  fi
   say "     $name: base model $base"
   ollama pull "$base"
   ollama create "$name" -f "$work/$file"

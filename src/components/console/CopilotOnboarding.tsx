@@ -30,8 +30,8 @@ export function LegalConsent({
   return (
     <div className="ai-screen-in min-h-screen bg-paper text-ink">
       <header className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between gap-4 px-5 lg:px-10">
-        <Link to="/" aria-label="Harness Studio home">
-          <Logo markClassName="h-8 w-8" />
+        <Link to="/" aria-label="Harness Console home">
+          <Logo markClassName="h-8 w-8" product="Console" />
         </Link>
         <Link
           to="/"
@@ -76,7 +76,7 @@ export function LegalConsent({
 
         <section className="ai-card-in mx-auto w-full max-w-[470px] rounded-[28px] border border-line bg-surface p-6 shadow-[0_24px_60px_-45px_rgba(23,21,15,0.45)] sm:p-8">
           <div className="flex items-center justify-between gap-3 lg:hidden">
-            <Logo markClassName="h-7 w-7" />
+            <Logo markClassName="h-7 w-7" product="Console" />
           </div>
 
           <div className="mt-6 lg:mt-0">

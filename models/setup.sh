@@ -23,6 +23,19 @@ build() { # modelfile name
   [ -f "$file" ] || die "missing $file"
   base="$(awk '/^FROM[[:space:]]/{print $2; exit}' "$file")"
   [ -n "$base" ] || die "no FROM line in $file"
+  # HARNESS_BASE=qwen2.5-coder:7b builds the same model on a stronger Apache
+  # base without editing the Modelfile. Slower, noticeably better at code.
+  if [ -n "${HARNESS_BASE:-}" ] && [ "${HARNESS_BASE}" != "$base" ]; then
+    echo "Overriding base: $base -> $HARNESS_BASE"
+    local swapped
+    swapped="$(mktemp)"
+    awk -v base="$HARNESS_BASE" '
+      /^FROM[[:space:]]/ && !done { print "FROM " base; done = 1; next }
+      { print }
+    ' "$file" >"$swapped"
+    file="$swapped"
+    base="$HARNESS_BASE"
+  fi
   echo "Base model for $name: $base"
   ollama pull "$base"
   echo "Creating $name…"

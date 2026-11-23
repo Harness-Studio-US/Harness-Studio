@@ -30,8 +30,8 @@ export function LoginShell({ children }: { children: ReactNode }) {
   return (
     <div className="ai-screen-in min-h-screen bg-paper text-ink">
       <header className="mx-auto flex h-20 w-full max-w-7xl items-center justify-between gap-4 px-5 lg:px-10">
-        <Link to="/" aria-label="Harness Studio home">
-          <Logo markClassName="h-8 w-8" />
+        <Link to="/" aria-label="Harness Console home">
+          <Logo markClassName="h-8 w-8" product="Console" />
         </Link>
         <Link
           to="/"
@@ -161,7 +161,7 @@ export function CopilotLogin() {
     return (
       <LoginShell>
         <div className="flex items-center justify-between gap-3 lg:hidden">
-          <Logo markClassName="h-7 w-7" />
+          <Logo markClassName="h-7 w-7" product="Console" />
           <span className="rounded-full border border-[#e8c38f] bg-[#fff7e8] px-2 py-1 text-[10px] font-medium text-[#8a4b08]">
             Setup needed
           </span>
@@ -217,7 +217,7 @@ export function CopilotLogin() {
   return (
     <LoginShell>
       <div className="flex items-center justify-between gap-3 lg:hidden">
-        <Logo markClassName="h-7 w-7" />
+        <Logo markClassName="h-7 w-7" product="Console" />
         <span className="rounded-full border border-line bg-paper px-2.5 py-1 text-[9.5px] font-medium uppercase tracking-[0.1em] text-muted">
           Secure sign-in
         </span>

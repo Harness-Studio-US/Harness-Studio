@@ -270,12 +270,27 @@ function escapeName(name: string): string {
  * turns of chat history. So every message carries the file list, plus the full
  * text of any file the message names, or else the file written last.
  */
+/** Names a file hands to the rest of the project, so a follow-up knows what exists. */
+function exportedNames(code: string): string[] {
+  const names: string[] = [];
+  const pattern =
+    /^\s*export\s+(?:async\s+)?(?:function|const|let|var|class|type|interface|enum)\s+([A-Za-z0-9_$]+)/gm;
+  let match: RegExpExecArray | null;
+  while ((match = pattern.exec(code)) !== null && names.length < 4) names.push(match[1]);
+  return names;
+}
+
 export function buildProjectContext(project: ProjectFile[], prompt: string): string {
   if (project.length === 0) return "";
 
-  const index = project.map(
-    (file) => `- ${file.name} (${file.lang || "text"}, ${file.code.split("\n").length} lines)`
-  );
+  // The whole list is always sent, with what each file exports: enough for the
+  // model to import the right name without paying for another file's text.
+  const index = project.map((file) => {
+    const lines = file.code.split("\n").length;
+    const exports = exportedNames(file.code);
+    const hands = exports.length > 0 ? `: exports ${exports.join(", ")}` : "";
+    return `- ${file.name} (${file.lang || "text"}, ${lines} lines${hands})`;
+  });
   const named = project.filter((file) => new RegExp(escapeName(file.name), "i").test(prompt));
   const chosen = (named.length > 0 ? named : [project[project.length - 1]]).slice(
     0,

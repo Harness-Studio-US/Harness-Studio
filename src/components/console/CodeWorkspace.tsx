@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import {
+  AlertTriangle,
   ArrowLeft,
   ArrowRight,
   Code,
@@ -11,6 +12,7 @@ import {
   Plus,
   RotateCcw,
   Send,
+  ShieldCheck,
   Square,
   Trash2,
   Undo2,
@@ -18,6 +20,8 @@ import {
 import type { ChatMessage } from "../../lib/chat";
 import { diffLines, type ProjectFile } from "../../lib/codeFiles";
 import type { Attachment } from "../../lib/files";
+import { findSyntaxIssue } from "../../lib/syntax";
+import { downloadText } from "../../lib/transcript";
 import { downloadZip } from "../../lib/zip";
 import { ChatMessageView } from "./ChatMessageView";
 import { AttachmentChips, AttachButton } from "./Attachments";
@@ -40,10 +44,12 @@ export function CodeWorkspace({
   onSend,
   onStop,
   onNewChat,
+  onExport,
   onRegenerate,
   onRenameFile,
   onDeleteFile,
   onSendToCopilot,
+  onCheckFile,
   canUndo,
   onUndo,
   onBackToCopilot,
@@ -62,10 +68,12 @@ export function CodeWorkspace({
   onRemoveAttachment: (id: string) => void;
   onStop: () => void;
   onNewChat: () => void;
+  onExport: () => void;
   onRegenerate: () => void;
   onRenameFile: (from: string, to: string) => void;
   onDeleteFile: (name: string) => void;
   onSendToCopilot: (file: ProjectFile) => void;
+  onCheckFile: (file: ProjectFile) => void;
   canUndo: boolean;
   onUndo: () => void;
   onBackToCopilot: () => void;
@@ -108,6 +116,9 @@ export function CodeWorkspace({
   }, [input]);
 
   const active = project.find((file) => file.name === selectedName) ?? project[0] ?? null;
+  // A 4B model can ship a mistyped closing tag; the panel says so instead of
+  // letting the file arrive in the project looking fine.
+  const issue = active ? findSyntaxIssue(active.lang, active.code) : null;
   const lines = active ? active.code.split("\n") : [];
   const streaming = streamingId !== null;
   const empty = messages.length === 0;
@@ -160,6 +171,16 @@ export function CodeWorkspace({
             >
               <Plus className="h-3.5 w-3.5" />
               New
+            </button>
+            <button
+              type="button"
+              onClick={onExport}
+              disabled={empty && messages.length === 0}
+              title="Download this chat and its files as Markdown"
+              className="press flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-[12px] font-medium text-slate-700 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition hover:bg-slate-50 hover:text-slate-900 disabled:opacity-40"
+            >
+              <Download className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">Export</span>
             </button>
             <button
               type="button"
@@ -524,6 +545,30 @@ export function CodeWorkspace({
                             role="menuitem"
                             onClick={() => {
                               setMenuOpen(false);
+                              downloadText(active.name, active.code);
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-left text-slate-700 transition hover:bg-slate-50"
+                          >
+                            <Download className="h-3.5 w-3.5 text-slate-400" />
+                            Download
+                          </button>
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setMenuOpen(false);
+                              onCheckFile(active);
+                            }}
+                            className="flex w-full items-center gap-2 px-3 py-2 text-left text-slate-700 transition hover:bg-slate-50"
+                          >
+                            <ShieldCheck className="h-3.5 w-3.5 text-slate-400" />
+                            Check for errors
+                          </button>
+                          <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => {
+                              setMenuOpen(false);
                               onDeleteFile(active.name);
                             }}
                             className="flex w-full items-center gap-2 px-3 py-2 text-left text-rose-600 transition hover:bg-rose-50"
@@ -537,6 +582,20 @@ export function CodeWorkspace({
                   </div>
                 </div>
               </div>
+
+              {issue && (
+                <div className="flex items-start gap-2 border-b border-amber-200 bg-amber-50 px-3 py-2 text-[11.5px] leading-[1.5] text-amber-900">
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  <span className="min-w-0 flex-1">Possible syntax error: {issue}</span>
+                  <button
+                    type="button"
+                    onClick={() => onCheckFile(active)}
+                    className="press shrink-0 rounded-md bg-amber-900/10 px-2 py-1 text-[11px] font-medium transition hover:bg-amber-900/20"
+                  >
+                    Ask Harness Code to fix
+                  </button>
+                </div>
+              )}
 
               <div className="min-h-0 flex-1 overflow-auto bg-white">
                 {showDiff && active.previous !== undefined ? (

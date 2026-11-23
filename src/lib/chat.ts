@@ -324,6 +324,8 @@ export async function* streamAssistant(opts: StreamOptions): AsyncGenerator<Stre
     yield* streamRealReply({
       system: COPILOT_SYSTEM_PROMPT,
       model: modelNameFor("copilot"),
+      // Prose can take a warmer sample than code without losing accuracy.
+      temperature: 0.5,
       prompt: opts.prompt,
       history: opts.history,
       attachments: opts.attachments,
