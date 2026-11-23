@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   ArrowLeft,
   ArrowRight,
+  CheckCircle2,
   Code,
   Copy,
   Download,
@@ -12,11 +13,13 @@ import {
   Pencil,
   Plus,
   RotateCcw,
+  Search,
   Send,
   ShieldCheck,
   Square,
   Trash2,
   Undo2,
+  X,
 } from "lucide-react";
 import type { ChatMessage } from "../../lib/chat";
 import { diffLines, type ProjectFile } from "../../lib/codeFiles";
@@ -96,6 +99,12 @@ export function CodeWorkspace({
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
   const [dragActive, setDragActive] = useState(false);
+  /** Narrowing the file tabs when a project has grown. */
+  const [fileQuery, setFileQuery] = useState("");
+  /** Result of checking every file at once: empty means nothing was wrong. */
+  const [checkResults, setCheckResults] = useState<{ name: string; issue: string }[] | null>(
+    null
+  );
   const threadRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -112,6 +121,11 @@ export function CodeWorkspace({
     setEditing(false);
     setDraft("");
   }, [selectedName]);
+
+  useEffect(() => {
+    // A changed project makes an old check result a claim about old code.
+    setCheckResults(null);
+  }, [project]);
 
   useEffect(() => {
     // Only follow the conversation once it has started; scrolling an empty
@@ -133,6 +147,12 @@ export function CodeWorkspace({
   // letting the file arrive in the project looking fine.
   const issue = active ? findSyntaxIssue(active.lang, active.code) : null;
   const lines = active ? active.code.split("\n") : [];
+  const needle = fileQuery.trim().toLowerCase();
+  const visibleFiles = needle
+    ? project.filter(
+        (file) => file.name.toLowerCase().includes(needle) || file.name === active?.name
+      )
+    : project;
   const streaming = streamingId !== null;
   const empty = messages.length === 0;
   const canSend = (input.trim().length > 0 || attachments.length > 0) && !streaming;
@@ -153,6 +173,16 @@ export function CodeWorkspace({
     if (!active) return;
     if (draft !== active.code) onUpdateFile(active.name, draft);
     setEditing(false);
+  }
+
+  /** The fast, local check across the whole project — no model call. */
+  function checkProject() {
+    const found: { name: string; issue: string }[] = [];
+    for (const file of project) {
+      const problem = findSyntaxIssue(file.lang, file.code);
+      if (problem) found.push({ name: file.name, issue: problem });
+    }
+    setCheckResults(found);
   }
 
   function duplicateFile() {
@@ -483,8 +513,30 @@ export function CodeWorkspace({
           </div>
         ) : (
           <>
+            {project.length > 4 && (
+              <div className="flex shrink-0 items-center gap-2 border-b border-slate-200 bg-white px-3 py-1.5">
+                <Search className="h-3 w-3 shrink-0 text-slate-400" />
+                <input
+                  value={fileQuery}
+                  onChange={(event) => setFileQuery(event.target.value)}
+                  placeholder="Filter files"
+                  aria-label="Filter project files"
+                  className="min-w-0 flex-1 bg-transparent text-[11.5px] text-slate-700 outline-none placeholder:text-slate-400"
+                />
+                {fileQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setFileQuery("")}
+                    aria-label="Clear the file filter"
+                    className="shrink-0 rounded p-0.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+            )}
             <div className="anim-stagger flex shrink-0 gap-1.5 overflow-x-auto border-b border-slate-200 bg-white px-3 py-2">
-              {project.map((file) => (
+              {visibleFiles.map((file) => (
                 <button
                   key={file.name}
                   type="button"
@@ -554,6 +606,17 @@ export function CodeWorkspace({
                   </div>
                 </div>
                 <div className="ml-auto flex shrink-0 items-center gap-1.5">
+                  {!editing && (
+                    <button
+                      type="button"
+                      onClick={checkProject}
+                      title="Check every file for syntax problems"
+                      className="press flex h-7 items-center gap-1 rounded-md px-2 text-[11px] font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                    >
+                      <ShieldCheck className="h-3 w-3" />
+                      <span className="hidden sm:inline">Check all</span>
+                    </button>
+                  )}
                   {active.previous !== undefined && (
                     <div className="flex items-center gap-0.5 rounded-lg border border-slate-200 bg-slate-50 p-0.5 text-[11px] font-medium">
                       <button
@@ -725,6 +788,54 @@ export function CodeWorkspace({
                     className="press shrink-0 rounded-md bg-amber-900/10 px-2 py-1 text-[11px] font-medium transition hover:bg-amber-900/20"
                   >
                     Ask Harness Code to fix
+                  </button>
+                </div>
+              )}
+
+              {!editing && checkResults && (
+                <div
+                  className={cn(
+                    "flex items-start gap-2 border-b px-3 py-2 text-[11.5px] leading-[1.5]",
+                    checkResults.length === 0
+                      ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+                      : "border-amber-200 bg-amber-50 text-amber-900"
+                  )}
+                >
+                  {checkResults.length === 0 ? (
+                    <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  ) : (
+                    <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  )}
+                  <span className="min-w-0 flex-1">
+                    {checkResults.length === 0 ? (
+                      "No syntax problems found in any file."
+                    ) : (
+                      <>
+                        Problems in {checkResults.length} file
+                        {checkResults.length === 1 ? "" : "s"}:{" "}
+                        {checkResults.map((result, index) => (
+                          <span key={result.name}>
+                            {index > 0 && ", "}
+                            <button
+                              type="button"
+                              onClick={() => setSelectedName(result.name)}
+                              title={result.issue}
+                              className="font-medium underline underline-offset-2 transition hover:text-amber-950"
+                            >
+                              {result.name}
+                            </button>
+                          </span>
+                        ))}
+                      </>
+                    )}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setCheckResults(null)}
+                    aria-label="Dismiss the check result"
+                    className="shrink-0 rounded p-0.5 transition hover:bg-black/5"
+                  >
+                    <X className="h-3 w-3" />
                   </button>
                 </div>
               )}

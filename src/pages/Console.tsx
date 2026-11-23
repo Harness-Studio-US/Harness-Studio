@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  AlertTriangle,
   ArrowDown,
   ArrowLeft,
   ArrowUpRight,
@@ -79,6 +80,8 @@ const wait = (ms: number) => new Promise<void>((resolve) => window.setTimeout(re
 const chatsKey = (userId: string) => `harness-copilot-conversations-v1:${userId}`;
 const codeChatKey = (userId: string) => `harness-code-chat-v1:${userId}`;
 const codeProjectKey = (userId: string) => `harness-code-project-v1:${userId}`;
+const draftsKey = (userId: string) => `harness-copilot-drafts-v1:${userId}`;
+const codeDraftKey = (userId: string) => `harness-code-draft-v1:${userId}`;
 
 const suggestions = [
   "Make the dashboard easier to scan",
@@ -187,6 +190,13 @@ export default function Console() {
     conversation: Conversation;
     index: number;
   } | null>(null);
+  /** The project file just deleted, kept for a few seconds so it can come back. */
+  const [deletedFile, setDeletedFile] = useState<{
+    file: ProjectFile;
+    index: number;
+  } | null>(null);
+  /** Set when the last request could not reach the model, until one succeeds. */
+  const [modelDown, setModelDown] = useState(false);
   /** A file being dragged over the workspace, so the pane can say it will take it. */
   const [dragActive, setDragActive] = useState(false);
   /** Whether the thread is scrolled far enough down to hide the jump button. */
@@ -195,6 +205,11 @@ export default function Console() {
   const codeCancelledRef = useRef(false);
   const codeUndoTimer = useRef<number | null>(null);
   const deleteTimer = useRef<number | null>(null);
+  const fileDeleteTimer = useRef<number | null>(null);
+  /** Unsent text per conversation, so switching or reloading does not lose it. */
+  const draftsRef = useRef<Record<string, string>>({});
+  const lastDraftChat = useRef("");
+  const inputRef = useRef("");
   const threadRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -231,6 +246,14 @@ export default function Console() {
       return;
     }
     setConversations(loadConversations(firebaseUser.uid));
+    try {
+      const rawDrafts = localStorage.getItem(draftsKey(firebaseUser.uid));
+      draftsRef.current = rawDrafts ? (JSON.parse(rawDrafts) as Record<string, string>) : {};
+    } catch {
+      draftsRef.current = {};
+    }
+    lastDraftChat.current = "";
+    setCodeInput(localStorage.getItem(codeDraftKey(firebaseUser.uid)) ?? "");
     const replayed = replayConversation(loadCodeMessages(firebaseUser.uid));
     setCodeMessages(replayed.messages);
     const storedProject = loadCodeProject(firebaseUser.uid);
@@ -302,6 +325,51 @@ export default function Console() {
     el.style.height = "auto";
     el.style.height = `${Math.min(el.scrollHeight, 180)}px`;
   }, [input]);
+
+  useEffect(() => {
+    inputRef.current = input;
+  }, [input]);
+
+  useEffect(() => {
+    if (!chatsReady) return;
+    // Keep what was typed in the chat being left, then show the new one's draft.
+    const previous = lastDraftChat.current;
+    if (previous && previous !== activeId) {
+      if (inputRef.current.trim()) draftsRef.current[previous] = inputRef.current;
+      else delete draftsRef.current[previous];
+    }
+    lastDraftChat.current = activeId;
+    setInput(activeId ? draftsRef.current[activeId] ?? "" : "");
+  }, [activeId, chatsReady]);
+
+  useEffect(() => {
+    if (!firebaseUser || !chatsReady) return;
+    if (activeId) {
+      if (input.trim()) draftsRef.current[activeId] = input;
+      else delete draftsRef.current[activeId];
+    }
+    const timer = window.setTimeout(() => {
+      try {
+        localStorage.setItem(draftsKey(firebaseUser.uid), JSON.stringify(draftsRef.current));
+      } catch {
+        /* storage quota — ignore */
+      }
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [input, activeId, chatsReady, firebaseUser]);
+
+  useEffect(() => {
+    if (!firebaseUser || !chatsReady) return;
+    const timer = window.setTimeout(() => {
+      try {
+        if (codeInput.trim()) localStorage.setItem(codeDraftKey(firebaseUser.uid), codeInput);
+        else localStorage.removeItem(codeDraftKey(firebaseUser.uid));
+      } catch {
+        /* storage quota — ignore */
+      }
+    }, 300);
+    return () => window.clearTimeout(timer);
+  }, [codeInput, firebaseUser, chatsReady]);
 
   useEffect(() => {
     // Cmd/Ctrl+K is the one shortcut people try first: go straight to search.
@@ -429,6 +497,7 @@ export default function Console() {
             content: message.content + event.text,
           }));
         } else if (event.type === "done") {
+          setModelDown(false);
           patchMessage(conv.id, assistantId, (message) => ({
             ...message,
             usage: event.usage,
@@ -442,6 +511,7 @@ export default function Console() {
       // mid-update. Let the dots run a moment, then say it in plain words.
       const detail = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
       console.error("[Harness Copilot] request failed", error);
+      setModelDown(true);
       if (!cancelledRef.current) await wait(SERVER_BUSY_DELAY_MS);
       patchMessage(conv.id, assistantId, (current) => ({
         ...current,
@@ -562,6 +632,7 @@ export default function Console() {
             content: message.content + event.text,
           }));
         } else if (event.type === "done") {
+          setModelDown(false);
           patchCodeMessage(assistantId, (message) => ({
             ...message,
             usage: event.usage,
@@ -573,6 +644,7 @@ export default function Console() {
     } catch (error) {
       const detail = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
       console.error("[Harness Code] request failed", error);
+      setModelDown(true);
       if (!codeCancelledRef.current) await wait(SERVER_BUSY_DELAY_MS);
       patchCodeMessage(assistantId, (current) => ({
         ...current,
@@ -683,7 +755,26 @@ export default function Console() {
   }
 
   function deleteCodeFile(name: string) {
+    const index = codeProject.findIndex((file) => file.name === name);
+    if (index < 0) return;
+    const removed = codeProject[index];
     setCodeProject((prev) => prev.filter((file) => file.name !== name));
+    setDeletedFile({ file: removed, index });
+    if (fileDeleteTimer.current) window.clearTimeout(fileDeleteTimer.current);
+    fileDeleteTimer.current = window.setTimeout(() => setDeletedFile(null), 8000);
+  }
+
+  function undoDeleteCodeFile() {
+    const removed = deletedFile;
+    if (!removed) return;
+    if (fileDeleteTimer.current) window.clearTimeout(fileDeleteTimer.current);
+    setDeletedFile(null);
+    setCodeProject((prev) => {
+      if (prev.some((file) => file.name === removed.file.name)) return prev;
+      const next = [...prev];
+      next.splice(Math.min(removed.index, next.length), 0, removed.file);
+      return next;
+    });
   }
 
   function duplicateCodeFile(from: string, to: string) {
@@ -876,6 +967,43 @@ export default function Console() {
     setView("copilot");
   }
 
+  function retryLast() {
+    if (view === "code") void regenerateCode();
+    else void regenerateReply();
+  }
+
+  /** Wipes every chat, draft and project file kept in this browser. */
+  function clearHistory() {
+    if (!firebaseUser) return;
+    const uid = firebaseUser.uid;
+    for (const key of [
+      chatsKey(uid),
+      codeChatKey(uid),
+      codeProjectKey(uid),
+      draftsKey(uid),
+      codeDraftKey(uid),
+    ]) {
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        /* ignore */
+      }
+    }
+    draftsRef.current = {};
+    const conversation = emptyConversation();
+    setConversations([conversation]);
+    setActiveId(conversation.id);
+    setInput("");
+    setCodeInput("");
+    setCodeMessages([]);
+    setCodeProject([]);
+    setCodeUndo(null);
+    setDeletedChat(null);
+    setDeletedFile(null);
+    setQuery("");
+    setView("copilot");
+  }
+
   /**
    * Rewinds the thread to a message so it can be changed and sent again. The
    * reply it had is dropped: asking the same thing twice would leave two
@@ -922,7 +1050,10 @@ export default function Console() {
     setCodeProject([]);
     setCodeUndo(null);
     setDeletedChat(null);
+    setDeletedFile(null);
+    setInput("");
     if (deleteTimer.current) window.clearTimeout(deleteTimer.current);
+    if (fileDeleteTimer.current) window.clearTimeout(fileDeleteTimer.current);
     setSidebarOpen(false);
     setSettingsOpen(false);
     setGuideOpen(false);
@@ -949,6 +1080,10 @@ export default function Console() {
   const lastCodePrompt = [...codeMessages].reverse().find((message) => message.role === "user");
   const codeChatTitle = lastCodePrompt ? titleForConversation(lastCodePrompt.content) : "Code chat";
   const isStreaming = streaming !== null;
+  const canRetry =
+    view === "code"
+      ? codeMessages.some((message) => message.role === "user")
+      : (activeConversation?.messages.some((message) => message.role === "user") ?? false);
   const userEmail = firebaseUser?.email ?? "Signed in";
   const userInitial = (firebaseUser?.displayName?.trim().charAt(0) || userEmail.charAt(0)).toUpperCase();
 
@@ -1421,6 +1556,35 @@ export default function Console() {
           </div>
         </header>
 
+        {modelDown && (
+          <div
+            role="status"
+            className="anim-fade-in flex shrink-0 items-center gap-2 border-b border-amber-200 bg-amber-50 px-4 py-2 text-[12px] text-amber-900 sm:px-6"
+          >
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
+            <span className="min-w-0 flex-1">
+              The model on your machine is not answering. Check the tunnel, then try again.
+            </span>
+            {canRetry && (
+              <button
+                type="button"
+                onClick={retryLast}
+                className="press shrink-0 rounded-md border border-amber-300 bg-white px-2.5 py-1 text-[11.5px] font-semibold text-amber-900 transition hover:bg-amber-100"
+              >
+                Retry
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setModelDown(false)}
+              aria-label="Dismiss"
+              className="shrink-0 rounded p-1 text-amber-800 transition hover:bg-amber-100"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
+
         {view === "code" && (
           <CodeWorkspace
             messages={codeMessages}
@@ -1624,19 +1788,40 @@ export default function Console() {
         </div>
       </div>
 
-      {deletedChat && (
-        <div
-          role="status"
-          className="anim-fade-in fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[12px] text-slate-700 shadow-[0_16px_40px_-20px_rgba(15,23,42,0.5)]"
-        >
-          <span>Chat deleted.</span>
-          <button
-            type="button"
-            onClick={undoDeleteConversation}
-            className="press rounded-md border border-slate-200 px-2 py-1 text-[11.5px] font-semibold text-slate-800 transition hover:bg-slate-50"
-          >
-            Undo
-          </button>
+      {(deletedFile || deletedChat) && (
+        <div className="pointer-events-none fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 flex-col items-center gap-2">
+          {deletedFile && (
+            <div
+              role="status"
+              className="anim-fade-in pointer-events-auto flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[12px] text-slate-700 shadow-[0_16px_40px_-20px_rgba(15,23,42,0.5)]"
+            >
+              <span>
+                File deleted: <span className="font-mono text-[11.5px]">{deletedFile.file.name}</span>
+              </span>
+              <button
+                type="button"
+                onClick={undoDeleteCodeFile}
+                className="press rounded-md border border-slate-200 px-2 py-1 text-[11.5px] font-semibold text-slate-800 transition hover:bg-slate-50"
+              >
+                Undo
+              </button>
+            </div>
+          )}
+          {deletedChat && (
+            <div
+              role="status"
+              className="anim-fade-in pointer-events-auto flex items-center gap-3 rounded-lg border border-slate-200 bg-white px-3 py-2 text-[12px] text-slate-700 shadow-[0_16px_40px_-20px_rgba(15,23,42,0.5)]"
+            >
+              <span>Chat deleted.</span>
+              <button
+                type="button"
+                onClick={undoDeleteConversation}
+                className="press rounded-md border border-slate-200 px-2 py-1 text-[11.5px] font-semibold text-slate-800 transition hover:bg-slate-50"
+              >
+                Undo
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -1646,6 +1831,7 @@ export default function Console() {
         onClose={() => setSettingsOpen(false)}
         user={firebaseUser}
         onUserChanged={() => setFirebaseUser(auth?.currentUser ?? firebaseUser)}
+        onClearHistory={clearHistory}
       />
     </div>
   );
